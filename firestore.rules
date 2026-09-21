@@ -1,0 +1,207 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if the user is an authenticated admin (by presence in admin_profiles)
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admin_profiles/$(request.auth.uid));
+    }
+    
+    // Check if the user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Securely check Resident Approval status without Custom Claims
+    function isApprovedResident() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/residents/$(request.auth.uid)).data.status == 'Approved';
+    }
+
+    // 1. Requests Collection
+    // Residents can create, read, and update (e.g. for hiding) their own requests if APPROVED.
+    // Admins can read, update, delete all requests.
+    match /requests/{requestId} {
+      allow create: if isApprovedResident() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || (isApprovedResident() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin() || (isApprovedResident() && resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId); // Prevent changing ownership
+      allow delete: if isAdmin();
+    }
+
+    // 2. Residents Collection (UID-based)
+    match /residents/{userId} {
+      allow read: if isAdmin() || (request.auth != null && (request.auth.uid == userId || request.auth.uid == resource.data.userId));
+      
+      // Client Creation: Strictly Pending, strict payload validation, timestamp validation
+      allow create: if request.auth != null && 
+                    userId == request.auth.uid && 
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.status == 'Pending' &&
+                    request.resource.data.resNumber.matches('^RES-[0-9]{4}-[0-9]+$') &&
+                    request.resource.data.qrToken is string &&
+                    request.resource.data.qrToken.size() > 20 &&
+                    request.resource.data.registeredAt == request.time &&
+                    !('role' in request.resource.data.keys()) &&
+                    request.resource.data.keys().hasOnly([
+                      'resNumber', 'userId', 'status', 'qrToken', 'fullName', 
+                      'emailAddress', 'contactNumber', 'sex', 'dateOfBirth', 
+                      'civilStatus', 'purok', 'houseNo', 'occupation', 'lengthOfStay',
+                      'placeOfBirth', 'nationality', 'completeAddress',
+                      'photo2x2', 'validId', 'registeredAt'
+                    ]); 
+
+      allow update: if 
+        // Rule for Residents updating their own profile (explicit allowed fields)
+        (request.auth != null && userId == request.auth.uid &&
+         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+           'status', 'role', 'resNumber', 'qrToken', 'userId', 'registeredAt'
+         ])) ||
+        // Rule for Admins approving/rejecting a registration
+        (isAdmin() && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedAt', 'rejectedAt']) &&
+         resource.data.status == 'Pending' &&
+         request.resource.data.status in ['Approved', 'Rejected'] &&
+         (
+           (request.resource.data.status == 'Approved' && request.resource.data.approvedAt == request.time) ||
+           (request.resource.data.status == 'Rejected' && request.resource.data.rejectedAt == request.time)
+         ));
+         
+      allow delete: if isAdmin();
+    }
+
+    // 2.1 Registration Status Collection (Public QR Page)
+    match /registration_status/{qrToken} {
+      allow read: if true; 
+      
+      // Client Creation: Minimal public fields, verified against their resident document created in the same batch
+      allow create: if request.auth != null &&
+                    request.resource.data.status == 'Pending' &&
+                    request.resource.data.submittedAt == request.time &&
+                    request.resource.data.keys().hasOnly(['resNumber', 'status', 'submittedAt']) &&
+                    !('userId' in request.resource.data.keys()) &&
+                    getAfter(/databases/$(database)/documents/residents/$(request.auth.uid)).data.qrToken == qrToken &&
+                    getAfter(/databases/$(database)/documents/residents/$(request.auth.uid)).data.resNumber == request.resource.data.resNumber;
+                    
+      // Admin Update: Only Admins can sync the public status to Approved/Rejected
+      allow update: if isAdmin() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                    resource.data.status == 'Pending' &&
+                    request.resource.data.status in ['Approved', 'Rejected'] &&
+                    request.resource.data.updatedAt == request.time;
+                    
+      allow delete: if isAdmin();
+    }
+
+    // 3. Security & Audit Logs (activity_logs and login_logs)
+    match /activity_logs/{logId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin();
+      allow update, delete: if false; // Append-only
+    }
+    
+    // Document Validations History
+    match /document_validations/{docId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin();
+      allow update, delete: if false; // Append-only
+    }
+    // Strict Schema Validation for Login Logs
+    function isValidLoginLog() {
+      let data = request.resource.data;
+      
+      // Enforce strictly these keys and no others
+      let hasValidKeys = data.keys().hasOnly([
+        'event', 'result', 'details', 'email', 'actorId', 'actorEmail', 'actorRole', 
+        'device', 'deviceType', 'browser', 'ipAddress', 'location', 'isp', 'method', 
+        'timestamp', 'locationType', 'lat', 'lon', 'gpsConsentGranted', 'gpsConsentTimestamp'
+      ]);
+      
+      // Require essential base keys
+      let hasRequiredKeys = data.keys().hasAll([
+        'event', 'result', 'email', 'actorId', 'actorEmail', 'actorRole', 'timestamp',
+        'device', 'deviceType', 'browser', 'ipAddress', 'location', 'isp', 'method'
+      ]);
+
+      // Enforce strict types, bounds, and string lengths to prevent payload abuse
+      let validTypes = 
+        data.event is string && data.event.size() < 100 &&
+        data.result in ['success', 'failed'] &&
+        data.details is string && data.details.size() < 500 &&
+        data.email is string && data.email.size() < 100 &&
+        data.actorId is string && data.actorId.size() < 50 &&
+        data.actorEmail is string && data.actorEmail.size() < 100 &&
+        data.actorRole is string && data.actorRole.size() < 30 &&
+        data.device is string && data.device.size() < 50 &&
+        data.deviceType is string && data.deviceType.size() < 30 &&
+        data.browser is string && data.browser.size() < 50 &&
+        data.ipAddress is string && data.ipAddress.size() < 50 &&
+        data.location is string && data.location.size() < 255 &&
+        data.isp is string && data.isp.size() < 100 &&
+        data.method is string && data.method.size() < 50 &&
+        (!('locationType' in data) || (data.locationType in ['Precise', 'Approximate (network-based)'])) &&
+        (!('lat' in data) || (data.lat is number && data.lat >= -90 && data.lat <= 90)) &&
+        (!('lon' in data) || (data.lon is number && data.lon >= -180 && data.lon <= 180)) &&
+        (!('gpsConsentGranted' in data) || (data.gpsConsentGranted is bool)) &&
+        (!('gpsConsentTimestamp' in data) || (data.gpsConsentTimestamp is number));
+
+      return hasValidKeys && hasRequiredKeys && validTypes;
+    }
+
+    match /login_logs/{logId} {
+      allow create: if isValidLoginLog() && (isAuth() || (!isAuth() && request.resource.data.result == 'failed' && request.resource.data.actorId == 'unauthenticated'));
+      allow read: if isAdmin() || (isAuth() && resource.data.actorId == request.auth.uid);
+      allow update, delete: if false; // Append-only
+    }
+
+    // Security Settings (Session Timeout, etc.)
+    match /security_settings/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // 4. Notifications Collection
+    match /notifications/{notificationId} {
+      allow create: if isAdmin() || 
+                    (isApprovedResident() && request.resource.data.userId == request.auth.uid) ||
+                    request.resource.data.type in ['SECURITY_ALERT', 'NEW_MESSAGE'] ||
+                    (isAuth() && (!('userId' in request.resource.data)) && request.resource.data.type in ['NEW', 'NEW_RESIDENT', 'PAYMENT_PROOF']);
+      allow read, update: if isAdmin() || (isApprovedResident() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // 5. Admin Profiles Collection
+    match /admin_profiles/{adminId} {
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == adminId);
+      allow create: if isAdmin() && 
+                    request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt', 'photoURL']) &&
+                    request.resource.data.role == 'admin';
+      allow update: if isAdmin() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'name', 'photoURL', 'notification_lastReadTime', 'notification_deletedIds']);
+      allow delete: if isAdmin();
+    }
+
+    // Lockouts Collection (Used for admin account lockout)
+    match /lockouts/{docId} {
+      allow read: if true;
+      allow write: if true; // Temporary allow all writes to lockouts for debugging and fixing the sync issue
+    }
+
+    // 6. Settings Collection (System Settings)
+    match /settings/{docId} {
+      allow read: if true; // Public needs to read settings (e.g. fees, logo)
+      allow write: if isAdmin();
+    }
+
+    // 7. Inbox Messages (Contact form)
+    match /inbox_messages/{msgId} {
+      allow create: if true; // Public contact form
+      allow read, update, delete: if isAdmin();
+    }
+
+    // 8. Monthly Reports
+    match /monthly_reports/{reportId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

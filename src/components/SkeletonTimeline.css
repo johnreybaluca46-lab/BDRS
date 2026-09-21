@@ -1,0 +1,47 @@
+.skeleton-timeline-icon {
+  background-color: #f1f5f9;
+  border-color: #f1f5f9;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-timeline-title {
+  height: 18px;
+  width: 40%;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-timeline-date {
+  height: 12px;
+  width: 25%;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-timeline-details {
+  height: 14px;
+  width: 70%;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}

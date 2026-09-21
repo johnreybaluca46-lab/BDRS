@@ -1,0 +1,253 @@
+/* Activity Log Header */
+.activity-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.activity-log-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-clear-logs {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-clear-logs:hover {
+  background-color: #dc2626;
+}
+
+.btn-clear-logs:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.log-filter-select {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #4a5568;
+  font-size: 0.9rem;
+  background-color: white;
+  min-width: 150px;
+}
+
+/* Summary Cards */
+.activity-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.activity-summary-card {
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.activity-summary-card h4 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.activity-summary-card .value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.card-blue-light { background-color: #ebf8ff; border-color: #bee3f8; color: #2c5282; }
+.card-blue-light h4 { color: #2b6cb0; }
+
+.card-red-light { background-color: #fff5f5; border-color: #fed7d7; color: #9b2c2c; }
+.card-red-light h4 { color: #c53030; }
+
+.card-green-light { background-color: #f0fff4; border-color: #c6f6d5; color: #276749; }
+.card-green-light h4 { color: #2f855a; }
+
+/* Timeline — identical to admin activity-timeline */
+.user-timeline {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.user-timeline .timeline-item {
+  position: relative;
+  padding-left: 45px;
+  margin-bottom: 24px;
+}
+
+.user-timeline .timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.user-timeline .timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 34px;
+  bottom: -24px;
+  width: 2px;
+  background-color: #e2e8f0;
+}
+
+.user-timeline .timeline-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: 2px solid white;
+}
+
+.user-timeline .timeline-icon.bg-blue   { background-color: #3182ce; }
+.user-timeline .timeline-icon.bg-green  { background-color: #48bb78; }
+.user-timeline .timeline-icon.bg-yellow { background-color: #ecc94b; }
+.user-timeline .timeline-icon.bg-red    { background-color: #e53e3e; }
+
+.user-timeline .timeline-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.user-timeline .timeline-date {
+  display: block;
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 2px;
+}
+
+.user-timeline .timeline-details {
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+/* Responsive media queries to prevent overlapping */
+@media (max-width: 768px) {
+  .activity-log-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .activity-log-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .activity-log-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .btn-clear-logs {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .log-filter-select {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .activity-summary-cards {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .activity-summary-card {
+    padding: 12px 8px;
+  }
+
+  .activity-summary-card h4 {
+    font-size: 0.7rem;
+    margin-bottom: 4px;
+  }
+
+  .activity-summary-card .value {
+    font-size: 1.3rem;
+  }
+
+  .user-timeline .timeline-item {
+    padding-left: 36px;
+    margin-bottom: 18px;
+  }
+
+  .user-timeline .timeline-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .user-timeline .timeline-item:not(:last-child)::after {
+    left: 12px;
+    top: 28px;
+    bottom: -18px;
+  }
+
+  .user-timeline .timeline-content h3 {
+    font-size: 0.85rem;
+  }
+
+  .user-timeline .timeline-date {
+    font-size: 0.75rem;
+  }
+
+  .user-timeline .timeline-details {
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .activity-summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .activity-summary-card {
+    padding: 10px 4px;
+  }
+
+  .activity-summary-card h4 {
+    font-size: 0.62rem;
+    letter-spacing: 0;
+  }
+
+  .activity-summary-card .value {
+    font-size: 1.1rem;
+  }
+
+  .user-timeline .timeline-content h3 {
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,132 @@
+.skeleton-table-wrapper {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  width: 100%;
+}
+
+.skeleton-controls {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.skeleton-dropdown {
+  width: 150px;
+  height: 38px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-search {
+  width: 200px;
+  height: 38px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-table {
+  width: 100%;
+}
+
+.skeleton-thead {
+  display: flex;
+  background-color: #f8fafc;
+  padding: 16px 20px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.skeleton-th {
+  height: 16px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  flex: 1;
+  margin-right: 20px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-th:last-child {
+  margin-right: 0;
+  flex: 0.5;
+}
+
+.skeleton-tbody-row {
+  display: flex;
+  padding: 16px 20px;
+  border-bottom: 1px solid #edf2f7;
+  align-items: center;
+}
+
+.skeleton-td {
+  flex: 1;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.skeleton-td:last-child {
+  margin-right: 0;
+  flex: 0.5;
+  justify-content: center;
+}
+
+.skeleton-avatar-cell {
+  gap: 12px;
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  animation: pulse 1.5s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+.skeleton-text-short {
+  height: 14px;
+  width: 60%;
+  background: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-text-long {
+  height: 14px;
+  width: 80%;
+  background: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-badge {
+  height: 24px;
+  width: 70px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-icon {
+  width: 24px;
+  height: 24px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}

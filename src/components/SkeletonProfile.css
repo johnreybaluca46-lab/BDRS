@@ -1,0 +1,135 @@
+.skeleton-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton-avatar-section {
+  display: flex;
+  justify-content: center;
+}
+
+.skeleton-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-name {
+  height: 24px;
+  width: 200px;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-badge {
+  height: 24px;
+  width: 80px;
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-contact-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.skeleton-contact-item {
+  height: 16px;
+  width: 100%;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-btn {
+  height: 36px;
+  width: 120px;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-meta-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-meta-item {
+  height: 36px;
+  width: 100%;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-tabs {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+.skeleton-tab {
+  height: 24px;
+  width: 120px;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.skeleton-details-header {
+  height: 24px;
+  width: 150px;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.skeleton-details-field {
+  height: 60px;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .skeleton-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}

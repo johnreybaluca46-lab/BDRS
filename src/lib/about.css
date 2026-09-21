@@ -1,0 +1,443 @@
+@keyframes slideToLeft {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.about-page-container {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideToLeft 0.3s ease-out;
+}
+
+.about-hero-section {
+  position: relative;
+  background-color: #dcebff;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 500px;
+}
+
+.about-hero-content {
+  flex: 1;
+  padding: 4rem 2rem 4rem 5rem;
+  z-index: 10;
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.about-hero-subtitle {
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.about-hero-title {
+  color: #1a2b56;
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 25px;
+}
+
+.about-hero-text {
+  color: #6a7491;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 95%;
+}
+
+.about-hero-image-container {
+  flex: 1.2;
+  position: relative;
+  height: 100%;
+}
+
+.about-hero-image-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -5px; /* Pull it slightly left to ensure it covers the edge */
+  bottom: 0;
+  width: 260px;
+  background: linear-gradient(to right, #dcebff 0%, #dcebff 10%, rgba(220, 235, 255, 0) 100%);
+  z-index: 1;
+}
+
+.about-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right top;
+  display: block;
+}
+
+.about-stats-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  width: 100%;
+  border: 1px solid #eaeaea;
+  margin-top: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-icon {
+  background: #eff6ff;
+  color: #2563eb;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.stat-label {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.about-mission-section {
+  padding: 4rem 5% 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-heading-center {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-heading-center h2 {
+  color: #1e3a8a;
+  font-size: 2rem;
+  font-weight: 800;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 15px;
+}
+
+.section-heading-center h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background-color: #2563eb;
+  border-radius: 2px;
+}
+
+.mission-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.mission-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  padding: 35px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: transform 0.3s ease;
+  border: 1px solid #f1f5f9;
+}
+
+.mission-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.mission-card-icon {
+  background: #eff6ff;
+  color: #2563eb;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.mission-card h3 {
+  color: #1e3a8a;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.mission-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.mission-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.mission-card ul li {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.mission-card ul li::before {
+  content: '•';
+  color: #2563eb;
+  font-weight: bold;
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+.about-commitment-section {
+  padding: 0 5% 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.commitment-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  border: 1px solid #f1f5f9;
+}
+
+.commitment-left h3 {
+  color: #1e3a8a;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.commitment-left p {
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.commitment-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 40px;
+}
+
+.commitment-item {
+  display: flex;
+  align-items: center;
+  color: #475569;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.commitment-check {
+  color: #2563eb;
+  background: #eff6ff;
+  border-radius: 50%;
+  padding: 4px;
+  margin-right: 15px;
+}
+
+@media (max-width: 992px) {
+  .about-hero-section {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 60px;
+  }
+  
+  .about-hero-content {
+    margin-bottom: 40px;
+  }
+
+  .about-hero-text {
+    margin: 0 auto 30px;
+  }
+  
+  .about-stats-card {
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    margin-top: 30px;
+  }
+  
+  .stat-item {
+    width: 45%;
+  }
+
+  .about-mission-section {
+    padding-top: 60px;
+  }
+
+  .mission-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .commitment-card {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .commitment-right {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 30px;
+  }
+}
+
+/* Responsive Design for Hero Section */
+@media (max-width: 1024px) {
+  .about-hero-section {
+    flex-direction: column;
+  }
+  .about-hero-content {
+    padding: 2.5rem 2rem 3rem;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+  }
+  .about-hero-title {
+    font-size: 3rem;
+  }
+  .about-hero-image-container {
+    min-height: 450px;
+    width: 100%;
+    flex-grow: 1;
+    display: block;
+  }
+  .about-hero-image-container::before {
+    background: linear-gradient(to bottom, #dcebff 0%, #dcebff 10%, rgba(220, 235, 255, 0) 100%);
+    width: 100%;
+    height: 150px;
+    left: 0;
+    right: 0;
+    top: -5px;
+    bottom: auto;
+  }
+  .about-hero-image {
+    object-position: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero-section {
+    flex-direction: column;
+  }
+  .about-hero-content {
+    padding: 2.5rem 2rem 3rem;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+  }
+  .about-hero-title {
+    font-size: 3rem;
+  }
+  .about-hero-image-container {
+    min-height: 450px;
+    width: 100%;
+    flex-grow: 1;
+    display: block;
+  }
+  .about-hero-image-container::before {
+    background: linear-gradient(to bottom, #dcebff 0%, #dcebff 10%, rgba(220, 235, 255, 0) 100%);
+    width: 100%;
+    height: 150px;
+    left: 0;
+    right: 0;
+    top: -5px;
+    bottom: auto;
+  }
+  .about-hero-image {
+    object-position: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-hero-section {
+    flex-direction: column;
+  }
+  .about-hero-content {
+    padding: 2rem 1.5rem 2.5rem;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+  }
+  .about-hero-title {
+    font-size: 2.5rem;
+  }
+  .about-hero-image-container {
+    height: 400px;
+    width: 100%;
+    flex: none;
+  }
+  .about-hero-image-container::before {
+    background: linear-gradient(to bottom, #dcebff 0%, #dcebff 10%, rgba(220, 235, 255, 0) 100%);
+    width: 100%;
+    height: 150px;
+    left: 0;
+    right: 0;
+    top: -5px;
+    bottom: auto;
+  }
+  .about-hero-image {
+    object-position: center;
+  }
+}

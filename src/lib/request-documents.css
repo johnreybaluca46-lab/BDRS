@@ -1,0 +1,153 @@
+.req-docs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 10px;
+}
+
+.req-doc-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.req-doc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.req-doc-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.req-doc-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #3b82f6;
+  overflow: hidden;
+}
+
+.req-doc-icon-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.req-doc-title-area h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+}
+
+.req-doc-title-area p {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.req-doc-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3b82f6;
+  margin: 0 0 12px 0;
+}
+
+.req-doc-purposes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin-bottom: 20px;
+}
+
+.req-doc-purpose-item {
+  display: flex;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.req-doc-purpose-item::before {
+  content: "•";
+  color: #3b82f6;
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.req-doc-info-block {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.req-doc-info-icon {
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.req-doc-info-text h4 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 2px 0;
+}
+
+.req-doc-info-text p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.req-doc-meta-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+}
+
+.req-doc-button {
+  margin-top: auto;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.req-doc-button:hover {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .req-docs-container {
+    grid-template-columns: 1fr;
+  }
+}

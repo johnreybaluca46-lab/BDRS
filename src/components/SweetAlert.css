@@ -1,0 +1,117 @@
+.sweet-alert-container {
+  position: fixed;
+  z-index: 999;
+  display: flex;
+  width: 90%;
+  height: auto;
+  min-height: 6rem;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-width: 24rem;
+  border-radius: 0.75rem;
+  top: 1.5rem;
+  right: 1.5rem;
+  left: auto;
+  transform: translateX(100%);
+  animation: slideInRight 0.5s ease-out forwards;
+}
+
+.sweet-alert-container.exiting {
+  animation: fadeOut 1s ease-in forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+}
+
+.sweet-alert-content {
+  margin: 0 0.625rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.sweet-alert-title {
+  margin-top: 0.375rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: indianred;
+  line-height: 2rem;
+  margin-right: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+
+.sweet-alert-msg {
+  overflow: hidden;
+  line-height: 1.25rem;
+  word-break: break-word;
+  color: #a1a1aa;
+  max-height: 2.5rem;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.sweet-alert-close {
+  width: 4rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.sweet-alert-close:focus {
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  .sweet-alert-container {
+    min-height: 4.5rem;
+    top: 1rem;
+    right: 1rem;
+    width: calc(100% - 2rem);
+  }
+  .sweet-alert-container > svg {
+    height: 4.5rem;
+  }
+  .sweet-alert-title {
+    font-size: 1.1rem;
+    line-height: 1.5rem;
+    margin-top: 0.25rem;
+  }
+  .sweet-alert-msg {
+    font-size: 0.75rem;
+    line-height: 1.1rem;
+  }
+  .sweet-alert-close {
+    width: 3rem;
+  }
+  .sweet-alert-close svg {
+    width: 22px;
+    height: 22px;
+  }
+}
