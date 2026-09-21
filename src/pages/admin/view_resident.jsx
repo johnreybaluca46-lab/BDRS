@@ -252,7 +252,7 @@ export default function ViewResident() {
         {/* Header */}
         <header className="admin-header">
           <h1 style={{ display: 'flex', alignItems: 'center', fontSize: '1.1rem', margin: 0 }}>
-            <button onClick={() => navigate(residentData?.status === 'Pending' ? '/admin/resident-approval' : '/admin/residents')} style={{color: '#718096', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: '1.1rem', fontWeight: 'normal'}}>
+            <button onClick={() => navigate(residentData?.status === 'Pending' || residentData?.status === 'Rejected' ? '/admin/resident-approval' : '/admin/residents')} style={{color: '#718096', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: '1.1rem', fontWeight: 'normal'}}>
               <ChevronLeft size={18} style={{marginRight: '5px'}} /> Back
             </button>
             <span style={{margin: '0 10px', color: '#718096', fontSize: '0.9rem'}}>&gt;</span>
@@ -329,7 +329,7 @@ export default function ViewResident() {
             </div>
             
             <div className="details-actions">
-              <button className="btn-back" onClick={() => navigate(residentData?.status === 'Pending' ? '/admin/resident-approval' : '/admin/residents')}>
+              <button className="btn-back" onClick={() => navigate(residentData?.status === 'Pending' || residentData?.status === 'Rejected' ? '/admin/resident-approval' : '/admin/residents')}>
                 {residentData?.status === 'Pending' ? 'Back to Approval' : 'Back to Residents'}
               </button>
             </div>

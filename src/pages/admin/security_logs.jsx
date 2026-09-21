@@ -636,8 +636,10 @@ export default function SecurityLogs() {
               <button 
                 className={`security-tab ${activeTab === 'account' ? 'active' : ''}`}
                 onClick={() => handleTabChange('account')}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Settings size={18} /> Admin Account
+                <Settings size={18} /> Account Security
+                <span style={{ fontSize: '0.65rem', backgroundColor: '#e2e8f0', color: '#4a5568', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', marginLeft: '4px' }}>Coming Soon</span>
               </button>
             </div>
 
@@ -647,8 +649,8 @@ export default function SecurityLogs() {
             {activeTab === 'account' ? (
               <div className="empty-state">
                 <Settings size={48} />
-                <h3>Admin Account Management</h3>
-                <p>Account settings, passwords, and profile information have been securely relocated to the Admin Profile module.</p>
+                <h3>Account Security</h3>
+                <p>Advanced security settings, two-factor authentication, and active session management will be available in a future update. (Coming Soon)</p>
               </div>
             ) : activeTab === 'settings' ? (
               renderSecuritySettings()

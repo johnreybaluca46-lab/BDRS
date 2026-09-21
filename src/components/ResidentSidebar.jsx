@@ -9,7 +9,7 @@ import { logAdminActivity as logActivity } from '../utils/activityLogger';
 import { 
   LayoutDashboard, FileText, ClipboardList, Clock, 
   UserCircle, LogOut, CheckSquare, CheckCircle, XCircle, Menu, X, User,
-  ChevronLeft, ChevronRight, CreditCard
+  ChevronLeft, ChevronRight, CreditCard, Info
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import '../lib/app-sidebar.css';
@@ -193,6 +193,10 @@ export default function ResidentSidebar() {
           <Link to="/user-request-documents" onClick={closeSidebar} className={`as-nav-item ${(location.pathname.includes('/user-request-documents') || location.pathname.includes('/barangay-clearance') || location.pathname.includes('/certificate-of-residency') || location.pathname.includes('/certificate-of-indigency') || location.pathname.includes('/business-clearance')) ? 'active' : ''}`} title="Request documents">
             <div className="as-nav-icon"><FileText size={20} /></div>
             <span className="as-nav-label">Request documents</span>
+          </Link>
+          <Link to="/user-instruction" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/user-instruction' ? 'active' : ''}`} title="Instruction">
+            <div className="as-nav-icon"><Info size={20} /></div>
+            <span className="as-nav-label">Instruction</span>
           </Link>
 
           <div className="as-nav-section">MY REQUESTS</div>

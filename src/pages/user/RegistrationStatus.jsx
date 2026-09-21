@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { db } from '../../database/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { ShieldCheck, AlertTriangle, CheckCircle, XCircle, ArrowLeft, Loader2, UserSquare2 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import ContactFooter from '../../components/ContactFooter';
@@ -19,31 +19,27 @@ export default function RegistrationStatus() {
   useEffect(() => {
     document.title = "BDRS | Registration Status";
 
-    const fetchStatus = async () => {
-      if (!token) {
-        setError('No QR token provided. Please scan a valid QR code.');
-        setLoading(false);
-        return;
+    if (!token) {
+      setError('No QR token provided. Please scan a valid QR code.');
+      setLoading(false);
+      return;
+    }
+
+    const docRef = doc(db, 'registration_status', token);
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setStatusData(docSnap.data());
+      } else {
+        setError('Invalid or expired QR token. No registration found.');
       }
+      setLoading(false);
+    }, (err) => {
+      console.error("Error fetching status:", err);
+      setError('Error retrieving status. Please try again later.');
+      setLoading(false);
+    });
 
-      try {
-        const docRef = doc(db, 'registration_status', token);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setStatusData(docSnap.data());
-        } else {
-          setError('Invalid or expired QR token. No registration found.');
-        }
-      } catch (err) {
-        console.error("Error fetching status:", err);
-        setError('Error retrieving status. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStatus();
+    return () => unsubscribe();
   }, [token]);
 
   const renderStatusCard = () => {

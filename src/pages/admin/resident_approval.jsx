@@ -68,7 +68,7 @@ export default function ResidentApproval() {
         const dateObj = data.registeredAt || data.timestamp;
         if (dateObj) {
           const date = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
-          formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          formattedDate = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
         }
 
         let isOnline = false;
@@ -330,7 +330,8 @@ export default function ResidentApproval() {
                   fontWeight: '600', 
                   padding: '8px 12px', 
                   cursor: 'pointer',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  fontFamily: 'inherit'
                 }}>
                 Pending Approvals
               </button>
@@ -339,12 +340,13 @@ export default function ResidentApproval() {
                 style={{ 
                   background: 'none', 
                   border: 'none', 
-                  borderBottom: activeTab === 'rejected' ? '2px solid #e53e3e' : '2px solid transparent', 
-                  color: activeTab === 'rejected' ? '#e53e3e' : '#718096', 
+                  borderBottom: activeTab === 'rejected' ? '2px solid #3182ce' : '2px solid transparent', 
+                  color: activeTab === 'rejected' ? '#3182ce' : '#718096', 
                   fontWeight: '600', 
                   padding: '8px 12px', 
                   cursor: 'pointer',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  fontFamily: 'inherit'
                 }}>
                 Rejected Applications
               </button>

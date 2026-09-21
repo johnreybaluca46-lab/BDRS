@@ -23,9 +23,9 @@ export default function NotificationBell() {
     } else if (type === 'NEW_RESIDENT') {
       const targetId = req.requestId || req.residentId;
       if (targetId) {
-        navigate(`/admin/residents/${targetId}`);
+        navigate(`/admin/residents/${targetId}`, { state: { from: 'approval' } });
       } else {
-        navigate('/admin/residents');
+        navigate('/admin/resident-approval');
       }
     } else if (type === 'RESIDENT_PROFILE_UPDATE' || type === 'PROFILE_UPDATE' || type === 'RESIDENT_UPDATED') {
       if (req.residentId) {

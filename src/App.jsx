@@ -30,6 +30,7 @@ import Residents from './pages/admin/residents';
 import ResidentApproval from './pages/admin/resident_approval';
 import ViewResident from './pages/admin/view_resident';
 import ResidentProtectedRoute from './components/ResidentProtectedRoute';
+import UserInstruction from './pages/user/user_instruction';
 import UserDashboard from './pages/user/user register/user dashboard';
 import RequestDocuments from './pages/user/user register/request documents';
 import MyRequests from './pages/user/user register/my request';
@@ -132,6 +133,7 @@ function App() {
           <Route element={<ResidentRouteGuard />}>
             <Route path="/user-dashboard" element={<UserDashboard />} />
             <Route path="/user-request-documents" element={<RequestDocuments />} />
+            <Route path="/user-instruction" element={<UserInstruction />} />
             <Route path="/user-my-requests" element={<MyRequests />} />
             <Route path="/user-history" element={<RequestHistory />} />
             <Route path="/user-profile" element={<UserProfile />} />
