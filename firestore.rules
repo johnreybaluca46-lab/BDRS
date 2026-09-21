@@ -149,7 +149,10 @@ service cloud.firestore {
     }
 
     match /login_logs/{logId} {
-      allow create: if isValidLoginLog() && (isAuth() || (!isAuth() && request.resource.data.result == 'failed' && request.resource.data.actorId == 'unauthenticated'));
+      allow create: if isValidLoginLog() && (
+        (isAuth() && request.resource.data.actorId == request.auth.uid && request.resource.data.actorEmail == request.auth.token.email) ||
+        (!isAuth() && request.resource.data.result == 'failed' && request.resource.data.actorId == 'unauthenticated')
+      );
       allow read: if isAdmin() || (isAuth() && resource.data.actorId == request.auth.uid);
       allow update, delete: if false; // Append-only
     }
@@ -164,7 +167,16 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow create: if isAdmin() || 
                     (isApprovedResident() && request.resource.data.userId == request.auth.uid) ||
-                    request.resource.data.type in ['SECURITY_ALERT', 'NEW_MESSAGE'] ||
+                    (request.resource.data.type == 'SECURITY_ALERT' && 
+                     request.resource.data.title == 'Security Alert: Failed Login Attempt' &&
+                     request.resource.data.message is string &&
+                     request.resource.data.isRead == false &&
+                     request.resource.data.keys().hasOnly(['type', 'title', 'message', 'timestamp', 'isRead'])) ||
+                    (request.resource.data.type == 'NEW_MESSAGE' && 
+                     request.resource.data.keys().hasOnly(['type', 'residentName', 'documentType', 'messageId', 'timestamp']) &&
+                     request.resource.data.residentName is string && request.resource.data.residentName.size() < 100 &&
+                     request.resource.data.documentType is string && request.resource.data.documentType.size() < 150 &&
+                     request.resource.data.messageId is string) ||
                     (isAuth() && (!('userId' in request.resource.data)) && request.resource.data.type in ['NEW', 'NEW_RESIDENT', 'PAYMENT_PROOF']);
       allow read, update: if isAdmin() || (isApprovedResident() && resource.data.userId == request.auth.uid);
       allow delete: if isAdmin();
@@ -182,9 +194,23 @@ service cloud.firestore {
     }
 
     // Lockouts Collection (Used for admin account lockout)
+    // NOTE: This collection functions only as a UI roadblock and database abuse prevention.
+    // It DOES NOT provide secure brute-force protection, as an attacker can bypass it by calling Firebase Auth directly.
+    // Real brute-force protection must be handled by Firebase Auth limits or Blocking Functions.
     match /lockouts/{docId} {
       allow read: if true;
-      allow write: if true; // Temporary allow all writes to lockouts for debugging and fixing the sync issue
+      allow create: if request.resource.data.keys().hasOnly(['failed_attempts', 'locked_until']) &&
+                       request.resource.data.failed_attempts == 1 &&
+                       request.resource.data.locked_until == null;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['failed_attempts', 'locked_until']) &&
+                    (
+                      // Increment by 1
+                      (request.resource.data.failed_attempts == resource.data.failed_attempts + 1 &&
+                       (request.resource.data.locked_until == null || request.resource.data.locked_until is number)) ||
+                      // Reset to 0
+                      (request.resource.data.failed_attempts == 0 && request.resource.data.locked_until == null)
+                    );
+      allow delete: if isAdmin();
     }
 
     // 6. Settings Collection (System Settings)
@@ -195,7 +221,13 @@ service cloud.firestore {
 
     // 7. Inbox Messages (Contact form)
     match /inbox_messages/{msgId} {
-      allow create: if true; // Public contact form
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'subject', 'message', 'status', 'adminNotes', 'createdAt']) &&
+                    request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 100 &&
+                    request.resource.data.email is string && request.resource.data.email.size() > 0 && request.resource.data.email.size() < 100 &&
+                    request.resource.data.subject is string && request.resource.data.subject.size() > 0 && request.resource.data.subject.size() < 150 &&
+                    request.resource.data.message is string && request.resource.data.message.size() > 0 && request.resource.data.message.size() < 2000 &&
+                    request.resource.data.status == 'New' &&
+                    request.resource.data.adminNotes == '';
       allow read, update, delete: if isAdmin();
     }
 
