@@ -23,6 +23,16 @@ export const calculateAge = (dob) => {
   return age;
 };
 
+const escapeHTML = (str) => {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 export const generateDocumentHTML = (request, settings) => {
   if (!request || !request.type) {
     throw new Error("Invalid request: Document type is missing.");
@@ -45,10 +55,10 @@ export const generateDocumentHTML = (request, settings) => {
     throw new Error("Template content is empty. Please set it up in System Settings.");
   }
 
-  const fullName = (request.name || request.fullName || '').toUpperCase();
-  const age = calculateAge(request.dateOfBirth).toString();
-  const civilStatus = request.civilStatus ? request.civilStatus.charAt(0).toUpperCase() + request.civilStatus.slice(1).toLowerCase() : '';
-  const purpose = request.purpose === 'Other' ? (request.specifyPurpose || '') : (request.purpose || '');
+  const fullName = escapeHTML((request.name || request.fullName || '').toUpperCase());
+  const age = escapeHTML(calculateAge(request.dateOfBirth).toString());
+  const civilStatus = escapeHTML(request.civilStatus ? request.civilStatus.charAt(0).toUpperCase() + request.civilStatus.slice(1).toLowerCase() : '');
+  const purpose = escapeHTML(request.purpose === 'Other' ? (request.specifyPurpose || '') : (request.purpose || ''));
 
   let formattedTemplate = rawTemplate;
 
@@ -64,8 +74,8 @@ export const generateDocumentHTML = (request, settings) => {
       formattedTemplate = formattedTemplate
         .replace(/{{full_name}}/gi, `<strong>${fullName}</strong>`)
         .replace(/{{civil_status}}/gi, `<strong>${civilStatus}</strong>`)
-        .replace(/{{address}}/gi, `<strong>${request.address || ''}</strong>`)
-        .replace(/{{residing_since}}/gi, `<strong>${request.lengthOfResidency || ''}</strong>`);
+        .replace(/{{address}}/gi, `<strong>${escapeHTML(request.address || '')}</strong>`)
+        .replace(/{{residing_since}}/gi, `<strong>${escapeHTML(request.lengthOfResidency || '')}</strong>`);
       break;
     case 'certificate_of_indigency':
       formattedTemplate = formattedTemplate
@@ -76,8 +86,8 @@ export const generateDocumentHTML = (request, settings) => {
       break;
     case 'business_clearance':
       formattedTemplate = formattedTemplate
-        .replace(/{{business_name}}/gi, `<strong>${request.businessName || ''}</strong>`)
-        .replace(/{{business_address}}/gi, `<strong>${request.businessAddress || ''}</strong>`)
+        .replace(/{{business_name}}/gi, `<strong>${escapeHTML(request.businessName || '')}</strong>`)
+        .replace(/{{business_address}}/gi, `<strong>${escapeHTML(request.businessAddress || '')}</strong>`)
         .replace(/{{operator_name}}/gi, `<strong>${fullName}</strong>`);
       break;
   }
@@ -105,9 +115,9 @@ export const generateDocumentHTML = (request, settings) => {
     }
   };
 
-  const dayFormat = getOrdinalDay(issueDate.getDate());
-  const monthFormat = issueDate.toLocaleString('default', { month: 'long' });
-  const yearFormat = issueDate.getFullYear().toString();
+  const dayFormat = escapeHTML(getOrdinalDay(issueDate.getDate()));
+  const monthFormat = escapeHTML(issueDate.toLocaleString('default', { month: 'long' }));
+  const yearFormat = escapeHTML(issueDate.getFullYear().toString());
 
   formattedTemplate = formattedTemplate
     .replace(/{{day}}/gi, `<strong>${dayFormat}</strong>`)

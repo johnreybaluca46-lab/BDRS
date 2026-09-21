@@ -41,6 +41,7 @@ export default function ResidentApproval() {
   }, []);
 
   const [residentsList, setResidentsList] = useState([]);
+  const [activeTab, setActiveTab] = useState('pending');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -286,6 +287,9 @@ export default function ResidentApproval() {
   };
 
   const filteredRequests = residentsList.filter(req => {
+    if (activeTab === 'pending' && req.status !== 'Pending') return false;
+    if (activeTab === 'rejected' && req.status !== 'Rejected') return false;
+
     const matchesSearch = !searchQuery || (req.resNumber && req.resNumber.toLowerCase().includes(searchQuery.toLowerCase())) || (req.name && req.name.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesSearch;
   });
@@ -314,7 +318,37 @@ export default function ResidentApproval() {
 
         {/* Content Area */}
         <div className="document-request-container">
-          <div className="doc-controls">
+          <div className="doc-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div className="tab-navigation" style={{ display: 'flex', gap: '16px' }}>
+              <button 
+                onClick={() => { setActiveTab('pending'); setCurrentPage(1); }}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  borderBottom: activeTab === 'pending' ? '2px solid #3182ce' : '2px solid transparent', 
+                  color: activeTab === 'pending' ? '#3182ce' : '#718096', 
+                  fontWeight: '600', 
+                  padding: '8px 12px', 
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}>
+                Pending Approvals
+              </button>
+              <button 
+                onClick={() => { setActiveTab('rejected'); setCurrentPage(1); }}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  borderBottom: activeTab === 'rejected' ? '2px solid #e53e3e' : '2px solid transparent', 
+                  color: activeTab === 'rejected' ? '#e53e3e' : '#718096', 
+                  fontWeight: '600', 
+                  padding: '8px 12px', 
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}>
+                Rejected Applications
+              </button>
+            </div>
             <div className="doc-search" style={{ border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', padding: '0 16px', width: '300px', display: 'flex', alignItems: 'center' }}>
               <span style={{ color: '#4a5568', fontWeight: '500', fontSize: '0.95rem' }}>RES-</span>
               <input 
@@ -339,8 +373,8 @@ export default function ResidentApproval() {
           {loading ? <SkeletonTable /> : filteredRequests.length === 0 ? (
             <EmptyState 
               icon={UserCheck} 
-              title="No Registration Approvals Found" 
-              subtitle={searchQuery !== '' ? "No results match your current filters." : "There are no pending registration approvals."}
+              title={activeTab === 'pending' ? "No Pending Approvals" : "No Rejected Applications"} 
+              subtitle={searchQuery !== '' ? "No results match your current filters." : (activeTab === 'pending' ? "There are no pending registration approvals." : "There are no rejected applications.")}
             />
           ) : (
             <div className="doc-table-wrapper">
