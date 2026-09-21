@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import '../lib/app-sidebar.css';
+import '../lib/stars.css';
 import DefaultLogo from '../assets/logo/barangay buluan seal.png';
 
 export default function ResidentSidebar() {
@@ -151,14 +152,30 @@ export default function ResidentSidebar() {
   return (
     <>
       <ResidentMaintenanceModal />
-      <button className="mobile-toggle" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Menu">
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      <label className="hamburger mobile-toggle" aria-label="Toggle Menu">
+        <input 
+          className="checkbox" 
+          type="checkbox" 
+          checked={isOpen} 
+          onChange={() => setIsOpen(!isOpen)} 
+        />
+        <svg fill="none" viewBox="0 0 50 50" height="40" width="40">
+          <path className="lineTop line" strokeLinecap="round" strokeWidth="4" stroke="black" d="M6 11L44 11"></path>
+          <path className="lineMid line" strokeLinecap="round" strokeWidth="4" stroke="black" d="M6 24H43"></path>
+          <path className="lineBottom line" strokeLinecap="round" strokeWidth="4" stroke="black" d="M6 37H43"></path>
+        </svg>
+      </label>
       
       {isOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
       <aside className={`app-sidebar ${isCollapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}>
         
+        <div className="sidebar-background">
+          <div id="stars"></div>
+          <div id="stars2"></div>
+          <div id="stars3"></div>
+        </div>
+
         {/* Top Toggle Section */}
         <div className="as-top-actions">
           <div className="as-logo-container">
@@ -169,19 +186,31 @@ export default function ResidentSidebar() {
             </div>
           </div>
           
-          {window.innerWidth > 768 && (
-            <button 
-              className="as-toggle-btn" 
-              onClick={() => {
-                const newState = !isCollapsed;
-                setIsCollapsed(newState);
-                localStorage.setItem('sidebar_collapsed_resident', newState);
-              }}
-              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-            </button>
-          )}
+          <label 
+            className="hamburger as-toggle-btn" 
+            title={isCollapsed && window.innerWidth > 768 ? "Expand sidebar" : "Collapse sidebar"}
+            style={{ width: '40px', height: '40px', padding: 0, background: 'transparent', border: 'none' }}
+          >
+            <input 
+              className="checkbox" 
+              type="checkbox" 
+              checked={window.innerWidth > 768 ? !isCollapsed : isOpen}
+              onChange={() => {
+                if (window.innerWidth > 768) {
+                  const newState = !isCollapsed;
+                  setIsCollapsed(newState);
+                  localStorage.setItem('sidebar_collapsed_resident', newState);
+                } else {
+                  setIsOpen(false);
+                }
+              }} 
+            />
+            <svg fill="none" viewBox="0 0 50 50" height="32" width="32">
+              <path className="lineTop line" strokeLinecap="round" strokeWidth="4" stroke="currentColor" d="M6 11L44 11"></path>
+              <path className="lineMid line" strokeLinecap="round" strokeWidth="4" stroke="currentColor" d="M6 24H43"></path>
+              <path className="lineBottom line" strokeLinecap="round" strokeWidth="4" stroke="currentColor" d="M6 37H43"></path>
+            </svg>
+          </label>
         </div>
         
         <nav className="as-nav" ref={navRef} onScroll={handleNavScroll}>

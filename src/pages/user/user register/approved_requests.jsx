@@ -111,7 +111,7 @@ export default function ApprovedRequests() {
         <ResidentSidebar />
   
         <main className="admin-main">
-          <header className="admin-header">
+          <header className="admin-header resident-header">
             <h1>Approved Requests</h1>
             <div className="header-right">
               <ResidentNotificationBell />

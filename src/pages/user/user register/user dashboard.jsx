@@ -159,7 +159,7 @@ export default function UserDashboard() {
         <ResidentSidebar />
   
         <main className="admin-main">
-          <header className="admin-header">
+          <header className="admin-header resident-header">
             <h1>Dashboard</h1>
             <div className="header-right">
               <ResidentNotificationBell />

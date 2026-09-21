@@ -272,7 +272,7 @@ export default function UserProfile() {
       <ResidentSidebar />
 
       <main className="admin-main">
-        <header className="admin-header">
+        <header className="admin-header resident-header">
           <h1>Profile Settings</h1>
           <div className="header-right">
             <ResidentNotificationBell />

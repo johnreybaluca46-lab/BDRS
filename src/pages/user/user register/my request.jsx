@@ -147,7 +147,7 @@ export default function MyRequests() {
         <ResidentSidebar />
   
         <main className="admin-main">
-          <header className="admin-header">
+          <header className="admin-header resident-header">
             <h1>My Requests</h1>
             <div className="header-right">
               <ResidentNotificationBell />

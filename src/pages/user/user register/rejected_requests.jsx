@@ -153,7 +153,7 @@ export default function RejectedRequests() {
       <ResidentSidebar />
 
       <main className="admin-main">
-        <header className="admin-header">
+        <header className="admin-header resident-header">
           <h1>Rejected / Expired</h1>
           <div className="header-right">
             <ResidentNotificationBell />

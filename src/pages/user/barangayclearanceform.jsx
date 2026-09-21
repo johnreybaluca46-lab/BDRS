@@ -314,7 +314,7 @@ const handleNextStep = () => {
       <ResidentSidebar />
 
       <main className="admin-main">
-        <header className="admin-header">
+        <header className="admin-header resident-header">
           <h1>Request Documents</h1>
           <div className="header-right">
             <ResidentNotificationBell />

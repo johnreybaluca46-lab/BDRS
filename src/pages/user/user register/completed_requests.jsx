@@ -141,7 +141,7 @@ export default function CompletedRequests() {
         <ResidentSidebar />
   
         <main className="admin-main">
-          <header className="admin-header">
+          <header className="admin-header resident-header">
             <h1>Completed Requests</h1>
             <div className="header-right">
               <ResidentNotificationBell />

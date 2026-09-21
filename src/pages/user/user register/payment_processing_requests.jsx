@@ -99,7 +99,7 @@ export default function OnlinePaymentRequests() {
         <ResidentSidebar />
   
         <main className="admin-main">
-          <header className="admin-header">
+          <header className="admin-header resident-header">
             <h1>Online Payment</h1>
             <div className="header-right">
               <ResidentNotificationBell />

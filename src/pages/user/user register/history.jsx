@@ -139,7 +139,7 @@ export default function RequestHistory() {
       <ResidentSidebar />
 
       <main className="admin-main">
-        <header className="admin-header">
+        <header className="admin-header resident-header">
           <h1>Request History</h1>
           <div className="header-right">
             <ResidentNotificationBell />
