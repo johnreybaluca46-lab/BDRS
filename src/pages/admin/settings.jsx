@@ -80,22 +80,22 @@ export default function SystemSettings() {
     const getOrdinalDay = (d) => {
       if (d > 3 && d < 21) return d + 'th';
       switch (d % 10) {
-        case 1:  return d + "st";
-        case 2:  return d + "nd";
-        case 3:  return d + "rd";
+        case 1: return d + "st";
+        case 2: return d + "nd";
+        case 3: return d + "rd";
         default: return d + "th";
       }
     };
     const dayFormat = getOrdinalDay(now.getDate());
     const monthFormat = now.toLocaleString('default', { month: 'long' });
     const yearFormat = now.getFullYear().toString();
-    
+
     formatted = formatted
       .replace(/{{day}}/gi, `<strong>${dayFormat}</strong>`)
       .replace(/{{month}}/gi, `<strong>${monthFormat}</strong>`)
       .replace(/{{year}}/gi, `<strong>${yearFormat}</strong>`)
       .replace(/{{[\w_]+}}/g, '<strong>_________</strong>');
-    
+
     return formatted;
   };
 
@@ -112,14 +112,14 @@ export default function SystemSettings() {
         ...(formData.documentTemplates || {}),
         [editTemplateMode.id]: templateBody
       };
-      
+
       const updatedSettings = { ...formData, documentTemplates: updatedTemplates };
       await setDoc(doc(db, 'settings', 'general'), updatedSettings, { merge: true });
       await logActivity({ action: 'Document Template Updated', targetType: 'settings', targetId: 'general', description: `Updated layout template for ${editTemplateMode.title}` });
 
       setFormData(updatedSettings);
       setEditTemplateMode(null);
-      
+
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -283,7 +283,7 @@ export default function SystemSettings() {
 
           const updatedSettings = { ...formData, logoUrl: base64String };
           await setDoc(doc(db, 'settings', 'general'), updatedSettings, { merge: true });
-      await logActivity({ action: 'Barangay Information Updated', targetType: 'settings', targetId: 'general', description: 'Updated general barangay information and contact details' });
+          await logActivity({ action: 'Barangay Information Updated', targetType: 'settings', targetId: 'general', description: 'Updated general barangay information and contact details' });
 
           setFormData(updatedSettings);
           setLogoFile(null); // Clear pending file since it's already saved
@@ -729,7 +729,7 @@ export default function SystemSettings() {
               <p className="settings-header-desc" style={{ marginBottom: 0 }}>Manage and customize templates for generated documents.</p>
             </div>
           </div>
-          
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginTop: '20px' }}>
             {templates.map((template) => (
               <div key={template.id} style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px', gap: '15px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
@@ -743,40 +743,40 @@ export default function SystemSettings() {
                       <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>{template.desc}</p>
                     </div>
                   </div>
-                  
+
                   <div style={{ width: '140px', height: '105px', border: '1px solid #e2e8f0', backgroundColor: '#ffffff', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px', position: 'relative', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                       <img src={Logo} alt="Seal" style={{ width: '20px', height: '20px' }} />
-                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                         <div style={{ width: '50px', height: '2px', backgroundColor: '#cbd5e1' }}></div>
-                         <div style={{ width: '70px', height: '2px', backgroundColor: '#cbd5e1' }}></div>
-                       </div>
-                     </div>
-                     <div style={{ fontSize: '7px', fontWeight: 'bold', color: '#1a202c', textAlign: 'center', marginBottom: '6px' }}>{template.title.toUpperCase()}</div>
-                     <div style={{ width: '100%', height: '1px', backgroundColor: '#e2e8f0', marginBottom: '4px' }}></div>
-                     <div style={{ width: '90%', height: '2px', backgroundColor: '#cbd5e1', marginBottom: '3px' }}></div>
-                     <div style={{ width: '80%', height: '2px', backgroundColor: '#cbd5e1', marginBottom: '3px' }}></div>
-                     <div style={{ width: '85%', height: '2px', backgroundColor: '#cbd5e1', marginBottom: '3px' }}></div>
-                     <div style={{ width: '40%', height: '2px', backgroundColor: '#cbd5e1', alignSelf: 'flex-start' }}></div>
-                     
-                     <div style={{ position: 'absolute', bottom: '6px', right: '6px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                       <div style={{ width: '20px', height: '2px', backgroundColor: '#cbd5e1' }}></div>
-                       <div style={{ width: '30px', height: '1px', backgroundColor: '#94a3b8' }}></div>
-                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <img src={Logo} alt="Seal" style={{ width: '20px', height: '20px' }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                        <div style={{ width: '50px', height: '2px', backgroundColor: '#cbd5e1' }}></div>
+                        <div style={{ width: '70px', height: '2px', backgroundColor: '#cbd5e1' }}></div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '7px', fontWeight: 'bold', color: '#1a202c', textAlign: 'center', marginBottom: '6px' }}>{template.title.toUpperCase()}</div>
+                    <div style={{ width: '100%', height: '1px', backgroundColor: '#e2e8f0', marginBottom: '4px' }}></div>
+                    <div style={{ width: '90%', height: '2px', backgroundColor: '#cbd5e1', marginBottom: '3px' }}></div>
+                    <div style={{ width: '80%', height: '2px', backgroundColor: '#cbd5e1', marginBottom: '3px' }}></div>
+                    <div style={{ width: '85%', height: '2px', backgroundColor: '#cbd5e1', marginBottom: '3px' }}></div>
+                    <div style={{ width: '40%', height: '2px', backgroundColor: '#cbd5e1', alignSelf: 'flex-start' }}></div>
+
+                    <div style={{ position: 'absolute', bottom: '6px', right: '6px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                      <div style={{ width: '20px', height: '2px', backgroundColor: '#cbd5e1' }}></div>
+                      <div style={{ width: '30px', height: '1px', backgroundColor: '#94a3b8' }}></div>
+                    </div>
                   </div>
                 </div>
-                
+
                 <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
-                  <button 
+                  <button
                     onClick={() => handleAction('Edit', template)}
-                    className="settings-btn-primary" 
+                    className="settings-btn-primary"
                     style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem' }}
                   >
                     <Edit size={16} /> Edit Template
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleAction('Preview', template)}
-                    className="settings-btn-outline" 
+                    className="settings-btn-outline"
                     style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem', color: '#3182ce', borderColor: '#3182ce' }}
                   >
                     <Eye size={16} /> Preview
@@ -942,7 +942,7 @@ export default function SystemSettings() {
 
   const handleBackupFreqChange = async (e) => {
     const newFreq = e.target.value;
-    
+
     setFormData(prev => ({
       ...prev,
       backupSettings: {
@@ -956,7 +956,7 @@ export default function SystemSettings() {
         backupSettings: { frequency: newFreq }
       }, { merge: true });
       await logActivity({ action: 'Backup Schedule Updated', targetType: 'settings', targetId: 'general', description: `Changed automated backup frequency to ${newFreq}` });
-      
+
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -1017,9 +1017,9 @@ export default function SystemSettings() {
     try {
       const isStartNow = actionType === 'active';
       const status = isStartNow ? 'active' : 'scheduled';
-      
-      const maintenanceStartTime = isStartNow 
-        ? Timestamp.now() 
+
+      const maintenanceStartTime = isStartNow
+        ? Timestamp.now()
         : Timestamp.fromMillis(Date.now() + maintScheduleMinutes * 60 * 1000);
 
       const updatedSettings = {
@@ -1035,11 +1035,11 @@ export default function SystemSettings() {
       const adminName = sessionStorage.getItem('adminName') || 'Unknown Admin';
       const adminRole = sessionStorage.getItem('adminRole') || 'Admin';
 
-      await logActivity({ 
-        action: `Maintenance Mode ${status === 'active' ? 'Started' : 'Scheduled'}`, 
-        targetType: 'settings', 
-        targetId: 'maintenance', 
-        description: `Maintenance mode was ${status === 'active' ? 'started immediately' : `scheduled for ${maintScheduleMinutes} minutes from now`} by ${adminName}` 
+      await logActivity({
+        action: `Maintenance Mode ${status === 'active' ? 'Started' : 'Scheduled'}`,
+        targetType: 'settings',
+        targetId: 'maintenance',
+        description: `Maintenance mode was ${status === 'active' ? 'started immediately' : `scheduled for ${maintScheduleMinutes} minutes from now`} by ${adminName}`
       }, adminName, adminRole);
 
       Swal.fire({
@@ -1070,7 +1070,7 @@ export default function SystemSettings() {
         </div>
 
         <div className="settings-card" style={{ marginTop: '20px', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          
+
           <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc' }}>
             <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#334155' }}>Current Status</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1082,7 +1082,7 @@ export default function SystemSettings() {
                 <span style={{ backgroundColor: '#c6f6d5', color: '#2f855a', padding: '5px 12px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>🟢 ENDED (Normal Operations)</span>
               )}
             </div>
-            
+
             {effectiveStatus === 'scheduled' && maintSettings.maintenanceStartTime && (
               <p style={{ marginTop: '10px', fontSize: '0.9rem', color: '#475569' }}>
                 Maintenance is scheduled to start at: <strong>{new Date(maintSettings.maintenanceStartTime.toMillis ? maintSettings.maintenanceStartTime.toMillis() : maintSettings.maintenanceStartTime).toLocaleString()}</strong>
@@ -1092,10 +1092,10 @@ export default function SystemSettings() {
 
           <div className="settings-form-group">
             <label className="settings-label">Maintenance Message (Visible to Residents)</label>
-            <textarea 
-              className="settings-textarea" 
+            <textarea
+              className="settings-textarea"
               style={{ height: '80px', resize: 'vertical' }}
-              value={maintSettings.message || ''} 
+              value={maintSettings.message || ''}
               onChange={e => setMaintSettings({ ...maintSettings, message: e.target.value })}
             ></textarea>
           </div>
@@ -1105,7 +1105,7 @@ export default function SystemSettings() {
               <label className="settings-label">Schedule Start Time</label>
               <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.9rem', color: '#475569' }}>Starts in</span>
-                <input 
+                <input
                   type="number"
                   className="settings-input"
                   style={{ width: '100px' }}
@@ -1117,7 +1117,7 @@ export default function SystemSettings() {
               </div>
             </div>
           )}
-          
+
           <div style={{ backgroundColor: '#fffbeb', padding: '15px', borderRadius: '8px', border: '1px solid #fef3c7', marginTop: '20px', display: 'flex', gap: '10px' }}>
             <AlertCircle color="#d97706" size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
             <div style={{ fontSize: '0.85rem', color: '#92400e' }}>
@@ -1131,8 +1131,8 @@ export default function SystemSettings() {
                 <button className="settings-btn-primary" onClick={() => handleSaveMaintenance('scheduled')} disabled={isSavingMaint}>
                   {isSavingMaint ? 'Saving...' : 'Schedule Maintenance'}
                 </button>
-                <button 
-                  onClick={() => handleSaveMaintenance('active')} 
+                <button
+                  onClick={() => handleSaveMaintenance('active')}
                   disabled={isSavingMaint}
                   style={{ backgroundColor: '#dd6b20', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
                 >
@@ -1142,8 +1142,8 @@ export default function SystemSettings() {
             ) : (
               <>
                 {(effectiveStatus === 'active' || effectiveStatus === 'scheduled') && (
-                  <button 
-                    onClick={handleEndMaintenance} 
+                  <button
+                    onClick={handleEndMaintenance}
                     disabled={isSavingMaint}
                     style={{ backgroundColor: '#e53e3e', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
                   >
@@ -1151,8 +1151,8 @@ export default function SystemSettings() {
                   </button>
                 )}
                 {effectiveStatus === 'scheduled' && (
-                  <button 
-                    onClick={() => handleSaveMaintenance('active')} 
+                  <button
+                    onClick={() => handleSaveMaintenance('active')}
                     disabled={isSavingMaint}
                     style={{ backgroundColor: '#dd6b20', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
                   >
@@ -1270,7 +1270,7 @@ export default function SystemSettings() {
                 className="settings-btn-primary"
                 style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '12px', marginBottom: '20px' }}
               >
-                {isBackingUp ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <CloudUpload size={18} />} 
+                {isBackingUp ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <CloudUpload size={18} />}
                 {isBackingUp ? 'Creating Backup...' : 'Create Backup'}
               </button>
             </div>
@@ -1297,11 +1297,11 @@ export default function SystemSettings() {
                     onChange={(e) => setRestoreFile(e.target.files[0])}
                     style={{ display: 'none' }}
                   />
-                  <label 
+                  <label
                     htmlFor="backup-file-upload"
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                      width: '100%', padding: '24px 16px', border: '2px dashed #cbd5e1', borderRadius: '8px', 
+                      width: '100%', padding: '24px 16px', border: '2px dashed #cbd5e1', borderRadius: '8px',
                       backgroundColor: '#f8fafc', cursor: 'pointer', color: '#64748b',
                       transition: 'all 0.2s ease', textAlign: 'center'
                     }}
@@ -1348,7 +1348,7 @@ export default function SystemSettings() {
                   className="settings-btn-primary"
                   style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '12px' }}
                 >
-                  {isRestoring ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={18} />} 
+                  {isRestoring ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={18} />}
                   {isRestoring ? 'Restoring...' : 'Restore Database'}
                 </button>
               </div>
@@ -1482,14 +1482,14 @@ export default function SystemSettings() {
               </div>
               <button onClick={() => setPreviewTemplate(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0aec0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px' }}><X size={20} /></button>
             </div>
-            
+
             <div style={{ padding: '30px', backgroundColor: '#e2e8f0', display: 'flex', justifyContent: 'center', overflowY: 'auto' }}>
               {/* Document Preview Paper */}
               <div style={{ width: '210mm', height: '297mm', backgroundColor: 'white', padding: '40px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ border: '3px double #2d3748', padding: '40px', flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                   {/* Watermark Logo */}
                   <img src={Logo} alt="Watermark" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '400px', height: '400px', opacity: 0.08, zIndex: 0 }} />
-                  
+
                   <div style={{ position: 'relative', zIndex: 1 }}>
                     {/* Header */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '30px', position: 'relative' }}>
@@ -1503,18 +1503,18 @@ export default function SystemSettings() {
                       </div>
                       <img src={ProvincialSeal} alt="Provincial Seal" style={{ width: '100px', height: '100px', position: 'absolute', right: '0' }} />
                     </div>
-                    
+
                     {/* Title */}
                     <h2 style={{ textAlign: 'center', textTransform: 'uppercase', fontSize: '24px', margin: '50px 0 30px 0', fontWeight: 'bold', fontFamily: 'serif', color: '#1a202c' }}>
                       {previewTemplate.title}
                     </h2>
-                    
+
                     {/* Body Content */}
-                    <div 
+                    <div
                       dangerouslySetInnerHTML={{ __html: getPreviewHTML(formData.documentTemplates?.[previewTemplate.id] || defaultTemplateBodies[previewTemplate.id] || "") }}
                       style={{ fontSize: '15px', lineHeight: '1.8', textAlign: 'justify', fontFamily: 'serif', color: '#1a202c', whiteSpace: 'pre-wrap' }}
                     />
-                    
+
                     {/* Signatures */}
                     <div style={{ marginTop: '80px', display: 'flex', justifyContent: 'space-between' }}>
                       <div style={{ textAlign: 'center', width: '250px' }}>
@@ -1528,7 +1528,7 @@ export default function SystemSettings() {
                         <p style={{ margin: 0, fontSize: '14px', fontFamily: 'serif' }}>Barangay Captain</p>
                       </div>
                     </div>
-                    
+
                     {/* Footer Info */}
                     <div style={{ marginTop: '50px', fontSize: '14px', fontFamily: 'serif', color: '#1a202c' }}>
                       <p style={{ margin: '5px 0' }}>Paid Under O.R. # _________________</p>
@@ -1546,7 +1546,7 @@ export default function SystemSettings() {
                 </div>
               </div>
             </div>
-            
+
             <div style={{ padding: '15px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', backgroundColor: '#ffffff', borderRadius: '0 0 12px 12px' }}>
               <button onClick={() => setPreviewTemplate(null)} className="settings-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={16} /> Done
@@ -1573,7 +1573,7 @@ export default function SystemSettings() {
               </div>
               <button onClick={() => setEditTemplateMode(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0aec0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5px' }}><X size={20} /></button>
             </div>
-            
+
             <div id="print-edit-area" style={{ padding: '30px', backgroundColor: '#e2e8f0', display: 'flex', justifyContent: 'center', overflowY: 'auto' }}>
               <style>
                 {`
@@ -1653,7 +1653,7 @@ export default function SystemSettings() {
                 <div style={{ border: '3px double #2d3748', padding: '40px', flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                   {/* Watermark Logo */}
                   <img src={Logo} alt="Watermark" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '400px', height: '400px', opacity: 0.08, zIndex: 0 }} />
-                  
+
                   <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
                     {/* Header */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '30px', position: 'relative' }}>
@@ -1667,32 +1667,32 @@ export default function SystemSettings() {
                       </div>
                       <img src={ProvincialSeal} alt="Provincial Seal" style={{ width: '100px', height: '100px', position: 'absolute', right: '0' }} />
                     </div>
-                    
+
                     {/* Title */}
                     <h2 style={{ textAlign: 'center', textTransform: 'uppercase', fontSize: '24px', margin: '30px 0 30px 0', fontWeight: 'bold', fontFamily: 'serif', color: '#1a202c' }}>
                       {editTemplateMode.title}
                     </h2>
-                    
+
                     {/* Editable Body Content */}
-                    <textarea 
+                    <textarea
                       value={templateBody}
                       onChange={(e) => setTemplateBody(e.target.value)}
-                      style={{ 
-                        flex: 1, 
-                        width: '100%', 
-                        minHeight: '400px', 
-                        fontSize: '15px', 
-                        lineHeight: '1.8', 
-                        textAlign: 'justify', 
-                        fontFamily: 'serif', 
-                        color: '#1a202c', 
-                        border: '1px dashed #cbd5e1', 
-                        backgroundColor: 'rgba(255,255,255,0.8)', 
+                      style={{
+                        flex: 1,
+                        width: '100%',
+                        minHeight: '400px',
+                        fontSize: '15px',
+                        lineHeight: '1.8',
+                        textAlign: 'justify',
+                        fontFamily: 'serif',
+                        color: '#1a202c',
+                        border: '1px dashed #cbd5e1',
+                        backgroundColor: 'rgba(255,255,255,0.8)',
                         resize: 'vertical',
                         padding: '10px'
-                      }} 
+                      }}
                     />
-                    
+
                     {/* Signatures */}
                     <div style={{ marginTop: '80px', display: 'flex', justifyContent: 'space-between' }}>
                       <div style={{ textAlign: 'center', width: '250px' }}>
@@ -1706,7 +1706,7 @@ export default function SystemSettings() {
                         <p style={{ margin: 0, fontSize: '14px', fontFamily: 'serif' }}>Barangay Captain</p>
                       </div>
                     </div>
-                    
+
                     {/* Footer Info */}
                     <div style={{ marginTop: '50px', fontSize: '14px', fontFamily: 'serif', color: '#1a202c' }}>
                       <p style={{ margin: '5px 0' }}>Paid Under O.R. # _________________</p>
@@ -1724,7 +1724,7 @@ export default function SystemSettings() {
                 </div>
               </div>
             </div>
-            
+
             <div style={{ padding: '15px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px', backgroundColor: '#ffffff', borderRadius: '0 0 12px 12px' }}>
               <button onClick={() => window.print()} className="settings-btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Printer size={16} /> Print Document
@@ -1825,11 +1825,11 @@ export default function SystemSettings() {
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
                       <div style={{ flex: 1 }}>
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#4a5568', marginBottom: '5px' }}>Payment Method Name (e.g., GCash)</label>
-                        <input 
-                          type="text" 
-                          value={editingDoc.paymentMethodName || ''} 
-                          onChange={e => setEditingDoc({ ...editingDoc, paymentMethodName: e.target.value })} 
-                          style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }} 
+                        <input
+                          type="text"
+                          value={editingDoc.paymentMethodName || ''}
+                          onChange={e => setEditingDoc({ ...editingDoc, paymentMethodName: e.target.value })}
+                          style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
                           placeholder="e.g. GCash, Maya, Bank Transfer"
                           onFocus={(e) => { e.target.style.borderColor = '#3182ce'; e.target.style.boxShadow = '0 0 0 1px #3182ce'; }}
                           onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
@@ -1837,18 +1837,18 @@ export default function SystemSettings() {
                       </div>
                       <div style={{ flex: 1 }}>
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#4a5568', marginBottom: '5px' }}>Account Name (e.g., E*** A**)</label>
-                        <input 
-                          type="text" 
-                          value={editingDoc.paymentAccountName || ''} 
-                          onChange={e => setEditingDoc({ ...editingDoc, paymentAccountName: e.target.value })} 
-                          style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }} 
+                        <input
+                          type="text"
+                          value={editingDoc.paymentAccountName || ''}
+                          onChange={e => setEditingDoc({ ...editingDoc, paymentAccountName: e.target.value })}
+                          style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
                           placeholder="e.g. Juan D."
                           onFocus={(e) => { e.target.style.borderColor = '#3182ce'; e.target.style.boxShadow = '0 0 0 1px #3182ce'; }}
                           onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
                         />
                       </div>
                     </div>
-                    
+
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#4a5568', marginBottom: '5px' }}>Payment QR Code</label>
                     {editingDoc.qrCodeUrl && !qrCodeFile && (
                       <div style={{ marginBottom: '10px' }}>
@@ -1860,11 +1860,11 @@ export default function SystemSettings() {
                       <div style={{ fontSize: '0.85rem', color: '#4a5568', fontWeight: 500 }}>
                         {qrCodeFile ? qrCodeFile.name : "Click to upload QR Code"}
                       </div>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={(e) => setQrCodeFile(e.target.files[0])} 
-                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setQrCodeFile(e.target.files[0])}
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
                       />
                     </div>
                   </div>
