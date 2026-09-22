@@ -14,10 +14,14 @@ import { auth, db } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function UserDashboard() {
-  const [loading, setLoading] = useState(true);
-  const [recentRequests, setRecentRequests] = useState([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, completed: 0, trash: 0, expired: 0 });
-  const [chartData, setChartData] = useState([]);
+  const cachedStats = JSON.parse(sessionStorage.getItem('residentDashboardStats')) || null;
+  const cachedRecent = JSON.parse(sessionStorage.getItem('residentDashboardRecent')) || [];
+  const cachedChart = JSON.parse(sessionStorage.getItem('residentDashboardChart')) || [];
+
+  const [loading, setLoading] = useState(cachedStats === null);
+  const [recentRequests, setRecentRequests] = useState(cachedRecent);
+  const [stats, setStats] = useState(cachedStats || { total: 0, pending: 0, approved: 0, completed: 0, trash: 0, expired: 0 });
+  const [chartData, setChartData] = useState(cachedChart);
 
   useEffect(() => {
     document.title = "Resident | Dashboard";
@@ -88,14 +92,18 @@ export default function UserDashboard() {
           }
         });
 
-        setStats({ total, pending, approved, completed, trash, expired });
+        const newStats = { total, pending, approved, completed, trash, expired };
+        setStats(newStats);
+        sessionStorage.setItem('residentDashboardStats', JSON.stringify(newStats));
 
         reqs.sort((a, b) => {
           const timeA = a.timestamp ? a.timestamp.toMillis() : 0;
           const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
           return timeB - timeA;
         });
-        setRecentRequests(reqs.slice(0, 4));
+        const newRecent = reqs.slice(0, 4);
+        setRecentRequests(newRecent);
+        sessionStorage.setItem('residentDashboardRecent', JSON.stringify(newRecent));
         
         const last6Months = [];
         const d = new Date();
@@ -114,6 +122,7 @@ export default function UserDashboard() {
            d.setMonth(d.getMonth() + 1);
         }
         setChartData(last6Months);
+        sessionStorage.setItem('residentDashboardChart', JSON.stringify(last6Months));
       });
       setLoading(false);
     });

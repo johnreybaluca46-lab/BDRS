@@ -359,7 +359,7 @@ export default function AdminPayment() {
                           <Link to={`/admin/document-requests/${req.id}`} state={{ from: '/admin/payment', activeTab: activeDeliveryTab }} style={{ display: 'inline-flex', alignItems: 'center', color: '#3182ce' }} title="View">
                             <Eye size={18} className="action-icon" color="#3182ce" />
                           </Link>
-                          {req.status === 'Processing Payment' && (
+                          {req.status === 'Processing Payment' && req.deliveryMethod !== 'Barangay Pickup' && (
                             <button 
                               onClick={() => handleVerifyPayment(req.id)}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: 0 }}

@@ -4,7 +4,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../database/firebase';
 
 export default function GreetingBanner({ pendingCount = 0 }) {
-  const [name, setName] = useState('Resident');
+  const cachedName = sessionStorage.getItem('cachedResidentName') || 'Resident';
+  const [name, setName] = useState(cachedName);
   const [greeting, setGreeting] = useState('Good Day');
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function GreetingBanner({ pendingCount = 0 }) {
                displayName = fullName.split(' ')[0].trim();
              }
              setName(displayName.toUpperCase());
+             sessionStorage.setItem('cachedResidentName', displayName.toUpperCase());
           }
         });
       }

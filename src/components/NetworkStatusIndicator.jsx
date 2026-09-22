@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff } from 'lucide-react';
 
 export default function NetworkStatusIndicator() {
-  const [ping, setPing] = useState(0);
+  const initialPing = parseInt(sessionStorage.getItem('lastPing'), 10) || null;
+  const [ping, setPing] = useState(initialPing);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -25,7 +26,11 @@ export default function NetworkStatusIndicator() {
           cache: 'no-store' 
         });
         const end = performance.now();
-        if (isMounted) setPing(Math.round(end - start));
+        if (isMounted) {
+          const newPing = Math.round(end - start);
+          setPing(newPing);
+          sessionStorage.setItem('lastPing', newPing);
+        }
       } catch (err) {
         if (isMounted) setPing(0);
         setIsOnline(false);
@@ -47,7 +52,9 @@ export default function NetworkStatusIndicator() {
   }, []);
 
   const getStatus = () => {
-    if (!isOnline || ping === 0) return { color: '#e53e3e', text: 'Offline', icon: <WifiOff size={18} /> }; // Red
+    if (!isOnline) return { color: '#e53e3e', text: 'Offline', icon: <WifiOff size={18} /> }; // Red
+    if (ping === null) return { color: '#a0aec0', text: '...', icon: <Wifi size={18} /> }; // Gray while calculating
+    if (ping === 0) return { color: '#e53e3e', text: 'Offline', icon: <WifiOff size={18} /> }; // Failed fetch
     if (ping < 150) return { color: '#38a169', text: `${ping}ms`, icon: <Wifi size={18} /> }; // Green
     if (ping <= 300) return { color: '#d69e2e', text: `${ping}ms`, icon: <Wifi size={18} /> }; // Yellow
     return { color: '#e53e3e', text: `${ping}ms`, icon: <Wifi size={18} /> }; // Red

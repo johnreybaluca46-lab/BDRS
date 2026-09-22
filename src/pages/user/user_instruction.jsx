@@ -332,7 +332,7 @@ export default function UserInstruction() {
                 <div>
                   <h3 className="step-title">Step 3: Process Online Payment</h3>
                   <p className="step-desc">
-                    Once approved, your request moves to the <strong>Online Payment</strong> tab. Upload a screenshot of your payment receipt as proof of payment. Our staff will verify the transaction.
+                    Once approved, go to the <strong>Approved Requests</strong> tab and click <strong>View Details</strong> on your request to upload a screenshot of your payment receipt. Our staff will verify the transaction.
                   </p>
                 </div>
               </div>
@@ -361,7 +361,7 @@ export default function UserInstruction() {
                 <DashedArrow />
                 <Step icon={Clock} label="Wait for Approval" description="Wait for officials to verify your application." />
                 <DashedArrow />
-                <Step icon={CreditCard} label="Process Payment" description="Upload your payment receipt in Online Payment." />
+                <Step icon={CreditCard} label="Process Payment" description="Upload your payment receipt in Approved Requests." />
                 <DashedArrow />
                 <Step icon={Download} label="Download Document" description="Get your approved document in the Completed tab." />
               </div>

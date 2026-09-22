@@ -53,10 +53,15 @@ export default function Dashboard() {
     document.title = "Admin | Dashboard";
   }, []);
 
-  const [recentRequests, setRecentRequests] = useState([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, trash: 0, expired: 0, earned: 0 });
-  const [resStats, setResStats] = useState({ registered: 0, active: 0, pending: 0, rejected: 0 });
-  const [chartData, setChartData] = useState([]);
+  const cachedAdminRecent = JSON.parse(sessionStorage.getItem('adminDashboardRecent')) || [];
+  const cachedAdminStats = JSON.parse(sessionStorage.getItem('adminDashboardStats')) || { total: 0, pending: 0, completed: 0, trash: 0, expired: 0, earned: 0 };
+  const cachedResStats = JSON.parse(sessionStorage.getItem('adminDashboardResStats')) || { registered: 0, active: 0, pending: 0, rejected: 0 };
+  const cachedAdminChart = JSON.parse(sessionStorage.getItem('adminDashboardChart')) || [];
+
+  const [recentRequests, setRecentRequests] = useState(cachedAdminRecent);
+  const [stats, setStats] = useState(cachedAdminStats);
+  const [resStats, setResStats] = useState(cachedResStats);
+  const [chartData, setChartData] = useState(cachedAdminChart);
   const navigate = useNavigate();
   const location = useLocation();
   const { isMaintenanceActive } = useMaintenance();
@@ -70,6 +75,7 @@ export default function Dashboard() {
         reqs.push({ id: doc.id, ...doc.data() });
       });
       setRecentRequests(reqs);
+      sessionStorage.setItem('adminDashboardRecent', JSON.stringify(reqs));
     });
 
     // Fetch Stats
@@ -120,7 +126,9 @@ export default function Dashboard() {
            if (isExpired) monthCounts[month].expired += 1;
         }
       });
-      setStats({ total, pending, completed, trash, expired, earned });
+      const newStats = { total, pending, completed, trash, expired, earned };
+      setStats(newStats);
+      sessionStorage.setItem('adminDashboardStats', JSON.stringify(newStats));
       
       const last6Months = [];
       const d = new Date();
@@ -139,6 +147,7 @@ export default function Dashboard() {
          d.setMonth(d.getMonth() + 1);
       }
       setChartData(last6Months);
+      sessionStorage.setItem('adminDashboardChart', JSON.stringify(last6Months));
     });
 
     const unsubResStats = onSnapshot(collection(db, 'residents'), (snapshot) => {
@@ -152,7 +161,9 @@ export default function Dashboard() {
           }
         }
       });
-      setResStats({ registered: snapshot.size, active: activeCount, pending: 0, rejected: 0 });
+      const newResStats = { registered: snapshot.size, active: activeCount, pending: 0, rejected: 0 };
+      setResStats(newResStats);
+      sessionStorage.setItem('adminDashboardResStats', JSON.stringify(newResStats));
     });
 
     return () => {
@@ -276,15 +287,15 @@ export default function Dashboard() {
             <div className="dashboard-panel">
               <h2 className="panel-title">Request Overview</h2>
               <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={50}>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
                     <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#4a5568' }} />
-                    <Line type="monotone" name="Total Requests" dataKey="requests" stroke="#3182ce" strokeWidth={3} dot={{r: 4, fill: '#3182ce', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
-                    <Line type="monotone" name="Pending Requests" dataKey="pending" stroke="#ed8936" strokeWidth={3} dot={{r: 4, fill: '#ed8936', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line isAnimationActive={false} type="monotone" name="Total Requests" dataKey="requests" stroke="#3182ce" strokeWidth={3} dot={{r: 4, fill: '#3182ce', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line isAnimationActive={false} type="monotone" name="Pending Requests" dataKey="pending" stroke="#ed8936" strokeWidth={3} dot={{r: 4, fill: '#ed8936', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -321,9 +332,10 @@ export default function Dashboard() {
             <div className="dashboard-panel">
               <h2 className="panel-title">Overall Distribution</h2>
               <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={50}>
                   <PieChart>
                     <Pie
+                      isAnimationActive={false}
                       data={[
                         { name: 'Doc Pending', value: stats.pending },
                         { name: 'Doc Complete', value: stats.completed },
@@ -367,13 +379,13 @@ export default function Dashboard() {
             <div className="dashboard-panel">
               <h2 className="panel-title">Completed Overview</h2>
               <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={50}>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
-                    <Line type="monotone" name="Completed" dataKey="completed" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line isAnimationActive={false} type="monotone" name="Completed" dataKey="completed" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -382,13 +394,13 @@ export default function Dashboard() {
             <div className="dashboard-panel">
               <h2 className="panel-title">Trash Overview</h2>
               <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={50}>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
-                    <Line type="monotone" name="Trash" dataKey="trash" stroke="#ef4444" strokeWidth={3} dot={{r: 4, fill: '#ef4444', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line isAnimationActive={false} type="monotone" name="Trash" dataKey="trash" stroke="#ef4444" strokeWidth={3} dot={{r: 4, fill: '#ef4444', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -397,13 +409,13 @@ export default function Dashboard() {
             <div className="dashboard-panel">
               <h2 className="panel-title">Expired Overview</h2>
               <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={50}>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
-                    <Line type="monotone" name="Expired" dataKey="expired" stroke="#805ad5" strokeWidth={3} dot={{r: 4, fill: '#805ad5', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line isAnimationActive={false} type="monotone" name="Expired" dataKey="expired" stroke="#805ad5" strokeWidth={3} dot={{r: 4, fill: '#805ad5', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -415,13 +427,13 @@ export default function Dashboard() {
             <div className="dashboard-panel">
               <h2 className="panel-title">Earnings Overview</h2>
               <div style={{ width: '100%', height: 350 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={50}>
                   <BarChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#718096', fontSize: 12}} tickFormatter={(value) => `₱${value}`} />
                     <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} formatter={(value) => `₱${value.toFixed(2)}`} />
-                    <Bar dataKey="earned" name="Revenue" fill="#ecc94b" radius={[4, 4, 0, 0]} />
+                    <Bar isAnimationActive={false} dataKey="earned" name="Revenue" fill="#ecc94b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

@@ -53,6 +53,8 @@ export default function SystemSettings() {
   const [formData, setFormData] = useState({});
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(Logo);
+  const [captainSignaturePreview, setCaptainSignaturePreview] = useState('');
+  const [secretarySignaturePreview, setSecretarySignaturePreview] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
@@ -255,6 +257,8 @@ export default function SystemSettings() {
     if (settings && !loading) {
       setFormData(settings);
       setLogoPreview(settings.logoUrl);
+      if (settings.captainSignatureUrl) setCaptainSignaturePreview(settings.captainSignatureUrl);
+      if (settings.secretarySignatureUrl) setSecretarySignaturePreview(settings.secretarySignatureUrl);
     }
   }, [settings, loading]);
 
@@ -318,13 +322,42 @@ export default function SystemSettings() {
     setFormData(prev => ({ ...prev, logoUrl: Logo }));
   };
 
+  const handleSignatureChange = async (e, setPreview) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      Swal.fire({ icon: 'error', title: 'File Too Large', text: 'Signature image must be 2MB or less.' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result);
+    };
+    reader.onerror = () => {
+      Swal.fire({ icon: 'error', title: 'Upload Failed', text: 'Could not process the signature image.' });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCaptainSignatureChange = (e) => handleSignatureChange(e, setCaptainSignaturePreview);
+  const handleSecretarySignatureChange = (e) => handleSignatureChange(e, setSecretarySignaturePreview);
+
+  const handleRemoveCaptainSignature = () => setCaptainSignaturePreview('');
+  const handleRemoveSecretarySignature = () => setSecretarySignaturePreview('');
+
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
       let currentLogoUrl = formData.logoUrl || Logo;
 
-
-      const updatedSettings = { ...formData, logoUrl: currentLogoUrl };
+      const updatedSettings = { 
+        ...formData, 
+        logoUrl: currentLogoUrl,
+        captainSignatureUrl: captainSignaturePreview,
+        secretarySignatureUrl: secretarySignaturePreview
+      };
 
       await setDoc(doc(db, 'settings', 'general'), updatedSettings, { merge: true });
       await logActivity({ action: 'General Settings Updated', targetType: 'settings', targetId: 'general', description: 'Updated general barangay and office information' });
@@ -518,11 +551,31 @@ export default function SystemSettings() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div className="settings-form-group">
                 <label className="settings-label">Barangay Captain / Punong Barangay</label>
-                <input type="text" className="settings-input" name="captain" value={formData.captain || ""} onChange={handleChange} />
+                <input type="text" className="settings-input" name="captain" value={formData.captain || ""} onChange={handleChange} style={{ marginBottom: '10px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {captainSignaturePreview && (
+                    <img src={captainSignaturePreview} alt="Captain Signature" style={{ height: '60px', objectFit: 'contain', alignSelf: 'flex-start', border: '1px dashed #cbd5e1', padding: '4px', borderRadius: '4px' }} />
+                  )}
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input type="file" id="captain-sig-upload" style={{ display: 'none' }} accept="image/png, image/jpeg, image/jpg" onChange={handleCaptainSignatureChange} />
+                    <button type="button" className="settings-btn-outline" style={{ fontSize: '0.8rem', padding: '4px 10px', display: 'flex', alignItems: 'center' }} onClick={() => document.getElementById('captain-sig-upload').click()}><Upload size={14} style={{ marginRight: '4px' }} /> Upload Signature</button>
+                    {captainSignaturePreview && <button type="button" className="settings-btn-outline-danger" style={{ fontSize: '0.8rem', padding: '4px 10px', display: 'flex', alignItems: 'center', background: 'white' }} onClick={handleRemoveCaptainSignature}><Trash2 size={14} style={{ marginRight: '4px' }} /> Remove</button>}
+                  </div>
+                </div>
               </div>
               <div className="settings-form-group">
                 <label className="settings-label">Barangay Secretary</label>
-                <input type="text" className="settings-input" name="secretary" value={formData.secretary || ""} onChange={handleChange} />
+                <input type="text" className="settings-input" name="secretary" value={formData.secretary || ""} onChange={handleChange} style={{ marginBottom: '10px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {secretarySignaturePreview && (
+                    <img src={secretarySignaturePreview} alt="Secretary Signature" style={{ height: '60px', objectFit: 'contain', alignSelf: 'flex-start', border: '1px dashed #cbd5e1', padding: '4px', borderRadius: '4px' }} />
+                  )}
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input type="file" id="secretary-sig-upload" style={{ display: 'none' }} accept="image/png, image/jpeg, image/jpg" onChange={handleSecretarySignatureChange} />
+                    <button type="button" className="settings-btn-outline" style={{ fontSize: '0.8rem', padding: '4px 10px', display: 'flex', alignItems: 'center' }} onClick={() => document.getElementById('secretary-sig-upload').click()}><Upload size={14} style={{ marginRight: '4px' }} /> Upload Signature</button>
+                    {secretarySignaturePreview && <button type="button" className="settings-btn-outline-danger" style={{ fontSize: '0.8rem', padding: '4px 10px', display: 'flex', alignItems: 'center', background: 'white' }} onClick={handleRemoveSecretarySignature}><Trash2 size={14} style={{ marginRight: '4px' }} /> Remove</button>}
+                  </div>
+                </div>
               </div>
               <div className="settings-form-group">
                 <label className="settings-label">Default Release Method</label>
@@ -1518,16 +1571,30 @@ export default function SystemSettings() {
                     {/* Signatures */}
                     <div style={{ marginTop: '80px', display: 'flex', justifyContent: 'space-between' }}>
                       <div style={{ textAlign: 'center', width: '250px' }}>
-                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '30px' }}></div>
+                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '40px', position: 'relative' }}>
+                          {formData?.secretarySignatureUrl && (
+                            <img src={formData.secretarySignatureUrl} style={{ height: '60px', objectFit: 'contain', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} alt="Secretary Signature" />
+                          )}
+                        </div>
                         <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', fontFamily: 'serif', textTransform: 'uppercase' }}>{formData?.secretary || "BARANGAY SECRETARY"}</p>
                         <p style={{ margin: 0, fontSize: '14px', fontFamily: 'serif' }}>Barangay Secretary</p>
                       </div>
                       <div style={{ textAlign: 'center', width: '250px' }}>
-                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '30px' }}></div>
+                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '40px', position: 'relative' }}>
+                          {formData?.captainSignatureUrl && (
+                            <img src={formData.captainSignatureUrl} style={{ height: '60px', objectFit: 'contain', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} alt="Captain Signature" />
+                          )}
+                        </div>
                         <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', fontFamily: 'serif', textTransform: 'uppercase' }}>{formData?.captain || "HON. JUAN DELA CRUZ"}</p>
                         <p style={{ margin: 0, fontSize: '14px', fontFamily: 'serif' }}>Barangay Captain</p>
                       </div>
                     </div>
+
+                    {formData?.footerNote && (
+                      <div style={{ marginTop: '40px', fontSize: '12px', color: '#4a5568', textAlign: 'center', fontFamily: 'serif', fontStyle: 'italic', zIndex: 2, position: 'relative' }}>
+                        {formData.footerNote}
+                      </div>
+                    )}
 
                     {/* Footer Info */}
                     <div style={{ marginTop: '50px', fontSize: '14px', fontFamily: 'serif', color: '#1a202c' }}>
@@ -1696,16 +1763,30 @@ export default function SystemSettings() {
                     {/* Signatures */}
                     <div style={{ marginTop: '80px', display: 'flex', justifyContent: 'space-between' }}>
                       <div style={{ textAlign: 'center', width: '250px' }}>
-                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '30px' }}></div>
+                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '40px', position: 'relative' }}>
+                          {formData?.secretarySignatureUrl && (
+                            <img src={formData.secretarySignatureUrl} style={{ height: '60px', objectFit: 'contain', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} alt="Secretary Signature" />
+                          )}
+                        </div>
                         <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', fontFamily: 'serif', textTransform: 'uppercase' }}>{formData?.secretary || "BARANGAY SECRETARY"}</p>
                         <p style={{ margin: 0, fontSize: '14px', fontFamily: 'serif' }}>Barangay Secretary</p>
                       </div>
                       <div style={{ textAlign: 'center', width: '250px' }}>
-                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '30px' }}></div>
+                        <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '40px', position: 'relative' }}>
+                          {formData?.captainSignatureUrl && (
+                            <img src={formData.captainSignatureUrl} style={{ height: '60px', objectFit: 'contain', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} alt="Captain Signature" />
+                          )}
+                        </div>
                         <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', fontFamily: 'serif', textTransform: 'uppercase' }}>{formData?.captain || "HON. JUAN DELA CRUZ"}</p>
                         <p style={{ margin: 0, fontSize: '14px', fontFamily: 'serif' }}>Barangay Captain</p>
                       </div>
                     </div>
+
+                    {formData?.footerNote && (
+                      <div style={{ marginTop: '40px', fontSize: '12px', color: '#4a5568', textAlign: 'center', fontFamily: 'serif', fontStyle: 'italic', zIndex: 2, position: 'relative' }}>
+                        {formData.footerNote}
+                      </div>
+                    )}
 
                     {/* Footer Info */}
                     <div style={{ marginTop: '50px', fontSize: '14px', fontFamily: 'serif', color: '#1a202c' }}>

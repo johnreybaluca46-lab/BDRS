@@ -243,7 +243,9 @@ const RequestDetailsModal = ({ request, onClose }) => {
           
           <div style="margin-top: 60px; display: flex; justify-content: space-between; z-index: 2; position: relative;">
             <div style="text-align: center; width: 250px;">
-              <div style="border-bottom: 1px solid #1a202c; margin-bottom: 5px; height: 30px;"></div>
+              <div style="border-bottom: 1px solid #1a202c; margin-bottom: 5px; height: 40px; position: relative;">
+                ${settings?.secretarySignatureUrl ? `<img src="${settings.secretarySignatureUrl}" style="height: 60px; object-fit: contain; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 10;" />` : ''}
+              </div>
               <div style="font-weight: bold; font-size: 11pt; text-transform: uppercase;">${settings?.secretary || "BARANGAY SECRETARY"}</div>
               <div style="font-size: 10pt;">Barangay Secretary</div>
             </div>
@@ -254,12 +256,15 @@ const RequestDetailsModal = ({ request, onClose }) => {
             </div>
 
             <div style="text-align: center; width: 250px;">
-              <div style="border-bottom: 1px solid #1a202c; margin-bottom: 5px; height: 30px;"></div>
+              <div style="border-bottom: 1px solid #1a202c; margin-bottom: 5px; height: 40px; position: relative;">
+                ${settings?.captainSignatureUrl ? `<img src="${settings.captainSignatureUrl}" style="height: 60px; object-fit: contain; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 10;" />` : ''}
+              </div>
               <div style="font-weight: bold; font-size: 11pt; text-transform: uppercase;">${settings?.captain || "HON. JUAN DELA CRUZ"}</div>
               <div style="font-size: 10pt;">Barangay Captain</div>
             </div>
           </div>
           
+          ${settings?.footerNote ? `<div style="margin-top: 40px; font-size: 9pt; color: #4a5568; text-align: center; font-family: serif; font-style: italic; z-index: 2; position: relative;">${settings.footerNote}</div>` : ''}
 
         </div>
       </div>
@@ -617,7 +622,11 @@ const RequestDetailsModal = ({ request, onClose }) => {
                   {/* Signature block */}
                   <div className="print-signature-block" style={{ marginTop: '60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 10, fontFamily: 'serif' }}>
                     <div style={{ textAlign: 'center', width: '250px' }}>
-                      <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '30px' }}></div>
+                      <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '40px', position: 'relative' }}>
+                        {settings?.secretarySignatureUrl && (
+                          <img src={settings.secretarySignatureUrl} style={{ height: '60px', objectFit: 'contain', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} alt="Secretary Signature" />
+                        )}
+                      </div>
                       <div style={{ fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase' }}>{settings?.secretary || "BARANGAY SECRETARY"}</div>
                       <div style={{ fontSize: '14px' }}>Barangay Secretary</div>
                     </div>
@@ -630,13 +639,21 @@ const RequestDetailsModal = ({ request, onClose }) => {
                     )}
 
                     <div style={{ textAlign: 'center', width: '250px' }}>
-                      <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '30px' }}></div>
+                      <div style={{ borderBottom: '1px solid #1a202c', marginBottom: '5px', height: '40px', position: 'relative' }}>
+                        {settings?.captainSignatureUrl && (
+                          <img src={settings.captainSignatureUrl} style={{ height: '60px', objectFit: 'contain', position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} alt="Captain Signature" />
+                        )}
+                      </div>
                       <div style={{ fontWeight: 'bold', fontSize: '15px', textTransform: 'uppercase' }}>{settings?.captain || "HON. JUAN DELA CRUZ"}</div>
                       <div style={{ fontSize: '14px' }}>Barangay Captain</div>
                     </div>
                   </div>
 
-
+                  {settings?.footerNote && (
+                    <div style={{ marginTop: '40px', fontSize: '12px', color: '#4a5568', textAlign: 'center', fontFamily: 'serif', fontStyle: 'italic', zIndex: 2, position: 'relative' }}>
+                      {settings.footerNote}
+                    </div>
+                  )}
 
                 </div>
               </div>
