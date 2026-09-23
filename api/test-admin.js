@@ -1,0 +1,1 @@
+import { createRequire } from 'module'; export default function handler(req, res) { try { const require = createRequire(import.meta.url); require('firebase-admin/app'); res.status(200).json({ success: true, message: 'Loaded admin app' }); } catch(e) { res.status(500).json({ success: false, message: e.message, stack: e.stack }); } }
