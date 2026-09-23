@@ -14,7 +14,8 @@ import {
   showEmailNotVerifiedAlert, 
   showAccountDisabledAlert, 
   showLogoutSuccessAlert, 
-  showSessionExpiredAlert 
+  showSessionExpiredAlert,
+  showGmailDoesNotExistAlert
 } from '../../utils/sweetAlerts';
 import '../../lib/login.css';
 import LoginBg from '../../assets/image/login bg.png';
@@ -165,12 +166,12 @@ export default function Login() {
         }
 
         if (authErr.code === 'auth/user-not-found') {
-          showAccountNotFoundAlert();
+          showGmailDoesNotExistAlert();
           setLoading(false);
           return;
         } else if (authErr.code === 'auth/wrong-password' || authErr.code === 'auth/invalid-credential') {
           if (!recentlyLocked) {
-            showIncorrectPasswordAlert();
+            showLoginFailedAlert('Invalid email or password.');
           }
           setLoading(false);
           return;

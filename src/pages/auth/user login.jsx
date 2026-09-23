@@ -145,6 +145,14 @@ export default function UserLogin() {
     }
 
     try {
+      // Block admin from user portal before database check
+      if (email.trim().toLowerCase() === 'mcmae123@gmail.com') {
+        await logLoginEvent({ event: 'Admin Blocked', result: 'failed', details: 'Admin attempted to login via resident portal', email: email.trim(), role: 'Admin', method: 'Email/Password', locationOverride });
+        showLoginFailedAlert('Admin accounts must log in at the Administrator Portal.');
+        setLoading(false);
+        return;
+      }
+
       await setPersistence(auth, browserSessionPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
@@ -152,15 +160,6 @@ export default function UserLogin() {
       if (user.emailVerified === false && import.meta.env.VITE_REQUIRE_EMAIL_VERIFICATION === 'true') {
         await signOut(auth);
         showEmailNotVerifiedAlert();
-        setLoading(false);
-        return;
-      }
-      
-      // Block admin from user portal
-      if (user.email?.toLowerCase() === 'mcmae123@gmail.com') {
-        await logLoginEvent({ event: 'Admin Blocked', result: 'failed', details: 'Admin attempted to login via resident portal', email: email.trim(), role: 'Admin', method: 'Email/Password', locationOverride });
-        await signOut(auth);
-        showLoginFailedAlert('Admin accounts must log in at the Administrator Portal.');
         setLoading(false);
         return;
       }
@@ -240,7 +239,7 @@ export default function UserLogin() {
       await logLoginEvent({ event: 'Resident Login Failed', result: 'failed', details: err.message || err.code, email: email.trim(), role: 'Resident', method: 'Email/Password', locationOverride });
       
       if (err.code === 'auth/user-not-found') {
-        showAccountNotFoundAlert();
+        showGmailDoesNotExistAlert();
       } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
         const newAttempts = failedAttempts + 1;
         setFailedAttempts(newAttempts);
@@ -268,7 +267,7 @@ export default function UserLogin() {
           } catch (e) {}
         }
         
-        showIncorrectPasswordAlert();
+        showLoginFailedAlert('Invalid email or password.');
       } else if (err.code === 'auth/user-disabled') {
         showAccountDisabledAlert();
       } else if (err.code === 'auth/too-many-requests') {

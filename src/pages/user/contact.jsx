@@ -91,18 +91,24 @@ export default function Contact() {
         });
       }
 
-      // Send email via EmailJS
-      await emailjs.send(
-        'service_n5mewts', // Replace with your EmailJS Service ID
-        'template_h9ag68p', // Replace with your EmailJS Template ID
-        {
-          name: formData.name,
-          email: formData.email,
-          subject: formData.subject,
-          message: formData.message,
-        },
-        'fy21VopOUVrxljrdC' // Replace with your EmailJS Public Key
-      );
+      // Send email via EmailJS (wrapped in separate try-catch to not block success if EmailJS fails)
+      try {
+        await emailjs.send(
+          'service_n5mewts', // Replace with your EmailJS Service ID
+          'template_h9ag68p', // Replace with your EmailJS Template ID
+          {
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+          },
+          'fy21VopOUVrxljrdC' // Replace with your EmailJS Public Key
+        );
+      } catch (emailError) {
+        console.error("EmailJS failed to send email: ", emailError);
+        // We do not throw the error here so the user still gets a success message
+        // since the database save was successful.
+      }
 
       setErrors({});
       setFormData({ name: '', email: '', subject: '', message: '' });
