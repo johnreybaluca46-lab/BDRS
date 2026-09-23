@@ -235,5 +235,16 @@ service cloud.firestore {
     match /monthly_reports/{reportId} {
       allow read, write: if isAdmin();
     }
+
+    // 9. OTP and Password Reset (Backend Only)
+    match /otp_requests/{docId} {
+      allow read, write: if false;
+    }
+    match /password_reset_tokens/{docId} {
+      allow read, write: if false;
+    }
+    match /rate_limits/{docId} {
+      allow read, write: if false;
+    }
   }
 }

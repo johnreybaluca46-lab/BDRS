@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import UserLogin from './pages/auth/user login';
+import ForgotPassword from './pages/auth/forgot password/create new password';
 import Home from './pages/user/home';
 import About from './pages/user/about';
 import Service from './pages/user/service';
@@ -125,6 +126,7 @@ function App() {
 
             {/* User Login - Blocked during maintenance */}
             <Route path="/user-login" element={<PublicRouteGuard><UserLogin /></PublicRouteGuard>} />
+            <Route path="/forgot-password" element={<PublicRouteGuard><ForgotPassword /></PublicRouteGuard>} />
 
           {/* Admin Login - Protected during maintenance unless unlocked via 10 clicks on logo */}
           <Route path="/login" element={<AdminLoginRoute />} />

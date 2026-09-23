@@ -343,6 +343,16 @@ export default function UserLogin() {
                   {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
+              <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                <span 
+                  onClick={() => navigate('/forgot-password')} 
+                  style={{ color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' }}
+                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                >
+                  Forgot Password?
+                </span>
+              </div>
             </div>
 
             <button type="submit" className="btn-login" disabled={loading || isLocked}>
