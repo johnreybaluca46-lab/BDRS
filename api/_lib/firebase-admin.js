@@ -8,7 +8,20 @@ if (!getApps().length) {
     try {
         let serviceAccount;
         if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+            try {
+                serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+                // Fix for Vercel sometimes double-escaping newlines in the private key
+                if (serviceAccount.private_key) {
+                    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                }
+            } catch (e) {
+                // Fallback: Check if it's base64 encoded
+                const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY, 'base64').toString('utf8');
+                serviceAccount = JSON.parse(decoded);
+                if (serviceAccount.private_key) {
+                    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                }
+            }
         } else {
             const localPath = path.resolve(process.cwd(), 'service-account.json');
             if (fs.existsSync(localPath)) {
