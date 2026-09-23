@@ -28,3 +28,6 @@ private backups/
 .vercel
 .env*
 service-account.json
+
+ngrok.exe
+cloudflared.exe
