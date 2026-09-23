@@ -1,13 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { createRequire } from 'module';
+import admin from 'firebase-admin';
 
-const require = createRequire(import.meta.url);
-const { initializeApp, getApps, cert } = require('firebase-admin/app');
-const { getAuth } = require('firebase-admin/auth');
-const { getFirestore } = require('firebase-admin/firestore');
-
-if (!getApps().length) {
+if (!admin.apps.length) {
     try {
         let serviceAccount;
         if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
@@ -37,8 +32,8 @@ if (!getApps().length) {
         }
         
         if (serviceAccount) {
-            initializeApp({
-                credential: cert(serviceAccount)
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
             });
         }
     } catch (error) {
@@ -46,5 +41,5 @@ if (!getApps().length) {
     }
 }
 
-export const adminAuth = getApps().length ? getAuth() : null;
-export const adminDb = getApps().length ? getFirestore() : null;
+export const adminAuth = admin.apps.length ? admin.auth() : null;
+export const adminDb = admin.apps.length ? admin.firestore() : null;
