@@ -543,8 +543,8 @@ export default function RegisterResidentForm() {
                                         <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} className="form-input" placeholder="Enter your password" required style={{ paddingRight: '2.5rem' }} />
                                         <button 
                                             type="button" 
+                                            className="password-toggle"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
                                         >
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
@@ -552,34 +552,21 @@ export default function RegisterResidentForm() {
                                     
                                     {/* Password Strength UI */}
                                     {formData.password.length > 0 && (
-                                        <div className="password-strength-container">
-                                            <div className="strength-header">
-                                                Password Strength: 
-                                                <span className={`strength-${passwordStrength.score.toLowerCase()}`}>
-                                                    {passwordStrength.score === 'BAD' ? '🔴 BAD' : passwordStrength.score === 'GOOD' ? '🟡 GOOD' : '🟢 EXCELLENT'}
-                                                </span>
+                                        <div className="password-strength-container" style={{ marginTop: '10px', padding: '15px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
+                                            <div className="strength-meter" style={{ width: '100%', backgroundColor: '#e2e8f0', height: '4px', borderRadius: '2px', overflow: 'hidden', marginBottom: '8px' }}>
+                                                <div className={`strength-bar ${passwordStrength.score.toLowerCase()}`} style={{ height: '4px', background: passwordStrength.score === 'EXCELLENT' ? '#10b981' : passwordStrength.score === 'GOOD' ? '#f59e0b' : '#ef4444', transition: 'all 0.3s', width: passwordStrength.score === 'EXCELLENT' ? '100%' : passwordStrength.score === 'GOOD' ? '66%' : '33%' }}></div>
                                             </div>
-                                            <div className="strength-checklist">
-                                                <div className={`strength-item ${passwordStrength.criteria.lower ? 'met' : ''}`}>
-                                                    <span className="strength-item-icon">{passwordStrength.criteria.lower ? <CheckSquare size={14} /> : <Square size={14} />}</span> Lowercase letter
-                                                </div>
-                                                <div className={`strength-item ${passwordStrength.criteria.upper ? 'met' : ''}`}>
-                                                    <span className="strength-item-icon">{passwordStrength.criteria.upper ? <CheckSquare size={14} /> : <Square size={14} />}</span> Uppercase letter
-                                                </div>
-                                                <div className={`strength-item ${passwordStrength.criteria.number ? 'met' : ''}`}>
-                                                    <span className="strength-item-icon">{passwordStrength.criteria.number ? <CheckSquare size={14} /> : <Square size={14} />}</span> Number
-                                                </div>
-                                                <div className={`strength-item ${passwordStrength.criteria.special ? 'met' : ''}`}>
-                                                    <span className="strength-item-icon">{passwordStrength.criteria.special ? <CheckSquare size={14} /> : <Square size={14} />}</span> Special character
-                                                </div>
-                                                <div className={`strength-item ${passwordStrength.criteria.length ? 'met' : ''}`}>
-                                                    <span className="strength-item-icon">{passwordStrength.criteria.length ? <CheckSquare size={14} /> : <Square size={14} />}</span> Minimum 12 characters
-                                                </div>
-                                                {!passwordStrength.criteria.notCommon && (
-                                                    <div className="strength-item" style={{ color: '#ef4444', marginTop: '4px' }}>
-                                                        <AlertTriangle size={14} /> Password is too common or simple
-                                                    </div>
-                                                )}
+                                            <span className={`strength-text ${passwordStrength.score.toLowerCase()}`} style={{ fontSize: '12px', fontWeight: 'bold', color: passwordStrength.score === 'EXCELLENT' ? '#10b981' : passwordStrength.score === 'GOOD' ? '#f59e0b' : '#ef4444' }}>
+                                                {passwordStrength.score}
+                                            </span>
+                                            
+                                            <div className="password-requirements" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', marginTop: '10px', fontSize: '11px', color: '#666' }}>
+                                                <div className={`req-item ${passwordStrength.criteria.length ? 'met' : ''}`} style={{ color: passwordStrength.criteria.length ? '#10b981' : '#ef4444' }}><Check size={12}/> 12+ Characters</div>
+                                                <div className={`req-item ${passwordStrength.criteria.upper ? 'met' : ''}`} style={{ color: passwordStrength.criteria.upper ? '#10b981' : '#ef4444' }}><Check size={12}/> Uppercase</div>
+                                                <div className={`req-item ${passwordStrength.criteria.lower ? 'met' : ''}`} style={{ color: passwordStrength.criteria.lower ? '#10b981' : '#ef4444' }}><Check size={12}/> Lowercase</div>
+                                                <div className={`req-item ${passwordStrength.criteria.number ? 'met' : ''}`} style={{ color: passwordStrength.criteria.number ? '#10b981' : '#ef4444' }}><Check size={12}/> Number</div>
+                                                <div className={`req-item ${passwordStrength.criteria.special ? 'met' : ''}`} style={{ color: passwordStrength.criteria.special ? '#10b981' : '#ef4444' }}><Check size={12}/> Special Char</div>
+                                                <div className={`req-item ${passwordStrength.criteria.notCommon ? 'met' : ''}`} style={{ color: passwordStrength.criteria.notCommon ? '#10b981' : '#ef4444' }}><Check size={12}/> Not Common</div>
                                             </div>
                                         </div>
                                     )}
@@ -590,8 +577,8 @@ export default function RegisterResidentForm() {
                                         <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className="form-input" placeholder="Confirm your password" required style={{ paddingRight: '2.5rem' }} />
                                         <button 
                                             type="button" 
+                                            className="password-toggle"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
                                         >
                                             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>

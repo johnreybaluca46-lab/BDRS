@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
 private backups/
 
 # Editor directories and files
@@ -23,3 +24,7 @@ private backups/
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+.env*
+service-account.json

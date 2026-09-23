@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ArrowLeft, Send, Check, ShieldCheck, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, ArrowLeft, Send, Check, ShieldCheck, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 import Swal from 'sweetalert2';
 import '../../../lib/login.css';
 import LoginBg from '../../../assets/image/login bg.png';
@@ -15,14 +15,18 @@ export default function ForgotPassword() {
 
   // Step 1: Email
   const [email, setEmail] = useState('');
+  
+  // Step 2: Mobile Number
+  const [maskedNumber, setMaskedNumber] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [requestId, setRequestId] = useState('');
 
-  // Step 2: OTP
+  // Step 3: OTP
   const [otp, setOtp] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [resetToken, setResetToken] = useState('');
 
-  // Step 3: New Password
+  // Step 4: New Password
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -64,10 +68,37 @@ export default function ForgotPassword() {
       calculatePasswordStrength(e.target.value);
   };
 
-  const handleRequestOTP = async (e) => {
+  const handleVerifyEmail = async (e) => {
     e?.preventDefault();
     if (!email) {
       return Swal.fire({ title: 'Missing Email', text: 'Please enter your email address.', icon: 'warning', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setMaskedNumber(data.maskedNumber);
+        setStep(2);
+      } else {
+        Swal.fire({ title: 'Notice', text: data.message || 'Something went wrong.', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+      }
+    } catch (err) {
+      Swal.fire({ title: 'Error', text: 'Service temporarily unavailable. Please try again later.', icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+    }
+    setLoading(false);
+  };
+
+  const handleRequestOTP = async (e) => {
+    e?.preventDefault();
+    if (!mobileNumber) {
+      return Swal.fire({ title: 'Missing Information', text: 'Please enter your registered mobile number.', icon: 'warning', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
     }
     if (countdown > 0) {
       return Swal.fire({ title: 'Please Wait', text: `You can resend in ${countdown}s`, icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
@@ -78,20 +109,20 @@ export default function ForgotPassword() {
       const res = await fetch(`${API_BASE_URL}/api/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() })
+        body: JSON.stringify({ email: email.trim(), mobileNumber: mobileNumber.trim() })
       });
       const data = await res.json();
       
       if (data.success) {
         setRequestId(data.requestId);
-        setStep(2);
+        setStep(3);
         setCountdown(60);
         Swal.fire({ title: 'Request Sent', text: data.message, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 5000 });
       } else {
         Swal.fire({ title: 'Notice', text: data.message || 'Something went wrong.', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
       }
     } catch (err) {
-      Swal.fire({ title: 'Error', text: 'Service temporarily unavailable. Please try again later.', icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+      Swal.fire({ title: 'Error', text: `Debug: ${err.message}`, icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 8000 });
     }
     setLoading(false);
   };
@@ -113,7 +144,7 @@ export default function ForgotPassword() {
       
       if (data.success) {
         setResetToken(data.resetToken);
-        setStep(3);
+        setStep(4);
         Swal.fire({ title: 'Verified', text: 'OTP verified. Please create a new password.', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
       } else {
         Swal.fire({ title: 'Verification Failed', text: data.message || 'Incorrect OTP.', icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
@@ -163,24 +194,41 @@ export default function ForgotPassword() {
         <div className="login-overlay"></div>
       </div>
       
-      <div className="login-content" style={{ marginTop: step === 3 ? '150px' : '0' }}>
+      <div className="login-content">
         <div className="login-header">
           <h1>Forgot Password</h1>
           <p>
-            {step === 1 && "Enter your email address to receive a verification code."}
-            {step === 2 && "Enter the 6-digit OTP sent to your mobile number."}
-            {step === 3 && "Create a secure new password for your account."}
+            {step === 1 && "Enter your email address to recover your account."}
+            {step === 2 && "Enter your registered mobile number for verification."}
+            {step === 3 && "Enter the 6-digit OTP sent to your mobile number."}
+            {step === 4 && "Create a secure new password for your account."}
           </p>
         </div>
 
         <div className="login-card">
           {step === 1 && (
-            <form className="login-form" onSubmit={handleRequestOTP}>
+            <form className="login-form" onSubmit={handleVerifyEmail}>
               <div className="form-group">
                 <label>Email</label>
                 <div className="input-wrapper">
                   <User className="input-icon" size={20} />
                   <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+              </div>
+              <button type="submit" className="btn-login" disabled={loading}>
+                <Check size={18} />
+                {loading ? 'Verifying...' : 'Continue'}
+              </button>
+            </form>
+          )}
+
+          {step === 2 && (
+            <form className="login-form" onSubmit={handleRequestOTP}>
+              <div className="form-group">
+                <label>Mobile Number ({maskedNumber})</label>
+                <div className="input-wrapper">
+                  <Phone className="input-icon" size={20} />
+                  <input type="text" placeholder="Enter full mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))} required />
                 </div>
               </div>
               <button type="submit" className="btn-login" disabled={loading || countdown > 0}>
@@ -190,7 +238,7 @@ export default function ForgotPassword() {
             </form>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <form className="login-form" onSubmit={handleVerifyOTP}>
               <div className="form-group">
                 <label>OTP Code</label>
@@ -210,7 +258,7 @@ export default function ForgotPassword() {
             </form>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <form className="login-form" onSubmit={handleResetPassword}>
                 <div className="form-group">
                     <label>New Password</label>
@@ -223,7 +271,7 @@ export default function ForgotPassword() {
                             onChange={handlePasswordChange}
                             required
                         />
-                        <button type="button" className="btn-toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                        <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                     </div>
@@ -258,7 +306,7 @@ export default function ForgotPassword() {
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                         />
-                        <button type="button" className="btn-toggle-password" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        <button type="button" className="password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                     </div>
@@ -274,7 +322,7 @@ export default function ForgotPassword() {
             <span>or</span>
           </div>
 
-          <button type="button" className="btn-staff" onClick={() => navigate('/user-login')}>
+          <button type="button" className="btn-staff" style={{ width: '100%' }} onClick={() => navigate('/user-login')}>
             <ArrowLeft size={18} /> Back to Login
           </button>
         </div>

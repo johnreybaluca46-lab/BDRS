@@ -1,4 +1,5 @@
 import { adminAuth, adminDb } from './_lib/firebase-admin.js';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import crypto from 'crypto';
 
 // Rate limiting: 5 requests per hour per email
@@ -23,19 +24,22 @@ export default async function handler(req, res) {
         return res.status(500).json({ success: false, message: 'Backend configuration error.' });
     }
 
-    const { email } = req.body;
+    const { email, mobileNumber } = req.body;
     if (!email || typeof email !== 'string') {
         return res.status(400).json({ success: false, message: 'Email is required.' });
     }
+    if (!mobileNumber || typeof mobileNumber !== 'string') {
+        return res.status(400).json({ success: false, message: 'Mobile number is required.' });
+    }
     
     const normalizedEmail = email.trim().toLowerCase();
+    const providedMobile = mobileNumber.trim();
 
-    // Generic success response to avoid account enumeration
-    const genericResponse = (requestId = null) => {
+    // Generic error response to avoid account enumeration
+    const genericError = () => {
         return res.status(200).json({ 
-            success: true, 
-            message: 'If the account is registered and eligible for recovery, a verification code has been sent to the registered mobile number.',
-            requestId 
+            success: false, 
+            message: 'Invalid email or mobile number.'
         });
     };
 
@@ -66,7 +70,7 @@ export default async function handler(req, res) {
             userRecord = await adminAuth.getUserByEmail(normalizedEmail);
         } catch (error) {
             if (error.code === 'auth/user-not-found') {
-                return genericResponse();
+                return genericError();
             }
             throw error;
         }
@@ -76,19 +80,19 @@ export default async function handler(req, res) {
         // 3. Fetch Resident Document
         const residentDoc = await adminDb.collection('residents').doc(uid).get();
         if (!residentDoc.exists) {
-            return genericResponse();
+            return genericError();
         }
 
         const residentData = residentDoc.data();
         
         // 4. Check Status
         if (residentData.status !== 'Approved') {
-            return genericResponse();
+            return genericError();
         }
 
         const contactNumber = residentData.contactNumber;
-        if (!contactNumber) {
-            return genericResponse();
+        if (!contactNumber || contactNumber !== providedMobile) {
+            return genericError();
         }
 
         // 5. Check Resend Cooldown (60s)
@@ -120,8 +124,8 @@ export default async function handler(req, res) {
             email: normalizedEmail,
             contactNumberMasked: "*".repeat(Math.max(0, contactNumber.length - 4)) + contactNumber.slice(-4),
             otpHash: otpHash,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            expiresAt: admin.firestore.Timestamp.fromMillis(now + 5 * 60 * 1000), // 5 mins
+            createdAt: FieldValue.serverTimestamp(),
+            expiresAt: Timestamp.fromMillis(now + 5 * 60 * 1000), // 5 mins
             attempts: 0,
             used: false,
             smsStatus: 'pending'
@@ -134,13 +138,31 @@ export default async function handler(req, res) {
         }, { merge: true });
 
         // 9. Send SMS via Traccar Gateway
-        const traccarUrl = process.env.TRACCAR_SMS_URL;
-        const traccarToken = process.env.TRACCAR_API_TOKEN;
+        let traccarUrl = process.env.TRACCAR_SMS_URL;
+        let traccarToken = process.env.TRACCAR_API_TOKEN;
+
+        // Fallback for local Vercel CLI bug where process.env is missing
+        if (!traccarUrl || !traccarToken) {
+            try {
+                const fs = await import('fs');
+                const path = await import('path');
+                const envPath = path.resolve(process.cwd(), '.env.local');
+                if (fs.existsSync(envPath)) {
+                    const envContent = fs.readFileSync(envPath, 'utf8');
+                    const urlMatch = envContent.match(/TRACCAR_SMS_URL="?([^"\n]+)"?/);
+                    const tokenMatch = envContent.match(/TRACCAR_API_TOKEN="?([^"\n]+)"?/);
+                    if (urlMatch) traccarUrl = urlMatch[1];
+                    if (tokenMatch) traccarToken = tokenMatch[1];
+                }
+            } catch (e) {
+                console.error("Failed to fallback read .env.local", e);
+            }
+        }
 
         if (!traccarUrl || !traccarToken) {
             console.error('Traccar configuration missing in environment variables.');
             await otpRef.update({ smsStatus: 'failed', used: true });
-            return res.status(500).json({ success: false, message: 'Service temporarily unavailable. Please try again later.' });
+            return res.status(500).json({ success: false, message: 'Debug Error: Missing TRACCAR_SMS_URL or TRACCAR_API_TOKEN in .env.local' });
         }
 
         try {
@@ -149,19 +171,24 @@ export default async function handler(req, res) {
                 message: `Your BDRS password reset OTP is: ${otpCode}. It expires in 5 minutes. Do not share this code with anyone.`
             };
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
             const traccarRes = await fetch(traccarUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': traccarToken
                 },
-                body: JSON.stringify(smsPayload)
+                body: JSON.stringify(smsPayload),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             if (!traccarRes.ok) {
                 console.error(`Traccar API error: ${traccarRes.status} ${traccarRes.statusText}`);
                 await otpRef.update({ smsStatus: 'failed', used: true });
-                return res.status(500).json({ success: false, message: 'Service temporarily unavailable. Please try again later.' });
+                return res.status(500).json({ success: false, message: 'SMS Gateway is currently unavailable. Please try again later.' });
             }
 
             await otpRef.update({ smsStatus: 'sent' });
@@ -170,11 +197,17 @@ export default async function handler(req, res) {
         } catch (smsError) {
             console.error('Failed to communicate with Traccar SMS Gateway:', smsError);
             await otpRef.update({ smsStatus: 'failed', used: true });
-            return res.status(500).json({ success: false, message: 'Service temporarily unavailable. Please try again later.' });
+            if (smsError.name === 'AbortError') {
+                return res.status(504).json({ success: false, message: 'SMS Gateway connection timed out. Please try again later.' });
+            }
+            return res.status(500).json({ success: false, message: 'SMS Gateway is currently offline. Please try again later.' });
         }
 
-        // Return generic response + requestId
-        return genericResponse(requestId);
+        return res.status(200).json({ 
+            success: true, 
+            message: 'A verification code has been sent to your mobile number.',
+            requestId 
+        });
 
     } catch (err) {
         console.error('Request OTP Error:', err);

@@ -1,6 +1,6 @@
 import { adminDb } from './_lib/firebase-admin.js';
 import crypto from 'crypto';
-import admin from 'firebase-admin';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 export default async function handler(req, res) {
     // CORS Headers to allow requests from Firebase Hosting
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
             
             if (data.otpHash !== submittedHash) {
                 // Increment attempt
-                t.update(otpRef, { attempts: admin.firestore.FieldValue.increment(1) });
+                t.update(otpRef, { attempts: FieldValue.increment(1) });
                 return { status: 400, message: 'Incorrect OTP.' };
             }
             
@@ -73,9 +73,9 @@ export default async function handler(req, res) {
             
             t.set(tokenRef, {
                 uid: data.uid,
-                expiresAt: admin.firestore.Timestamp.fromMillis(now + 15 * 60 * 1000), // 15 mins
+                expiresAt: Timestamp.fromMillis(now + 15 * 60 * 1000), // 15 mins
                 status: 'available', // states: available -> processing -> consumed
-                createdAt: admin.firestore.FieldValue.serverTimestamp()
+                createdAt: FieldValue.serverTimestamp()
             });
             
             return { status: 200, resetToken };
