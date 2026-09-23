@@ -10,16 +10,18 @@ if (!getApps().length) {
         if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
             try {
                 serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-                // Fix for Vercel sometimes double-escaping newlines in the private key
                 if (serviceAccount.private_key) {
                     serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
                 }
-            } catch (e) {
-                // Fallback: Check if it's base64 encoded
-                const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY, 'base64').toString('utf8');
-                serviceAccount = JSON.parse(decoded);
-                if (serviceAccount.private_key) {
-                    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            } catch (e1) {
+                try {
+                    const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY, 'base64').toString('utf8');
+                    serviceAccount = JSON.parse(decoded);
+                    if (serviceAccount.private_key) {
+                        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                    }
+                } catch (e2) {
+                    console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY as JSON or Base64.');
                 }
             }
         } else {
