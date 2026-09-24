@@ -24,6 +24,7 @@ import { functions } from '../../database/firebase';
 import { httpsCallable } from 'firebase/functions';
 import '../../lib/login.css';
 import LoginBg from '../../assets/image/login bg.png';
+import Swal from 'sweetalert2';
 
 export default function UserLogin() {
   const navigate = useNavigate();
@@ -347,7 +348,7 @@ export default function UserLogin() {
               </div>
               <div style={{ textAlign: 'right', marginTop: '8px' }}>
                 <span 
-                  onClick={() => navigate('/forgot-password')} 
+                  onClick={() => Swal.fire({ title: 'Under Maintenance', text: 'This feature is currently unavailable. We will fix this feature later.', icon: 'info' })} 
                   style={{ color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' }}
                   onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
                   onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
