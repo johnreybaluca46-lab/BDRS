@@ -3,7 +3,7 @@ import SkeletonTable from '../../components/SkeletonTable';
 import Swal from 'sweetalert2';
 import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../database/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateEmail } from 'firebase/auth';
 import { Shield, Search, RefreshCw, AlertTriangle, Database, Settings, ShieldCheck, User, Activity, LogIn, Lock, FileText, Calendar, ChevronLeft, ChevronRight, CheckCircle, Trash2, Edit, Globe, Monitor, MapPin, Info, X, Eye } from 'lucide-react';
 import '../../lib/security_logs.css';
 import '../../lib/admin-layout.css';
@@ -35,12 +35,19 @@ export default function SecurityLogs() {
 
   const [selectedLog, setSelectedLog] = useState(null);
 
+  const [emailCurrentPassword, setEmailCurrentPassword] = useState('');
+  const [passCurrentPassword, setPassCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountEmail, setAccountEmail] = useState('');
+
   useEffect(() => {
     document.title = "Security & Audit Logs | BDRS";
     
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
+        setAccountEmail(user.email || '');
       }
     });
     
@@ -601,6 +608,167 @@ export default function SecurityLogs() {
     </div>
   );
 
+  const handleUpdateEmail = async (e) => {
+    e.preventDefault();
+    if (!emailCurrentPassword) {
+      Swal.fire('Error', 'Please enter your current password to change your email.', 'error');
+      return;
+    }
+    
+    if (accountEmail === currentUser.email) {
+      Swal.fire('Info', 'The email address is the same as your current one.', 'info');
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(currentUser.email, emailCurrentPassword);
+      await reauthenticateWithCredential(currentUser, credential);
+
+      await updateEmail(currentUser, accountEmail);
+      await setDoc(doc(db, 'admin_profiles', currentUser.uid), { email: accountEmail }, { merge: true });
+
+      Swal.fire('Success', 'Email address updated successfully.', 'success');
+      setEmailCurrentPassword('');
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        Swal.fire('Error', 'Incorrect current password.', 'error');
+      } else {
+        Swal.fire('Error', err.message || 'Failed to update email address.', 'error');
+      }
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (!passCurrentPassword) {
+      Swal.fire('Error', 'Please enter your current password to change your password.', 'error');
+      return;
+    }
+    
+    if (!newPassword || newPassword !== confirmPassword) {
+      Swal.fire('Error', 'New passwords do not match or are empty.', 'error');
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(currentUser.email, passCurrentPassword);
+      await reauthenticateWithCredential(currentUser, credential);
+
+      await updatePassword(currentUser, newPassword);
+
+      Swal.fire('Success', 'Password updated successfully.', 'success');
+      setPassCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        Swal.fire('Error', 'Incorrect current password.', 'error');
+      } else {
+        Swal.fire('Error', err.message || 'Failed to update password.', 'error');
+      }
+    }
+  };
+
+  const renderAccountSecurity = () => (
+    <div className="security-settings-content">
+      <h2><ShieldCheck size={20} color="#3b82f6" /> Account Security</h2>
+      <p className="desc">Manage your authentication credentials and security settings.</p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginTop: '20px' }}>
+        {/* Email Update Card */}
+        <form onSubmit={handleUpdateEmail} style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>Update Email Address</h3>
+          
+          <div className="form-group" style={{ marginBottom: '5px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>New Email Address</label>
+            <input 
+              type="email" 
+              value={accountEmail} 
+              onChange={(e) => setAccountEmail(e.target.value)}
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
+              required
+            />
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '20px' }}>
+            Note: You will use this new email to log in next time.
+          </p>
+
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Current Password (Required)</label>
+            <input 
+              type="password" 
+              value={emailCurrentPassword} 
+              onChange={(e) => setEmailCurrentPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            style={{ padding: '10px 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', width: 'max-content', transition: 'background 0.2s', marginTop: 'auto' }}
+            onMouseOver={(e) => e.target.style.background = '#2563eb'}
+            onMouseOut={(e) => e.target.style.background = '#3b82f6'}
+          >
+            Save New Email
+          </button>
+        </form>
+
+        {/* Password Update Card */}
+        <form onSubmit={handleUpdatePassword} style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>Update Password</h3>
+          
+          <div className="form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>New Password</label>
+            <input 
+              type="password" 
+              value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
+            />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '5px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Confirm New Password</label>
+            <input 
+              type="password" 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
+            />
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '20px' }}>
+            Note: You will be logged out of other devices after changing your password.
+          </p>
+
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Current Password (Required)</label>
+            <input 
+              type="password" 
+              value={passCurrentPassword} 
+              onChange={(e) => setPassCurrentPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            style={{ padding: '10px 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', width: 'max-content', transition: 'background 0.2s', marginTop: 'auto' }}
+            onMouseOver={(e) => e.target.style.background = '#2563eb'}
+            onMouseOut={(e) => e.target.style.background = '#3b82f6'}
+          >
+            Save New Password
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <div className="admin-dashboard-container">
       <AdminSidebar />
@@ -639,7 +807,6 @@ export default function SecurityLogs() {
                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 <Settings size={18} /> Account Security
-                <span style={{ fontSize: '0.65rem', backgroundColor: '#e2e8f0', color: '#4a5568', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', marginLeft: '4px' }}>Coming Soon</span>
               </button>
             </div>
 
@@ -647,11 +814,7 @@ export default function SecurityLogs() {
             {activeTab === 'login' && renderLoginStatsCards()}
 
             {activeTab === 'account' ? (
-              <div className="empty-state">
-                <Settings size={48} />
-                <h3>Account Security</h3>
-                <p>Advanced security settings, two-factor authentication, and active session management will be available in a future update. (Coming Soon)</p>
-              </div>
+              renderAccountSecurity()
             ) : activeTab === 'settings' ? (
               renderSecuritySettings()
             ) : (

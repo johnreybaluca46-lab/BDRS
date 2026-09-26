@@ -106,26 +106,40 @@ const isPublicIP = (ip) => {
 
 const getIpInfo = async () => {
   try {
-    const res = await fetch('https://ipapi.co/json/');
-    if (res.ok) {
-      const data = await res.json();
-      const ip = data.ip || 'Unknown';
-      if (!isPublicIP(ip)) {
-        return { ip: 'Unavailable', location: 'Unavailable', isp: 'Unavailable', locationType: 'Approximate (network-based)' };
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 1500);
+    
+    try {
+      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+      clearTimeout(id);
+      
+      if (res.ok) {
+        const data = await res.json();
+        const ip = data.ip || 'Unknown';
+        if (!isPublicIP(ip)) {
+          return { ip: 'Unavailable', location: 'Unavailable', isp: 'Unavailable', locationType: 'Approximate (network-based)' };
+        }
+        const locationParts = [data.city, data.region, data.country_name].filter(Boolean);
+        return { 
+          ip: ip, 
+          location: locationParts.length > 0 ? locationParts.join(', ') : 'Unknown',
+          isp: data.org || 'Unknown',
+          locationType: 'Approximate (network-based)'
+        };
       }
-      const locationParts = [data.city, data.region, data.country_name].filter(Boolean);
-      return { 
-        ip: ip, 
-        location: locationParts.length > 0 ? locationParts.join(', ') : 'Unknown',
-        isp: data.org || 'Unknown',
-        locationType: 'Approximate (network-based)'
-      };
-    } else {
-      // Fallback
-      const fbRes = await fetch('https://api.ipify.org?format=json');
-      const fbData = await fbRes.json();
-      return { ip: fbData.ip, location: 'Unknown', isp: 'Unknown', locationType: 'Approximate (network-based)' };
+    } catch (err) {
+      clearTimeout(id);
     }
+    
+    // Fallback
+    const fbController = new AbortController();
+    const fbId = setTimeout(() => fbController.abort(), 1500);
+    const fbRes = await fetch('https://api.ipify.org?format=json', { signal: fbController.signal });
+    clearTimeout(fbId);
+    
+    const fbData = await fbRes.json();
+    return { ip: fbData.ip, location: 'Unknown', isp: 'Unknown', locationType: 'Approximate (network-based)' };
+    
   } catch (e) {
     return { ip: 'Unknown', location: 'Unknown', isp: 'Unknown', locationType: 'Approximate (network-based)' };
   }
@@ -171,7 +185,11 @@ export const getLocationWithConsent = async (isResident = false) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
           try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 1500);
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, { signal: controller.signal });
+            clearTimeout(id);
+            
             let locationParts = [];
             if (res.ok) {
               const data = await res.json();
@@ -216,7 +234,7 @@ export const getLocationWithConsent = async (isResident = false) => {
           }
           resolve(null);
         },
-        { timeout: 10000, maximumAge: 0 }
+        { timeout: 3000, maximumAge: 0 }
       );
     });
   } catch (e) {

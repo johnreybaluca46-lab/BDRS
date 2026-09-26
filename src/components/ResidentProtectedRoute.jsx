@@ -32,7 +32,7 @@ const ResidentProtectedRoute = ({ children }) => {
             }
           }
 
-          if (docSnap.exists() || (user.email && user.email.toLowerCase() !== 'mcmae123@gmail.com')) {
+          if (docSnap.exists() || (user.email && user.email.toLowerCase() !== 'barangaybuluan@gmail.com')) {
             sessionStorage.setItem('isResident', 'true');
             setIsAuthenticated(true);
           } else {
@@ -41,7 +41,7 @@ const ResidentProtectedRoute = ({ children }) => {
           }
         } catch (error) {
           console.error("Error checking resident profile", error);
-          if (user.email && user.email.toLowerCase() !== 'mcmae123@gmail.com') {
+          if (user.email && user.email.toLowerCase() !== 'barangaybuluan@gmail.com') {
             sessionStorage.setItem('isResident', 'true');
             setIsAuthenticated(true);
           } else {

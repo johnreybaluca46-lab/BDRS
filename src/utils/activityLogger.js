@@ -22,10 +22,12 @@ const getDeviceInfo = () => {
   return { browser, os };
 };
 
-// Helper to get IP address
 const getIpAddress = async () => {
   try {
-    const res = await fetch('https://api.ipify.org?format=json');
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 1500);
+    const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+    clearTimeout(id);
     const data = await res.json();
     return data.ip;
   } catch (e) {

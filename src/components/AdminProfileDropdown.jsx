@@ -61,8 +61,13 @@ export default function AdminProfileDropdown() {
     confirmLogoutAlert(async () => {
       try {
         if (auth.currentUser?.email) {
-          const locationOverride = await getLocationWithConsent(true);
-          await logLoginEvent({ event: 'Logout Successful', result: 'success', email: auth.currentUser.email, role: 'Admin', locationOverride });
+          await logLoginEvent({ 
+            event: 'Logout Successful', 
+            result: 'success', 
+            email: auth.currentUser.email, 
+            role: 'Admin',
+            locationOverride: { ip: 'Skipped', location: 'Skipped', isp: 'Skipped', locationType: 'Skipped' }
+          });
         }
         sessionStorage.removeItem('isAdmin');
         await signOut(auth);

@@ -139,16 +139,12 @@ export default function UserLogin() {
 
     setLoading(true);
 
-    const locationOverride = await getLocationWithConsent(true);
-    if (!locationOverride) {
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
 
     try {
       // Block admin from user portal before database check
-      if (email.trim().toLowerCase() === 'mcmae123@gmail.com') {
-        await logLoginEvent({ event: 'Admin Blocked', result: 'failed', details: 'Admin attempted to login via resident portal', email: email.trim(), role: 'Admin', method: 'Email/Password', locationOverride });
+      if (email.trim().toLowerCase() === 'barangaybuluan@gmail.com') {
+        logLoginEvent({ event: 'Admin Blocked', result: 'failed', details: 'Admin attempted to login via resident portal', email: email.trim(), role: 'Admin', method: 'Email/Password' }).catch(console.error);
         showLoginFailedAlert('Admin accounts must log in at the Administrator Portal.');
         setLoading(false);
         return;
@@ -170,8 +166,8 @@ export default function UserLogin() {
       const residentDocSnap = await getDoc(residentDocRef);
 
       if (!residentDocSnap.exists()) {
-        await logActivity('Failed Login Attempt', 'Account not found in resident records', 'failed_login', email.trim(), 'user');
-        await logLoginEvent({ event: 'Resident Login Blocked', result: 'failed', details: 'Authenticated but no resident profile found', email: user.email, actorId: user.uid, role: 'Resident', method: 'Email/Password', locationOverride });
+        logActivity('Failed Login Attempt', 'Account not found in resident records', 'failed_login', email.trim(), 'user').catch(console.error);
+        logLoginEvent({ event: 'Resident Login Blocked', result: 'failed', details: 'Authenticated but no resident profile found', email: user.email, actorId: user.uid, role: 'Resident', method: 'Email/Password' }).catch(console.error);
         await signOut(auth);
         showLoginFailedAlert('Account not found in resident records. Please register as a resident first.');
         setLoading(false);
@@ -223,8 +219,8 @@ export default function UserLogin() {
         console.error("Error updating resident login status:", statusErr);
       }
 
-      await logActivity('Logged in', 'Resident successfully authenticated', 'login', user.email, 'user');
-      await logLoginEvent({ event: 'Resident Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Resident', method: 'Email/Password', locationOverride });
+      logActivity('Logged in', 'Resident successfully authenticated', 'login', user.email, 'user').catch(console.error);
+      logLoginEvent({ event: 'Resident Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Resident', method: 'Email/Password' }).catch(console.error);
       
       localStorage.removeItem(`resident_lockout_${email.trim().toLowerCase()}`);
       setFailedAttempts(0);
@@ -237,7 +233,7 @@ export default function UserLogin() {
     } catch (err) {
       console.log('Login error code:', err.code);
 
-      await logLoginEvent({ event: 'Resident Login Failed', result: 'failed', details: err.message || err.code, email: email.trim(), role: 'Resident', method: 'Email/Password', locationOverride });
+      logLoginEvent({ event: 'Resident Login Failed', result: 'failed', details: err.message || err.code, email: email.trim(), role: 'Resident', method: 'Email/Password' }).catch(console.error);
       
       if (err.code === 'auth/user-not-found') {
         showGmailDoesNotExistAlert();
@@ -373,6 +369,20 @@ export default function UserLogin() {
                 'Login'
               )}
             </button>
+
+            <div style={{ textAlign: 'center', marginTop: '15px' }}>
+              <span style={{ color: '#4b5563', fontSize: '0.9rem' }}>
+                Don't have an account?{' '}
+                <span 
+                  onClick={() => navigate('/register')} 
+                  style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 'bold' }}
+                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                >
+                  Register here
+                </span>
+              </span>
+            </div>
 
             <div className="divider">
               <span>or</span>

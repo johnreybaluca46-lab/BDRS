@@ -94,11 +94,6 @@ export default function Login() {
     if (justUnlocked) setJustUnlocked(false);
 
     setLoading(true);
-    const locationOverride = await getLocationWithConsent(true);
-    if (!locationOverride) {
-      setLoading(false);
-      return;
-    }
 
     try {
       const trimmedEmail = email.trim();
@@ -220,7 +215,7 @@ export default function Login() {
       } catch (err) {}
 
       sessionStorage.setItem('isAdmin', 'true');
-      try { await logLoginEvent({ event: 'Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Admin', method: 'Email/Password', locationOverride }); } catch (_) {}
+      logLoginEvent({ event: 'Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Admin', method: 'Email/Password' }).catch(console.error);
       showLoginSuccessAlert();
       redirectUser(user.email);
     } catch (err) {

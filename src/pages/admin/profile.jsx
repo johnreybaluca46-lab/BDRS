@@ -32,7 +32,7 @@ import {
   FileCheck,
   Megaphone
 } from 'lucide-react';
-import { signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import { signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateEmail } from 'firebase/auth';
 import { auth, db } from '../../database/firebase';
 import { doc, getDoc, setDoc, collection, query, where, orderBy, onSnapshot, limit, deleteDoc, getDocs } from 'firebase/firestore';
 import { logActivity, logLoginEvent, getLocationWithConsent } from '../../utils/auditLogger';
@@ -299,7 +299,7 @@ export default function AdminProfile() {
                       </div>
                       <div className="form-group">
                         <label>Email Address</label>
-                        <input type="email" name="email" value={profileData.email} onChange={handleInputChange} className="form-input" />
+                        <input type="email" name="email" value={profileData.email} className="form-input" disabled style={{ backgroundColor: '#f1f5f9', color: '#64748b', cursor: 'not-allowed' }} title="To change your email, please go to Security & Audit Logs -> Account Security" />
                       </div>
                       <div className="form-group">
                         <label>Role</label>
