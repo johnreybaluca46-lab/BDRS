@@ -5,6 +5,7 @@ import '../../lib/home.css';
 import { ChevronRight, MapPin, FileText, Users, LogIn } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import ContactFooter from '../../components/ContactFooter';
+import { useSettings } from '../../context/SettingsContext';
 import Logo from '../../assets/logo/barangay buluan seal.png';
 import BannerImg from '../../assets/image/banner 2.png';
 import TicketIcon from '../../assets/image/ticket.png';
@@ -20,6 +21,7 @@ import BuluanIslandImg from '../../assets/image/buluan iland.jpg';
 import Swal from 'sweetalert2';
 
 export default function Home() {
+  const { settings } = useSettings();
   useEffect(() => {
     document.title = "BDRS | Home";
   }, []);
@@ -109,7 +111,7 @@ export default function Home() {
               <img src={BuluanIslandImg} alt="Buluan Island" />
             </div>
             <div className="about-qr-container">
-              <QRCode value="https://bdrs-a4bd0.web.app" size={160} />
+              <QRCode value={settings?.officialWebsite || "https://bdrs-five.vercel.app/"} size={160} />
               <p>Scan to visit our website</p>
             </div>
           </div>
