@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ArrowLeft, Send, Check, ShieldCheck, Lock, Eye, EyeOff, Phone } from 'lucide-react';
+import { User, ArrowLeft, Send, Check, ShieldCheck, Lock, Eye, EyeOff, Phone, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import '../../../lib/login.css';
 import LoginBg from '../../../assets/image/login bg.png';
@@ -16,9 +16,7 @@ export default function ForgotPassword() {
   // Step 1: Email
   const [email, setEmail] = useState('');
   
-  // Step 2: Mobile Number
-  const [maskedNumber, setMaskedNumber] = useState('');
-  const [mobileNumber, setMobileNumber] = useState('');
+  // Step 2 (Removed, skipping directly to OTP)
   const [requestId, setRequestId] = useState('');
 
   // Step 3: OTP
@@ -68,37 +66,10 @@ export default function ForgotPassword() {
       calculatePasswordStrength(e.target.value);
   };
 
-  const handleVerifyEmail = async (e) => {
+  const handleRequestOTP = async (e) => {
     e?.preventDefault();
     if (!email) {
       return Swal.fire({ title: 'Missing Email', text: 'Please enter your email address.', icon: 'warning', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/verify-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setMaskedNumber(data.maskedNumber);
-        setStep(2);
-      } else {
-        Swal.fire({ title: 'Notice', text: data.message || 'Something went wrong.', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-      }
-    } catch (err) {
-      Swal.fire({ title: 'Error', text: 'Service temporarily unavailable. Please try again later.', icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-    }
-    setLoading(false);
-  };
-
-  const handleRequestOTP = async (e) => {
-    e?.preventDefault();
-    if (!mobileNumber) {
-      return Swal.fire({ title: 'Missing Information', text: 'Please enter your registered mobile number.', icon: 'warning', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
     }
     if (countdown > 0) {
       return Swal.fire({ title: 'Please Wait', text: `You can resend in ${countdown}s`, icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
@@ -109,7 +80,7 @@ export default function ForgotPassword() {
       const res = await fetch(`${API_BASE_URL}/api/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), mobileNumber: mobileNumber.trim() })
+        body: JSON.stringify({ email: email.trim() })
       });
       const data = await res.json();
       
@@ -117,15 +88,17 @@ export default function ForgotPassword() {
         setRequestId(data.requestId);
         setStep(3);
         setCountdown(60);
-        Swal.fire({ title: 'Request Sent', text: data.message, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 5000 });
+        Swal.fire({ title: 'OTP Sent', text: data.message, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 5000 });
       } else {
         Swal.fire({ title: 'Notice', text: data.message || 'Something went wrong.', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
       }
     } catch (err) {
-      Swal.fire({ title: 'Error', text: `Debug: ${err.message}`, icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 8000 });
+      Swal.fire({ title: 'Error', text: `Service temporarily unavailable. Please try again later.`, icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 8000 });
     }
     setLoading(false);
   };
+
+
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
@@ -190,6 +163,15 @@ export default function ForgotPassword() {
 
   return (
     <div className="login-page">
+      <style>{`
+        @keyframes btn-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .spin-icon {
+          animation: btn-spin 1s linear infinite;
+        }
+      `}</style>
       <div className="login-background" style={{ backgroundImage: `url("${LoginBg}")` }}>
         <div className="login-overlay"></div>
       </div>
@@ -199,15 +181,19 @@ export default function ForgotPassword() {
           <h1>Forgot Password</h1>
           <p>
             {step === 1 && "Enter your email address to recover your account."}
-            {step === 2 && "Enter your registered mobile number for verification."}
-            {step === 3 && "Enter the 6-digit OTP sent to your mobile number."}
+            {step === 3 && (
+              <>
+                Enter the 6-digit code sent to<br/>
+                <strong>{email && email.includes('@') ? `${email.charAt(0)}***@${email.split('@')[1]}` : ''}</strong>
+              </>
+            )}
             {step === 4 && "Create a secure new password for your account."}
           </p>
         </div>
 
         <div className="login-card">
           {step === 1 && (
-            <form className="login-form" onSubmit={handleVerifyEmail}>
+            <form className="login-form" onSubmit={handleRequestOTP}>
               <div className="form-group">
                 <label>Email</label>
                 <div className="input-wrapper">
@@ -216,24 +202,8 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <button type="submit" className="btn-login" disabled={loading}>
-                <Check size={18} />
-                {loading ? 'Verifying...' : 'Continue'}
-              </button>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form className="login-form" onSubmit={handleRequestOTP}>
-              <div className="form-group">
-                <label>Mobile Number ({maskedNumber})</label>
-                <div className="input-wrapper">
-                  <Phone className="input-icon" size={20} />
-                  <input type="text" placeholder="Enter full mobile number" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))} required />
-                </div>
-              </div>
-              <button type="submit" className="btn-login" disabled={loading || countdown > 0}>
-                <Send size={18} />
-                {loading ? 'Sending...' : countdown > 0 ? `Wait ${countdown}s` : 'Send OTP'}
+                {loading ? <Loader2 className="spin-icon" size={18} /> : <Check size={18} />}
+                {loading ? 'Sending OTP...' : 'Continue'}
               </button>
             </form>
           )}
@@ -248,7 +218,7 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <button type="submit" className="btn-login" disabled={loading || otp.length !== 6}>
-                <Check size={18} /> {loading ? 'Verifying...' : 'Verify OTP'}
+                {loading ? <Loader2 className="spin-icon" size={18} /> : <Check size={18} />} {loading ? 'Verifying...' : 'Verify OTP'}
               </button>
               <div style={{ marginTop: '15px', textAlign: 'center' }}>
                 <button type="button" onClick={handleRequestOTP} disabled={countdown > 0 || loading} style={{ background: 'none', border: 'none', color: countdown > 0 ? '#aaa' : '#007bff', cursor: countdown > 0 ? 'not-allowed' : 'pointer', fontSize: '14px' }}>

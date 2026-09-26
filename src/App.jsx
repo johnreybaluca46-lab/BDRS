@@ -126,7 +126,7 @@ function App() {
 
             {/* User Login - Blocked during maintenance */}
             <Route path="/user-login" element={<PublicRouteGuard><UserLogin /></PublicRouteGuard>} />
-            <Route path="/forgot-password" element={<PublicRouteGuard><ForgotPassword /></PublicRouteGuard>} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Admin Login - Protected during maintenance unless unlocked via 10 clicks on logo */}
           <Route path="/login" element={<AdminLoginRoute />} />

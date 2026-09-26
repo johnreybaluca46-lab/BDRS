@@ -536,6 +536,9 @@ export default function RegisterResidentForm() {
                                 <div className="form-group full-width">
                                     <label className="form-label">Email Address (Gmail) <span className="required-asterisk">*</span></label>
                                     <input type="email" name="emailAddress" value={formData.emailAddress} onChange={handleChange} className="form-input" placeholder="Enter your email address" required />
+                                    <div style={{ color: '#0284c7', fontSize: '0.85rem', marginTop: '6px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <Info size={14} /> Note: Must use an active Gmail account. If you forgot your password, your account will be recovered using your active Gmail.
+                                    </div>
                                 </div>
                                 <div className="form-group" style={{ position: 'relative' }}>
                                     <label className="form-label">Password <span className="required-asterisk">*</span></label>
@@ -545,6 +548,7 @@ export default function RegisterResidentForm() {
                                             type="button" 
                                             className="password-toggle"
                                             onClick={() => setShowPassword(!showPassword)}
+                                            style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex', padding: 0 }}
                                         >
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
@@ -579,6 +583,7 @@ export default function RegisterResidentForm() {
                                             type="button" 
                                             className="password-toggle"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex', padding: 0 }}
                                         >
                                             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>

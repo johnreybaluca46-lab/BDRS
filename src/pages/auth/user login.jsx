@@ -348,7 +348,7 @@ export default function UserLogin() {
               </div>
               <div style={{ textAlign: 'right', marginTop: '8px' }}>
                 <span 
-                  onClick={() => Swal.fire({ title: 'Under Maintenance', text: 'This feature is currently unavailable. We will fix this feature later.', icon: 'info' })} 
+                  onClick={() => navigate('/forgot-password')} 
                   style={{ color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' }}
                   onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
                   onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
