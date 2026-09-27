@@ -9,6 +9,7 @@ import Logo from '../../assets/logo/barangay buluan seal.png';
 import WindowImg from '../../assets/illustraion/window download.png';
 import AndroidImg from '../../assets/illustraion/android download.png';
 import ContactFooter from '../../components/ContactFooter';
+import InstallPWA from '../../components/InstallPWA';
 
 export default function DownloadPage() {
   useEffect(() => {
@@ -49,10 +50,7 @@ export default function DownloadPage() {
               <h2>BDRS for Windows</h2>
               <p>Install BDRS on your Windows PC and get quick access to barangay services, anytime.</p>
               
-              <button className="download-btn">
-                <Download size={20} />
-                Download .EXE
-              </button>
+              <InstallPWA platform="windows" buttonClassName="download-btn" />
               
               <div className="card-footer">
                 <div className="footer-item">
@@ -77,10 +75,7 @@ export default function DownloadPage() {
               <h2>BDRS for Android</h2>
               <p>Install BDRS on your Android phone and stay connected to barangay services.</p>
               
-              <button className="download-btn">
-                <Download size={20} />
-                Download .APK
-              </button>
+              <InstallPWA platform="android" buttonClassName="download-btn" />
               
               <div className="card-footer">
                 <div className="footer-item">
