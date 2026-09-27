@@ -18,8 +18,8 @@ function createWindow() {
   mainWindow.setMenuBarVisibility(false);
 
   if (isDev) {
-    // In dev mode, wait for Vite dev server (usually localhost:5173, but we use an env var if Vercel is at 3000)
-    const port = process.env.PORT || 3000;
+    // In dev mode, wait for Vite dev server (usually localhost:5173)
+    const port = process.env.PORT || 5173;
     mainWindow.loadURL(`http://localhost:${port}`);
     mainWindow.webContents.openDevTools();
   } else {
