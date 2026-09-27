@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db, auth } from '../database/firebase';
 import Swal from 'sweetalert2';
 
@@ -80,7 +80,7 @@ const getDeviceInfo = async () => {
 
 const isPublicIP = (ip) => {
   if (!ip || typeof ip !== 'string') return false;
-  
+
   // IPv4 Private Ranges
   // 10.0.0.0/8
   if (/^10\./.test(ip)) return false;
@@ -108,11 +108,11 @@ const getIpInfo = async () => {
   try {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 1500);
-    
+
     try {
       const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
       clearTimeout(id);
-      
+
       if (res.ok) {
         const data = await res.json();
         const ip = data.ip || 'Unknown';
@@ -120,8 +120,8 @@ const getIpInfo = async () => {
           return { ip: 'Unavailable', location: 'Unavailable', isp: 'Unavailable', locationType: 'Approximate (network-based)' };
         }
         const locationParts = [data.city, data.region, data.country_name].filter(Boolean);
-        return { 
-          ip: ip, 
+        return {
+          ip: ip,
           location: locationParts.length > 0 ? locationParts.join(', ') : 'Unknown',
           isp: data.org || 'Unknown',
           locationType: 'Approximate (network-based)'
@@ -130,16 +130,16 @@ const getIpInfo = async () => {
     } catch (err) {
       clearTimeout(id);
     }
-    
+
     // Fallback
     const fbController = new AbortController();
     const fbId = setTimeout(() => fbController.abort(), 1500);
     const fbRes = await fetch('https://api.ipify.org?format=json', { signal: fbController.signal });
     clearTimeout(fbId);
-    
+
     const fbData = await fbRes.json();
     return { ip: fbData.ip, location: 'Unknown', isp: 'Unknown', locationType: 'Approximate (network-based)' };
-    
+
   } catch (e) {
     return { ip: 'Unknown', location: 'Unknown', isp: 'Unknown', locationType: 'Approximate (network-based)' };
   }
@@ -155,7 +155,7 @@ export const getLocationWithConsent = async (isResident = false) => {
     // Some browsers (like older Safari) don't support navigator.permissions
     let isPrompt = true;
     let isDenied = false;
-    
+
     if (navigator.permissions) {
       try {
         const permission = await navigator.permissions.query({ name: 'geolocation' });
@@ -203,12 +203,12 @@ export const getLocationWithConsent = async (isResident = false) => {
           try {
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), 3000); // Increase timeout to 3s for reverse geocoding
-            
+
             let locationName = null;
 
             try {
               // Try Nominatim first
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, { 
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
                 signal: controller.signal,
                 headers: {
                   'Accept-Language': 'en-US,en;q=0.9'
@@ -241,10 +241,10 @@ export const getLocationWithConsent = async (isResident = false) => {
 
             clearTimeout(id);
             const ipInfo = await ipPromise; // Wait for IP info to finish
-            
+
             // If both geocoders failed, fallback to Lat/Lon display instead of IP
             if (!locationName) {
-               locationName = `GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)} (Address lookup failed)`;
+              locationName = `GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)} (Address lookup failed)`;
             }
 
             resolve({
@@ -281,7 +281,16 @@ export const getLocationWithConsent = async (isResident = false) => {
             resolve(null); // Explicit deny aborts login
           } else {
             // Timeout (3) or Position Unavailable (2)
-            // Do NOT silently abort! Fallback to IP location so login can proceed!
+            let errorReason = err.code === 2 ? 'POSITION_UNAVAILABLE (Your Windows/OS Location Services might be turned off)' : 
+                              err.code === 3 ? 'TIMEOUT (Your device took too long to get a GPS lock)' : `Error Code: ${err.code}`;
+            
+            await Swal.fire({
+              title: 'GPS Hardware Failed',
+              text: `Your browser failed to get a GPS signal: ${errorReason}. We will safely fall back to your IP address so you can still log in!`,
+              icon: 'info',
+              confirmButtonColor: '#3182ce'
+            });
+
             const ipInfo = await ipPromise;
             resolve({
               ...ipInfo,
@@ -292,7 +301,7 @@ export const getLocationWithConsent = async (isResident = false) => {
           }
         },
         // maximumAge: 60000 caches the location for 1 minute so subsequent logins are instant
-        { timeout: 10000, maximumAge: 60000 } 
+        { enableHighAccuracy: true, timeout: 3000, maximumAge: 60000 }
       );
     });
   } catch (e) {
@@ -355,14 +364,41 @@ export const logLoginEvent = async ({ event, result, details = '', email = '', r
     const user = auth.currentUser;
     const { browser, os, deviceType } = await getDeviceInfo();
     const locInfo = locationOverride || await getIpInfo();
-    const { ip, location, isp, locationType, lat, lon, gpsConsentGranted, gpsConsentTimestamp } = locInfo;
+    let { ip, location, isp, locationType, lat, lon, gpsConsentGranted, gpsConsentTimestamp } = locInfo;
     
-    const payload = sanitizePayload({ event, result, details, email, method }, ['event', 'result', 'details', 'email', 'method']);
+    const actualEmail = user ? user.email : (email || 'Unknown');
+
+    // If the device GPS hardware failed, fulfill the user's request to use their LAST KNOWN exact GPS location instead of the inaccurate ISP IP address!
+    if (locationType && locationType.includes('Approximate (GPS Failed') && actualEmail !== 'Unknown') {
+       try {
+         const lastLogQuery = query(
+           collection(db, 'login_logs'), 
+           where('actorEmail', '==', actualEmail), 
+           where('locationType', '==', 'Precise (GPS)'), 
+           orderBy('timestamp', 'desc'), 
+           limit(1)
+         );
+         const lastLogSnap = await getDocs(lastLogQuery);
+         if (!lastLogSnap.empty) {
+           const lastLog = lastLogSnap.docs[0].data();
+           if (lastLog.location && lastLog.lat && lastLog.lon) {
+             location = lastLog.location;
+             lat = lastLog.lat;
+             lon = lastLog.lon;
+             locationType = 'Precise (Cached from last known location)';
+           }
+         }
+       } catch (cachedErr) {
+         console.warn("Failed to retrieve cached location", cachedErr);
+       }
+    }
+
+    const payload = sanitizePayload({ event, result, details, email: actualEmail, method }, ['event', 'result', 'details', 'email', 'method']);
 
     const logData = {
       ...payload,
       actorId: user ? user.uid : 'unauthenticated',
-      actorEmail: user ? user.email : payload.email || 'Unknown',
+      actorEmail: actualEmail,
       actorRole: role ? role : (user ? (user.email === 'admin@bdrs.gov.ph' ? 'Admin' : 'Resident') : 'Unknown'),
       device: os,
       deviceType: deviceType,
