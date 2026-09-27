@@ -67,10 +67,28 @@ export default function InstallPWA({ platform, buttonClassName }) {
 
   // If not installable (e.g. prompt not available), fallback to an instruction or keep it active to try?
   // We'll keep the button visible but maybe it just alerts if they can't install yet
+  const handleFallbackInstall = () => {
+    let instruction = 'To install, use the "Add to Home Screen" or "Install App" option in your browser menu.';
+    
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    const isAndroid = /android/i.test(userAgent);
+    
+    if (isIOS) {
+      instruction = 'To install BDRS on iOS, tap the Share icon at the bottom of Safari, then select "Add to Home Screen".';
+    } else if (isAndroid) {
+      instruction = 'To install BDRS on Android, tap the menu (⋮) in Chrome and select "Install app" or "Add to Home screen".';
+    } else {
+      instruction = 'To install on PC, click the Install icon (⤓ or ⊕) inside the address bar of Chrome/Edge.';
+    }
+
+    alert(instruction);
+  };
+
   return (
     <button 
       className={buttonClassName} 
-      onClick={isInstallable ? handleInstallClick : () => alert('To install, use the "Add to Home Screen" or "Install App" option in your browser menu.')}
+      onClick={isInstallable ? handleInstallClick : handleFallbackInstall}
     >
       <Download size={20} />
       Install BDRS
