@@ -137,6 +137,7 @@ export default function Contact() {
   };
 
   useEffect(() => {
+    document.title = "BDRS | Contact";
     window.scrollTo(0, 0);
   }, []);
 

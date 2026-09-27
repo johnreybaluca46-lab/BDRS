@@ -13,6 +13,7 @@ import InstallPWA from '../../components/InstallPWA';
 
 export default function DownloadPage() {
   useEffect(() => {
+    document.title = "BDRS | Download";
     window.scrollTo(0, 0);
   }, []);
 
