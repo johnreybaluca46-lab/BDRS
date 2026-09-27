@@ -19,8 +19,7 @@ export default function DownloadPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="download-hero" style={{ backgroundImage: `url("${BannerImg}")` }}>
-        <div className="download-hero-overlay"></div>
+      <section className="download-hero">
         <div className="download-hero-content">
           <div className="download-hero-badge">BDRS Download</div>
           <h1>Download BDRS</h1>
@@ -30,8 +29,9 @@ export default function DownloadPage() {
             Latest version: 1.0.0
           </div>
         </div>
-        <div className="download-hero-image">
-          <img src={HallImg} alt="Barangay Hall" />
+        
+        <div className="download-hero-image-container">
+          <img src={BannerImg} alt="Barangay Hall" className="download-hero-banner" />
         </div>
       </section>
 

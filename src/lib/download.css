@@ -8,30 +8,22 @@
 
 .download-hero {
   position: relative;
-  background-size: cover;
-  background-position: center;
-  padding: 6rem 5% 4rem;
-  overflow: hidden;
+  background-color: #dcebff;
   display: flex;
-  align-items: center;
-  min-height: 400px;
-}
-
-.download-hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, rgba(240, 247, 255, 0.95) 0%, rgba(240, 247, 255, 0.8) 50%, rgba(240, 247, 255, 0.2) 100%);
-  z-index: 1;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 420px;
 }
 
 .download-hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 600px;
-  padding-right: 2rem;
+  flex: 1;
+  padding: 4rem 2rem 4rem 5rem;
+  z-index: 10;
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .download-hero-badge {
@@ -48,15 +40,15 @@
 .download-hero h1 {
   font-size: 3.5rem;
   font-weight: 800;
-  color: #1e3a8a;
+  color: #1a2b56;
   margin-bottom: 1rem;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .download-hero p {
-  font-size: 1.125rem;
-  color: #475569;
-  margin-bottom: 2rem;
+  font-size: 1.2rem;
+  color: #6a7491;
+  margin-bottom: 2.5rem;
   line-height: 1.6;
 }
 
@@ -72,19 +64,22 @@
   font-size: 0.875rem;
 }
 
-.download-hero-image {
-  position: absolute;
-  right: 5%;
-  bottom: 0;
-  z-index: 2;
-  width: 45%;
-  max-width: 550px;
+.download-hero-image-container {
+  flex: 1.2;
+  position: relative;
+  height: auto;
+  font-size: 0;
+  overflow: hidden;
 }
 
-.download-hero-image img {
+.download-hero-banner {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: right 15%;
   display: block;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 160px);
+  mask-image: linear-gradient(to right, transparent 0%, #000 160px);
 }
 
 .download-cards-section {
@@ -240,27 +235,30 @@
   background-color: #cbd5e1;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .download-hero {
     flex-direction: column;
-    text-align: center;
-    padding-top: 5rem;
   }
   
   .download-hero-content {
-    padding-right: 0;
-    margin-bottom: 2rem;
+    padding: 2.5rem 2rem 3rem;
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
   }
   
-  .download-hero-image {
-    position: relative;
-    width: 80%;
-    margin: 0 auto;
-    right: 0;
+  .download-hero-image-container {
+    min-height: 450px;
+    width: 100%;
+    flex-grow: 1;
+    display: block;
   }
   
-  .download-hero-overlay {
-    background: linear-gradient(180deg, rgba(240, 247, 255, 0.95) 0%, rgba(240, 247, 255, 0.8) 50%, rgba(240, 247, 255, 0.2) 100%);
+  .download-hero-banner {
+    object-position: center;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 120px);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 120px);
   }
 }
 
@@ -271,5 +269,13 @@
   
   .download-cards-container {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .download-hero-image-container {
+    height: 400px;
+    width: 100%;
+    flex: none;
   }
 }
