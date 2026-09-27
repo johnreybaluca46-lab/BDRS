@@ -44,6 +44,7 @@ export default function Home() {
       }
       
       if (keySequence === cheatCode) {
+        sessionStorage.setItem('loginUnlocked', 'true');
         navigate('/login');
       }
     };
