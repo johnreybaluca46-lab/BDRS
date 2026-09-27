@@ -19,7 +19,7 @@
       "output": "../BDRS-Build"
     },
     "win": {
-      "target": "nsis"
+      "target": "portable"
     }
   },
   "dependencies": {

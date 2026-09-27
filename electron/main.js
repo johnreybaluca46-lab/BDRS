@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -23,8 +23,8 @@ function createWindow() {
     mainWindow.loadURL(`http://localhost:${port}`);
     mainWindow.webContents.openDevTools();
   } else {
-    // In production, load the LIVE Vercel website so the desktop app auto-updates!
-    mainWindow.loadURL('https://bdrs-cmpy2aw6u-johnreybaluca46-6855.vercel.app');
+    // In production, load the local built files instead of the Vercel URL
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
 const Router = isNativeApp ? HashRouter : BrowserRouter;
@@ -87,12 +87,13 @@ const ResidentRouteGuard = () => {
 
 const PublicRouteGuard = ({ children }) => {
   const { isMaintenanceActive } = useMaintenance();
+  const location = useLocation();
   if (isMaintenanceActive) {
     return <Maintenance />;
   }
   
   // If native app and accessing public website pages, redirect to resident portal
-  const path = window.location.pathname;
+  const path = location.pathname;
   const publicPages = ['/', '/about', '/services', '/contact', '/download'];
   
   if (isNativeApp && publicPages.includes(path)) {
@@ -137,7 +138,7 @@ function App() {
             <Route path="/about" element={<PublicRouteGuard><About /></PublicRouteGuard>} />
             <Route path="/services" element={<PublicRouteGuard><Service /></PublicRouteGuard>} />
             <Route path="/contact" element={<PublicRouteGuard><Contact /></PublicRouteGuard>} />
-            <Route path="/download" element={<PublicRouteGuard><DownloadPage /></PublicRouteGuard>} />
+            <Route path="/download" element={<Maintenance />} />
 
             <Route path="/register" element={<PublicRouteGuard><RegisterResidentForm /></PublicRouteGuard>} />
             <Route path="/status" element={<PublicRouteGuard><RegistrationStatus /></PublicRouteGuard>} />
