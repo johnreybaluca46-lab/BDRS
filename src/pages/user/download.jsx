@@ -5,9 +5,10 @@ import '../../lib/download.css';
 
 // Import images
 import BannerImg from '../../assets/image/banner 2.png';
-import HallImg from '../../assets/icon/hall.png';
+import Logo from '../../assets/logo/barangay buluan seal.png';
 import WindowImg from '../../assets/illustraion/window download.png';
 import AndroidImg from '../../assets/illustraion/android download.png';
+import ContactFooter from '../../components/ContactFooter';
 
 export default function DownloadPage() {
   useEffect(() => {
@@ -98,11 +99,13 @@ export default function DownloadPage() {
         </div>
       </section>
 
-      {/* Simple Footer */}
-      <footer className="simple-footer">
-        <span>Barangay Buluan</span>
-        <div className="simple-footer-divider"></div>
-        <span>Modern Services for a Better Community</span>
+      <ContactFooter />
+      <footer className="footer">
+        <div className="footer-content">
+          <img src={Logo} alt="BDRS Icon" className="footer-icon" />
+          <span className="footer-logo">BDRS</span>
+          <span className="footer-text">&copy; 2026 All Rights Reserved.</span>
+        </div>
       </footer>
     </div>
   );
