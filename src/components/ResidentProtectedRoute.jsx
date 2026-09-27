@@ -1,66 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, updateDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../database/firebase';
-
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+import { useAuth } from '../context/AuthContext';
 
 const ResidentProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('isResident') === 'true' ? true : null;
-  });
+  const { userRole, loading, sessionExpired, logoutSession } = useAuth();
   const location = useLocation();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const residentDocRef = doc(db, 'residents', user.uid);
-          let docSnap = await getDoc(residentDocRef);
-          
-          if (!docSnap.exists() && user.email) {
-            const residentsRef = collection(db, 'residents');
-            let qEmail = query(residentsRef, where("emailAddress", "==", user.email));
-            let querySnapshot = await getDocs(qEmail);
-            if (querySnapshot.empty) {
-              qEmail = query(residentsRef, where("email", "==", user.email));
-              querySnapshot = await getDocs(qEmail);
-            }
-            if (!querySnapshot.empty) {
-              docSnap = querySnapshot.docs[0];
-            }
-          }
-
-          if (docSnap.exists() || (user.email && user.email.toLowerCase() !== 'barangaybuluan@gmail.com')) {
-            sessionStorage.setItem('isResident', 'true');
-            setIsAuthenticated(true);
-          } else {
-            sessionStorage.removeItem('isResident');
-            setIsAuthenticated(false);
-          }
-        } catch (error) {
-          console.error("Error checking resident profile", error);
-          if (user.email && user.email.toLowerCase() !== 'barangaybuluan@gmail.com') {
-            sessionStorage.setItem('isResident', 'true');
-            setIsAuthenticated(true);
-          } else {
-            sessionStorage.removeItem('isResident');
-            setIsAuthenticated(false);
-          }
-        }
-      } else {
-        sessionStorage.removeItem('isResident');
-        setIsAuthenticated(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Session expiration logic
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (loading || userRole !== 'resident') return;
 
     let timeoutInterval;
 
@@ -117,17 +67,12 @@ const ResidentProtectedRoute = ({ children }) => {
               console.error("Error updating inactive status", updateErr);
             }
           }
-
-          await signOut(auth);
-          sessionStorage.removeItem('isResident');
-          sessionStorage.setItem('sessionWasExpired', 'true');
-          setIsAuthenticated(false);
+          await logoutSession();
         } catch (error) {
           console.error("Logout error on session expiration", error);
         }
       } else {
-        // Heartbeat: If user was active recently, update last_seen in Firestore
-        // Throttle this to once a minute to prevent excessive writes
+        // Heartbeat
         if (currentTime - lastActivity < 65000 && currentTime - lastHeartbeatUpdate > 60000) {
           const user = auth.currentUser;
           if (user) {
@@ -154,7 +99,6 @@ const ResidentProtectedRoute = ({ children }) => {
     window.addEventListener('scroll', updateActivity, { passive: true });
     window.addEventListener('touchstart', updateActivity, { passive: true });
 
-    // Check every 5 seconds instead of 1 minute to support custom timeouts
     timeoutInterval = setInterval(checkInactivity, 5000);
 
     return () => {
@@ -165,28 +109,14 @@ const ResidentProtectedRoute = ({ children }) => {
       window.removeEventListener('touchstart', updateActivity);
       clearInterval(timeoutInterval);
     };
-  }, [isAuthenticated]);
+  }, [loading, userRole, logoutSession]);
 
-  if (isAuthenticated === null) {
+  if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
   }
 
-  if (!isAuthenticated) {
-    // Check if it was a session expiration
-    let isExpired = sessionStorage.getItem('sessionWasExpired') === 'true';
-    if (isExpired) {
-      sessionStorage.removeItem('sessionWasExpired');
-    } else {
-      const lastActivity = parseInt(localStorage.getItem('lastResidentActivity') || '0', 10);
-      const timeoutSetting = localStorage.getItem('adminSessionTimeout') || '1800';
-      let SESSION_TIMEOUT_MS_FROM_LOCAL = parseInt(timeoutSetting, 10) * 1000;
-      if (['15', '30', '60'].includes(timeoutSetting)) {
-        SESSION_TIMEOUT_MS_FROM_LOCAL *= 60;
-      }
-      isExpired = lastActivity > 0 && (Date.now() - lastActivity > SESSION_TIMEOUT_MS_FROM_LOCAL);
-    }
-
-    return <Navigate to="/user-login" state={{ from: location, sessionExpired: isExpired }} replace />;
+  if (userRole !== 'resident') {
+    return <Navigate to="/user-login" state={{ from: location, sessionExpired: sessionExpired }} replace />;
   }
 
   return children ? children : <Outlet />;

@@ -4,6 +4,7 @@ import { User, Lock, Unlock, EyeOff, Eye, Home, ShieldCheck } from 'lucide-react
 import { auth, db } from '../../database/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '../../context/AuthContext';
 import { logLoginEvent, getLocationWithConsent } from '../../utils/auditLogger';
 import { 
   showLoginFailedAlert, 
@@ -23,6 +24,7 @@ import LoginBg from '../../assets/image/login bg.png';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loginWithSession } = useAuth();
 
   useEffect(() => {
     document.title = "BDRS Administrator portal";
@@ -129,8 +131,10 @@ export default function Login() {
       }
 
       try {
-        await setPersistence(auth, browserSessionPersistence);
+        const { inMemoryPersistence } = await import('firebase/auth');
+        await setPersistence(auth, inMemoryPersistence);
         userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
+
       } catch (authErr) {
         console.log('Admin auth error:', authErr.code, authErr.message);
 
@@ -221,7 +225,18 @@ export default function Login() {
         await setDoc(adminLockoutRef, { failed_attempts: 0, locked_until: null }, { merge: true });
       } catch (err) {}
 
-      sessionStorage.setItem('isAdmin', 'true');
+      // Secure Session Cookie Login
+      try {
+        const idToken = await user.getIdToken();
+        await loginWithSession(idToken);
+      } catch (sessionErr) {
+        console.error('Session creation failed:', sessionErr);
+        await signOut(auth);
+        showLoginFailedAlert(sessionErr.message || 'Failed to create secure session.');
+        setLoading(false);
+        return;
+      }
+
       logLoginEvent({ event: 'Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Admin', method: 'Email/Password' }).catch(console.error);
       showLoginSuccessAlert();
       redirectUser(user.email);

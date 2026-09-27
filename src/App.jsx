@@ -43,15 +43,18 @@ import UserCompletedRequests from './pages/user/user register/completed_requests
 import UserRejectedRequests from './pages/user/user register/rejected_requests';
 
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import MaintenanceWarning from './maintenance/MaintenanceWarning';
 
 const AdminLoginRoute = () => {
   const { isMaintenanceActive } = useMaintenance();
+  const { userRole, loading } = useAuth();
 
   const isUnlocked = sessionStorage.getItem('loginUnlocked') === 'true';
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
-  if (isAdmin) {
+  if (loading) return null; // or a spinner
+
+  if (userRole === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
@@ -109,10 +112,11 @@ function App() {
   }, []);
 
   return (
-    <MaintenanceProvider>
-      <Router>
-        <MaintenanceWarning />
-        <ScrollToTop />
+    <AuthProvider>
+      <MaintenanceProvider>
+        <Router>
+          <MaintenanceWarning />
+          <ScrollToTop />
         <div className="app-container">
           <Routes>
             {/* Public User Routes - replaced by Maintenance when active */}
@@ -173,7 +177,8 @@ function App() {
         </Routes>
         </div>
       </Router>
-    </MaintenanceProvider>
+      </MaintenanceProvider>
+    </AuthProvider>
   );
 }
 

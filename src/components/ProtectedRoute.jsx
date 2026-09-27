@@ -1,58 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../database/firebase';
-
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../database/firebase';
+import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('isAdmin') === 'true' ? true : null;
-  });
+  const { userRole, loading, sessionExpired, logoutSession } = useAuth();
   const location = useLocation();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const docRef = doc(db, 'admin_profiles', user.uid);
-          let docSnap = await getDoc(docRef);
-
-          if (!docSnap.exists()) {
-            // Save to database automatically if not present
-            await setDoc(docRef, {
-              fullName: 'Barangay Administrator',
-              username: 'admin',
-              email: user.email,
-              role: 'System Administrator',
-              contactNumber: '09123456789',
-              dateJoined: new Date().toISOString().split('T')[0],
-              address: 'Barangay Hall, Buluan',
-              status: 'Active'
-            }, { merge: true });
-            docSnap = await getDoc(docRef);
-          }
-
-          sessionStorage.setItem('isAdmin', 'true');
-          setIsAuthenticated(true);
-        } catch (error) {
-          console.error("Error checking admin profile", error);
-          sessionStorage.removeItem('isAdmin');
-          setIsAuthenticated(false);
-        }
-      } else {
-        sessionStorage.removeItem('isAdmin');
-        setIsAuthenticated(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Session expiration logic
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (loading || userRole !== 'admin') return;
 
     let timeoutInterval;
 
@@ -96,12 +54,7 @@ const ProtectedRoute = ({ children }) => {
       if (currentTime - lastActivity > timeoutMs) {
         // Session expired
         try {
-          await signOut(auth);
-          sessionStorage.removeItem('isAdmin');
-          sessionStorage.setItem('sessionWasExpired', 'true');
-          setIsAuthenticated(false);
-          // Assuming the redirect state handling will take care of showing the alert
-          // which is handled in login.jsx on location.state.sessionExpired
+          await logoutSession();
         } catch (error) {
           console.error("Logout error on session expiration", error);
         }
@@ -118,7 +71,7 @@ const ProtectedRoute = ({ children }) => {
     window.addEventListener('scroll', updateActivity, { passive: true });
     window.addEventListener('touchstart', updateActivity, { passive: true });
 
-    // Check every 5 seconds instead of 1 minute to support custom timeouts like 15 seconds
+    // Check every 5 seconds
     timeoutInterval = setInterval(checkInactivity, 5000);
 
     return () => {
@@ -129,30 +82,14 @@ const ProtectedRoute = ({ children }) => {
       window.removeEventListener('touchstart', updateActivity);
       clearInterval(timeoutInterval);
     };
-  }, [isAuthenticated]);
+  }, [loading, userRole, logoutSession]);
 
-  if (isAuthenticated === null) {
-    // Return a loading spinner or null while checking auth state
+  if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
   }
 
-  if (!isAuthenticated) {
-    // Check if it was a session expiration
-    const timeoutSetting = localStorage.getItem('adminSessionTimeout') || '30';
-    const lastActivity = parseInt(localStorage.getItem('lastAdminActivity') || '0', 10);
-    let isExpired = sessionStorage.getItem('sessionWasExpired') === 'true';
-    if (isExpired) {
-      sessionStorage.removeItem('sessionWasExpired');
-    } else if (timeoutSetting !== 'disabled' && lastActivity > 0) {
-      let timeoutMs = parseInt(timeoutSetting, 10) * 1000;
-      if (['15', '30', '60'].includes(timeoutSetting)) {
-        timeoutMs *= 60;
-      }
-      isExpired = (Date.now() - lastActivity > timeoutMs);
-    }
-    
-    // Redirect to login, but save the location they were trying to go to
-    return <Navigate to="/login" state={{ from: location, sessionExpired: isExpired }} replace />;
+  if (userRole !== 'admin') {
+    return <Navigate to="/login" state={{ from: location, sessionExpired: sessionExpired }} replace />;
   }
 
   return children ? children : <Outlet />;

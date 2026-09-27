@@ -4,6 +4,7 @@ import { User, Lock, Unlock, EyeOff, Eye, Home, ShieldCheck } from 'lucide-react
 import { auth, db } from '../../database/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../context/AuthContext';
 import { 
   showLoginFailedAlert, 
   showLoginSuccessAlert, 
@@ -29,6 +30,7 @@ import Swal from 'sweetalert2';
 export default function UserLogin() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loginWithSession } = useAuth();
 
   useEffect(() => {
     document.title = "BDRS Resident Portal";
@@ -155,7 +157,8 @@ export default function UserLogin() {
         return;
       }
 
-      await setPersistence(auth, browserSessionPersistence);
+      const { inMemoryPersistence } = await import('firebase/auth');
+      await setPersistence(auth, inMemoryPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
 
@@ -209,7 +212,18 @@ export default function UserLogin() {
       // Firestore rules also use document-based validation (isApprovedResident).
       // We no longer need to enforce custom claims here.
 
-      sessionStorage.setItem('isResident', 'true');
+      // Secure Session Cookie Login
+      try {
+        const idToken = await user.getIdToken();
+        await loginWithSession(idToken);
+      } catch (sessionErr) {
+        console.error('Session creation failed:', sessionErr);
+        await signOut(auth);
+        showLoginFailedAlert(sessionErr.message || 'Failed to create secure session.');
+        setLoading(false);
+        return;
+      }
+
 
       // Update resident document with login status and reset lockouts
       try {
