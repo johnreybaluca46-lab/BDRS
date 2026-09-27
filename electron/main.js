@@ -24,7 +24,7 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // In production, load the LIVE Vercel website so the desktop app auto-updates!
-    mainWindow.loadURL('https://bdrs.vercel.app');
+    mainWindow.loadURL('https://bdrs-cmpy2aw6u-johnreybaluca46-6855.vercel.app');
   }
 }
 

@@ -12,6 +12,7 @@ import {
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import CalendarCard from '../../../components/CalendarCard';
 
 export default function UserDashboard() {
   const cachedStats = JSON.parse(sessionStorage.getItem('residentDashboardStats')) || null;
@@ -256,6 +257,9 @@ export default function UserDashboard() {
                   </div>
                 )}
               </div>
+            {/* Calendar */}
+            <div className="dashboard-panel">
+              <CalendarCard />
             </div>
           </div>
 
