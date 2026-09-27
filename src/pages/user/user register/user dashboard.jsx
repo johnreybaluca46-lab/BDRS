@@ -257,6 +257,8 @@ export default function UserDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+
             {/* Calendar */}
             <div className="dashboard-panel">
               <CalendarCard />
