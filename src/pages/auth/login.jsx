@@ -218,7 +218,7 @@ export default function Login() {
         return;
       }
 
-      logLoginEvent({ event: 'Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Admin', method: 'Email/Password' }).catch(console.error);
+      logLoginEvent({ event: 'Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Admin', method: 'Email/Password', locationOverride }).catch(console.error);
       showLoginSuccessAlert();
       redirectUser(user.email);
     } catch (err) {
