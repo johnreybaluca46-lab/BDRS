@@ -51,7 +51,13 @@ export default function DownloadPage() {
               <h2>BDRS for Windows</h2>
               <p>Install BDRS on your Windows PC and get quick access to barangay services, anytime.</p>
               
-              <InstallPWA platform="windows" buttonClassName="download-btn" />
+              <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                <a href="/downloads/BDRS-Setup.exe" className="download-btn" download style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Download size={20} />
+                  Download .EXE
+                </a>
+                <InstallPWA platform="windows" buttonClassName="download-btn" />
+              </div>
               
               <div className="card-footer">
                 <div className="footer-item">
@@ -76,7 +82,13 @@ export default function DownloadPage() {
               <h2>BDRS for Android</h2>
               <p>Install BDRS on your Android phone and stay connected to barangay services.</p>
               
-              <InstallPWA platform="android" buttonClassName="download-btn" />
+              <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                <a href="/downloads/BDRS-Android.apk" className="download-btn" download style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a2b56', color: 'white' }}>
+                  <Download size={20} />
+                  Download .APK
+                </a>
+                <InstallPWA platform="android" buttonClassName="download-btn" />
+              </div>
               
               <div className="card-footer">
                 <div className="footer-item">

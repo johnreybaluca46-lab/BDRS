@@ -1,12 +1,27 @@
 {
   "name": "bdrs",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "cross-env ELECTRON=true npm run build && electron-builder",
+    "capacitor:build": "cross-env CAPACITOR=true npm run build && npx cap sync android"
+  },
+  "build": {
+    "appId": "com.barangaybuluan.bdrs",
+    "productName": "BDRS",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/pwa-512x512.png"
+    }
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -24,6 +39,9 @@
     "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "@firebase/rules-unit-testing": "^5.0.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
