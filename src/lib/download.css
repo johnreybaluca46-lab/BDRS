@@ -1,9 +1,21 @@
+@keyframes slideToLeft {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
 .download-page {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #f8fafc;
+  animation: slideToLeft 0.3s ease-out;
 }
 
 .download-hero {
