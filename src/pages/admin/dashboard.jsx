@@ -40,6 +40,7 @@ import Logo from '../../assets/logo/barangay buluan seal.png';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useMaintenance } from '../../context/MaintenanceContext';
 import { AlertTriangle } from 'lucide-react';
+import CalendarCard from '../../components/CalendarCard';
 
 const recentRequests = [
   { id: 1, name: 'Juan Dela Cruz', type: 'Barangay Clearance', status: 'Pending' },
@@ -324,6 +325,11 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Calendar */}
+            <div className="dashboard-panel">
+              <CalendarCard />
             </div>
           </div>
 

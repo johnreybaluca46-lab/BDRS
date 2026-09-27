@@ -285,7 +285,7 @@
 /* Bottom Grid */
 .dashboard-bottom-grid {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: 3fr 2fr 1.5fr;
   gap: 20px;
   align-items: stretch;
 }
