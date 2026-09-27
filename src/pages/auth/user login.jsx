@@ -20,7 +20,7 @@ import {
   showAccountRejectedAlert
 } from '../../utils/sweetAlerts';
 import { logAdminActivity as logActivity } from '../../utils/activityLogger';
-import { logLoginEvent, getLocationWithConsent } from '../../utils/auditLogger';
+import { logLoginEvent, getOptionalLocation } from '../../utils/auditLogger';
 import { functions } from '../../database/firebase';
 import { httpsCallable } from 'firebase/functions';
 import '../../lib/login.css';
@@ -148,19 +148,10 @@ export default function UserLogin() {
       const { inMemoryPersistence } = await import('firebase/auth');
       await setPersistence(auth, inMemoryPersistence);
       
-      // Run GPS check and Firebase Auth in parallel to cut loading time in half
-      const [locResult, authResult] = await Promise.all([
-        getLocationWithConsent(),
-        signInWithEmailAndPassword(auth, email.trim(), password).catch(e => e)
-      ]);
+      // Authenticate first before asking for any optional location
+      const authResult = await signInWithEmailAndPassword(auth, email.trim(), password).catch(e => e);
 
-      locationOverride = locResult;
-
-      if (!locationOverride) {
-        if (!(authResult instanceof Error)) await signOut(auth);
-        setLoading(false);
-        return;
-      }
+      locationOverride = null;
 
       if (authResult instanceof Error) {
         throw authResult; // Throw to be caught by the main catch block below
@@ -182,7 +173,7 @@ export default function UserLogin() {
 
       if (!residentDocSnap.exists()) {
         logActivity('Failed Login Attempt', 'Account not found in resident records', 'failed_login', email.trim(), 'user').catch(console.error);
-        logLoginEvent({ event: 'Resident Login Blocked', result: 'failed', details: 'Authenticated but no resident profile found', email: user.email, actorId: user.uid, role: 'Resident', method: 'Email/Password' }).catch(console.error);
+        logLoginEvent({ event: 'Resident Login Blocked', result: 'failed', details: 'Authenticated but no resident profile found', email: user.email, actorId: user.uid, role: 'Resident', method: 'Email/Password', locationOverride }).catch(console.error);
         await signOut(auth);
         showLoginFailedAlert('Account not found in resident records. Please register as a resident first.');
         setLoading(false);
@@ -219,6 +210,9 @@ export default function UserLogin() {
       // Firestore rules also use document-based validation (isApprovedResident).
       // We no longer need to enforce custom claims here.
 
+      // Fetch optional location silently without blocking
+      locationOverride = await getOptionalLocation();
+
       // Secure Session Cookie Login
       try {
         const idToken = await user.getIdToken();
@@ -246,7 +240,7 @@ export default function UserLogin() {
       }
 
       logActivity('Logged in', 'Resident successfully authenticated', 'login', user.email, 'user').catch(console.error);
-      logLoginEvent({ event: 'Resident Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Resident', method: 'Email/Password' }).catch(console.error);
+      logLoginEvent({ event: 'Resident Login Successful', result: 'success', details: 'Successfully authenticated', email: user.email, role: 'Resident', method: 'Email/Password', locationOverride }).catch(console.error);
       
       localStorage.removeItem(`resident_lockout_${email.trim().toLowerCase()}`);
       setFailedAttempts(0);
@@ -259,7 +253,7 @@ export default function UserLogin() {
     } catch (err) {
       console.log('Login error code:', err.code);
 
-      logLoginEvent({ event: 'Resident Login Failed', result: 'failed', details: err.message || err.code, email: email.trim(), role: 'Resident', method: 'Email/Password' }).catch(console.error);
+      logLoginEvent({ event: 'Resident Login Failed', result: 'failed', details: err.message || err.code, email: email.trim(), role: 'Resident', method: 'Email/Password', locationOverride }).catch(console.error);
       
       if (err.code === 'auth/user-not-found') {
         showGmailDoesNotExistAlert();

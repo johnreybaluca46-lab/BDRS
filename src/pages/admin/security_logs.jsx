@@ -534,13 +534,24 @@ export default function SecurityLogs() {
               </td>
               <td>
                 <div className="table-user-details">
-                  <strong>{log.location || 'Unknown'}</strong>
-                  {log.lat && log.lon ? (
-                    <a href={`https://www.google.com/maps?q=${log.lat},${log.lon}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#2563eb', fontSize: '0.75rem', textDecoration: 'none', marginTop: '2px' }} title={`Lat: ${log.lat}, Lon: ${log.lon}`}>
-                      <MapPin size={12} /> View on Map (GPS)
-                    </a>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {log.locationType === 'Precise' ? (
+                      <span title="Precise GPS">📍</span>
+                    ) : log.locationType === 'Approximate (network-based)' ? (
+                      <span title="Approximate network location">🌐</span>
+                    ) : (
+                      <span title="Location unavailable">⚠</span>
+                    )}
+                    <strong>{log.location || 'Location unavailable'}</strong>
+                  </div>
+                  {log.locationType === 'Precise' ? (
+                    <span style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '2px', marginTop: '2px' }}>
+                      Precise GPS
+                    </span>
                   ) : (
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{log.isp || 'IP-based Location'}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '2px', marginTop: '2px' }}>
+                      {log.locationType === 'Approximate (network-based)' ? 'Approximate network location' : 'Location unavailable'}
+                    </span>
                   )}
                 </div>
               </td>
@@ -1079,12 +1090,30 @@ export default function SecurityLogs() {
                 <div className="detail-item">
                   <MapPin size={18} className="detail-icon blue" />
                   <div>
-                    <span className="detail-label">{selectedLog.locationType === 'Precise' ? 'Precise Location (GPS)' : 'Approximate Location'}</span>
+                    <span className="detail-label">Location Source</span>
+                    <strong className="detail-value font-normal text-sm">
+                      {selectedLog.locationType === 'Precise' ? 'Precise GPS' : 
+                       selectedLog.locationType === 'Approximate (network-based)' ? 'Approximate network location' : 'Location unavailable'}
+                    </strong>
+                    
+                    <span className="detail-label" style={{ marginTop: '8px' }}>Location</span>
                     <strong className="detail-value font-normal text-sm">{selectedLog.location || 'Unknown'}</strong>
+
                     {selectedLog.lat && selectedLog.lon && (
-                      <a href={`https://www.google.com/maps?q=${selectedLog.lat},${selectedLog.lon}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#2563eb', fontSize: '0.85rem', marginTop: '4px', textDecoration: 'none' }}>
-                        View exact location on Google Maps (Lat: {selectedLog.lat.toFixed(5)}, Lon: {selectedLog.lon.toFixed(5)})
-                      </a>
+                      <>
+                        <span className="detail-label" style={{ marginTop: '8px' }}>Latitude</span>
+                        <strong className="detail-value font-normal text-sm">{selectedLog.lat.toFixed(5)}</strong>
+                        
+                        <span className="detail-label" style={{ marginTop: '8px' }}>Longitude</span>
+                        <strong className="detail-value font-normal text-sm">{selectedLog.lon.toFixed(5)}</strong>
+                        
+                        <span className="detail-label" style={{ marginTop: '8px' }}>GPS Consent</span>
+                        <strong className="detail-value font-normal text-sm">{selectedLog.gpsConsentGranted ? 'Granted' : 'Unknown'}</strong>
+
+                        <a href={`https://www.google.com/maps?q=${selectedLog.lat},${selectedLog.lon}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: '#2563eb', fontSize: '0.85rem', marginTop: '8px', textDecoration: 'none' }}>
+                          View exact location on Google Maps
+                        </a>
+                      </>
                     )}
                   </div>
                 </div>

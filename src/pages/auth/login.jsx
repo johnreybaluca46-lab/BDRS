@@ -5,7 +5,7 @@ import { auth, db } from '../../database/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
-import { logLoginEvent, getLocationWithConsent } from '../../utils/auditLogger';
+import { logLoginEvent, getOptionalLocation } from '../../utils/auditLogger';
 import { 
   showLoginFailedAlert, 
   showLoginSuccessAlert, 
@@ -106,20 +106,10 @@ export default function Login() {
       const { inMemoryPersistence } = await import('firebase/auth');
       await setPersistence(auth, inMemoryPersistence);
       
-      // Run GPS check and Firebase Auth in parallel to cut loading time in half
-      const [locResult, authResult] = await Promise.all([
-        getLocationWithConsent(),
-        signInWithEmailAndPassword(auth, trimmedEmail, password).catch(e => e)
-      ]);
+      // Authenticate first before asking for any optional location
+      const authResult = await signInWithEmailAndPassword(auth, trimmedEmail, password).catch(e => e);
 
-      locationOverride = locResult;
-
-      if (!locationOverride) {
-        // If they denied GPS, but auth succeeded, roll it back
-        if (!(authResult instanceof Error)) await signOut(auth);
-        setLoading(false);
-        return;
-      }
+      locationOverride = null; // Will be fetched later if auth succeeds
 
       if (authResult instanceof Error) {
         const authErr = authResult;
@@ -212,6 +202,9 @@ export default function Login() {
       try {
         await setDoc(adminLockoutRef, { failed_attempts: 0, locked_until: null }, { merge: true });
       } catch (err) {}
+
+      // Fetch optional location silently without blocking
+      locationOverride = await getOptionalLocation();
 
       // Secure Session Cookie Login
       try {

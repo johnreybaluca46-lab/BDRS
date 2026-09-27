@@ -78,17 +78,12 @@ export function AuthProvider({ children }) {
         // Also track onAuthStateChanged as a backup (it updates on signInWithCustomToken)
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (isMounted) {
+                // Only update client state, do NOT automatically delete server cookie here 
+                // because this fires with null on initial page load due to inMemoryPersistence!
                 setCurrentUser(user);
-                // If user becomes null externally (e.g. forced signout), clear role
                 if (!user) {
                     setUserRole(null);
                     setUserData(null);
-                    // Also clear the server-side cookie just in case
-                    fetch(`${API_BASE_URL}/api/session-logout`, {
-                        method: 'POST',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                        credentials: 'include'
-                    }).catch(e => console.log('Auto-logout cookie sync:', e));
                 }
             }
         });
