@@ -28,6 +28,8 @@ import { useSettings } from '../../context/SettingsContext';
 export default function RegisterResidentForm() {
     const { settings } = useSettings();
     const navigate = useNavigate();
+    const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+    const cancelRoute = isNativeApp ? '/user-login' : '/';
     const [isLoading, setIsLoading] = useState(true);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [activeStep, setActiveStep] = useState(1);
@@ -713,7 +715,7 @@ export default function RegisterResidentForm() {
                             </div>
 
                             <div className="form-actions desktop-only-btn">
-                                <button type="button" className="btn-cancel" onClick={() => navigate('/')}>Cancel</button>
+                                <button type="button" className="btn-cancel" onClick={() => navigate(cancelRoute)}>Cancel</button>
                                 <button type="submit" className="btn-next" disabled={!isCertified} style={{ opacity: !isCertified ? 0.5 : 1, cursor: !isCertified ? 'not-allowed' : 'pointer' }}>
                                     <UserSquare2 size={18} /> Next: Review Registration &rarr;
                                 </button>
@@ -905,7 +907,7 @@ export default function RegisterResidentForm() {
                 <div className="form-actions mobile-only-btn" style={{marginTop: '0'}}>
                     {activeStep === 1 && (
                         <>
-                            <button type="button" className="btn-cancel" onClick={() => navigate('/')}>Cancel</button>
+                            <button type="button" className="btn-cancel" onClick={() => navigate(cancelRoute)}>Cancel</button>
                             <button type="submit" form="resident-register-form" className="btn-next" disabled={!isCertified || isTransitioning} style={{ opacity: (!isCertified || isTransitioning) ? 0.5 : 1, cursor: (!isCertified || isTransitioning) ? 'not-allowed' : 'pointer' }}>
                                 {isTransitioning ? 'Submitting...' : <><UserSquare2 size={18} /> Next: Review &rarr;</>}
                             </button>

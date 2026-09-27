@@ -38,6 +38,8 @@ export default function UserLogin() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+
+  const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -408,9 +410,11 @@ export default function UserLogin() {
               <span>or</span>
             </div>
 
-            <button type="button" className="btn-staff" onClick={() => navigate('/')}>
-              <Home size={18} /> Back to Home Page
-            </button>
+            {!isNativeApp && (
+              <button type="button" className="btn-staff" onClick={() => navigate('/')}>
+                <Home size={18} /> Back to Home Page
+              </button>
+            )}
           </form>
 
           <div className="login-footer">

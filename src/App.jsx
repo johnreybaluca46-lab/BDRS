@@ -1,4 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+const Router = isNativeApp ? HashRouter : BrowserRouter;
 import UserLogin from './pages/auth/user login';
 import ForgotPassword from './pages/auth/forgot password/create new password';
 import Home from './pages/user/home';
@@ -87,6 +90,15 @@ const PublicRouteGuard = ({ children }) => {
   if (isMaintenanceActive) {
     return <Maintenance />;
   }
+  
+  // If native app and accessing public website pages, redirect to resident portal
+  const path = window.location.pathname;
+  const publicPages = ['/', '/about', '/services', '/contact', '/download'];
+  
+  if (isNativeApp && publicPages.includes(path)) {
+    return <Navigate to="/user-login" replace />;
+  }
+
   return children;
 };
 
