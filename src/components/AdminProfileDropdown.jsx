@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logLoginEvent, getLocationWithConsent } from '../utils/auditLogger';
+import { logLoginEvent } from '../utils/auditLogger';
 import { User, Lock, LogOut, ChevronDown } from 'lucide-react';
 import { confirmLogoutAlert } from '../utils/sweetAlerts';
 import { signOut, onAuthStateChanged } from 'firebase/auth';

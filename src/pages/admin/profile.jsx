@@ -35,7 +35,7 @@ import {
 import { signOut, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateEmail } from 'firebase/auth';
 import { auth, db } from '../../database/firebase';
 import { doc, getDoc, setDoc, collection, query, where, orderBy, onSnapshot, limit, deleteDoc, getDocs } from 'firebase/firestore';
-import { logActivity, logLoginEvent, getLocationWithConsent } from '../../utils/auditLogger';
+import { logActivity, logLoginEvent, getOptionalLocation } from '../../utils/auditLogger';
 
 import '../../lib/admin-layout.css';
 import AdminHeaderRight from '../../components/AdminHeaderRight';
@@ -96,7 +96,7 @@ export default function AdminProfile() {
     confirmLogoutAlert(async () => {
       try {
         if (auth.currentUser?.email) {
-          const locationOverride = await getLocationWithConsent(true);
+          const locationOverride = await getOptionalLocation();
           await logLoginEvent({ event: 'Logout Successful', result: 'success', email: auth.currentUser.email, role: 'Admin', locationOverride });
         }
         await signOut(auth);

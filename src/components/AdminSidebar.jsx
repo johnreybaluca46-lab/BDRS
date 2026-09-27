@@ -4,7 +4,7 @@ import { confirmLogoutAlert } from '../utils/sweetAlerts';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../database/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { logLoginEvent, getLocationWithConsent } from '../utils/auditLogger';
+import { logLoginEvent } from '../utils/auditLogger';
 import { 
   LayoutDashboard, FileText, Users, UserPlus, BarChart2, 
   CheckCircle, UserCircle, LogOut, Settings, Trash2, Mail,
