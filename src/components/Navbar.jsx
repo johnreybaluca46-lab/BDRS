@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home as HomeIcon, Info, FileText, Phone, Menu, X, LogIn } from 'lucide-react';
+import { Home as HomeIcon, Info, FileText, Phone, Menu, X, LogIn, Download } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo/barangay buluan seal.png';
 import './Navbar.css';
@@ -70,6 +70,10 @@ export default function Navbar({ blockNavigation = false, onBlockedNavigation = 
           <Link to="/contact" className={`nav-link ${isActive('/contact')}`} onClick={(e) => handleLinkClick(e, '/contact')}>
             <Phone size={22} strokeWidth={2.5} />
             <span>Contact</span>
+          </Link>
+          <Link to="/download" className={`nav-link ${isActive('/download')}`} onClick={(e) => handleLinkClick(e, '/download')}>
+            <Download size={22} strokeWidth={2.5} />
+            <span>Download</span>
           </Link>
           <Link to="/user-login" className={`nav-link ${isActive('/user-login')}`} onClick={(e) => handleLinkClick(e, '/user-login')}>
             <LogIn size={22} strokeWidth={2.5} />

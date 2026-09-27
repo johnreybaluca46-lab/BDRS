@@ -11,6 +11,7 @@ import CertificateOfIndigencyForm from './pages/user/certificateofindigencyform'
 import BusinessClearanceForm from './pages/user/businessclearanceform';
 import RegisterResidentForm from './pages/user/registerresidentform';
 import RegistrationStatus from './pages/user/RegistrationStatus';
+import DownloadPage from './pages/user/download';
 import ScrollToTop from './components/ScrollToTop';
 import Login from './pages/auth/login';
 import Dashboard from './pages/admin/dashboard';
@@ -124,6 +125,7 @@ function App() {
             <Route path="/about" element={<PublicRouteGuard><About /></PublicRouteGuard>} />
             <Route path="/services" element={<PublicRouteGuard><Service /></PublicRouteGuard>} />
             <Route path="/contact" element={<PublicRouteGuard><Contact /></PublicRouteGuard>} />
+            <Route path="/download" element={<PublicRouteGuard><DownloadPage /></PublicRouteGuard>} />
 
             <Route path="/register" element={<PublicRouteGuard><RegisterResidentForm /></PublicRouteGuard>} />
             <Route path="/status" element={<PublicRouteGuard><RegistrationStatus /></PublicRouteGuard>} />
