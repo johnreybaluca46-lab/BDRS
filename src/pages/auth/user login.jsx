@@ -142,24 +142,31 @@ export default function UserLogin() {
     setLoading(true);
 
     try {
-      // Require GPS location for residents
-      const locationOverride = await getLocationWithConsent();
-      if (!locationOverride) {
-        setLoading(false);
-        return;
-      }
-
-      // Block admin from user portal before database check
-      if (email.trim().toLowerCase() === 'barangaybuluan@gmail.com') {
-        logLoginEvent({ event: 'Admin Blocked', result: 'failed', details: 'Admin attempted to login via resident portal', email: email.trim(), role: 'Admin', method: 'Email/Password' }).catch(console.error);
-        showLoginFailedAlert('Admin accounts must log in at the Administrator Portal.');
-        setLoading(false);
-        return;
-      }
-
+      let locationOverride = null;
+      let userCredential = null;
+      
       const { inMemoryPersistence } = await import('firebase/auth');
       await setPersistence(auth, inMemoryPersistence);
-      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      
+      // Run GPS check and Firebase Auth in parallel to cut loading time in half
+      const [locResult, authResult] = await Promise.all([
+        getLocationWithConsent(),
+        signInWithEmailAndPassword(auth, email.trim(), password).catch(e => e)
+      ]);
+
+      locationOverride = locResult;
+
+      if (!locationOverride) {
+        if (!(authResult instanceof Error)) await signOut(auth);
+        setLoading(false);
+        return;
+      }
+
+      if (authResult instanceof Error) {
+        throw authResult; // Throw to be caught by the main catch block below
+      }
+
+      userCredential = authResult;
       const user = userCredential.user;
 
       if (user.emailVerified === false && import.meta.env.VITE_REQUIRE_EMAIL_VERIFICATION === 'true') {

@@ -146,14 +146,37 @@ const getIpInfo = async () => {
 };
 
 export const getLocationWithConsent = async (isResident = false) => {
-  if (!navigator.geolocation || !navigator.permissions) {
-    return null;
+  if (!navigator.geolocation) {
+    // If geolocation is entirely unsupported, fallback to IP immediately
+    return await getIpInfo();
   }
 
   try {
-    const permission = await navigator.permissions.query({ name: 'geolocation' });
+    // Some browsers (like older Safari) don't support navigator.permissions
+    let isPrompt = true;
+    let isDenied = false;
+    
+    if (navigator.permissions) {
+      try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        isPrompt = permission.state === 'prompt';
+        isDenied = permission.state === 'denied';
+      } catch (e) {
+        console.warn("Permissions API not fully supported, ignoring state check.");
+      }
+    }
 
-    if (permission.state === 'prompt') {
+    if (isDenied) {
+      await Swal.fire({
+        title: 'Location Access Blocked',
+        text: 'Location permission is required to log in. Please click the lock icon in your URL bar, allow location access, and try again.',
+        icon: 'warning',
+        confirmButtonColor: '#3182ce'
+      });
+      return null; // Denied means we must abort as per requirements
+    }
+
+    if (isPrompt) {
       const result = await Swal.fire({
         title: 'Location Required',
         text: 'We use your location to help you verify your own login activity and spot suspicious access. Your exact location is only visible to you.',
@@ -165,57 +188,81 @@ export const getLocationWithConsent = async (isResident = false) => {
         cancelButtonColor: '#718096'
       });
       if (!result.isConfirmed) {
-        return null;
+        return null; // User cancelled prompt
       }
     }
 
-    if (permission.state === 'denied') {
-      await Swal.fire({
-        title: 'Location Access Blocked',
-        text: 'Location permission is required to log in. Please unblock location access in your browser settings and try again.',
-        icon: 'warning',
-        confirmButtonColor: '#3182ce'
-      });
-      return null;
-    }
-
     return await new Promise((resolve) => {
+      // Start IP fetch immediately in parallel to save time
+      const ipPromise = getIpInfo();
+
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
           try {
             const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 1500);
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, { signal: controller.signal });
-            clearTimeout(id);
+            const id = setTimeout(() => controller.abort(), 3000); // Increase timeout to 3s for reverse geocoding
             
-            let locationParts = [];
-            if (res.ok) {
-              const data = await res.json();
-              const address = data.address || {};
-              const localArea = address.village || address.suburb || address.barangay || address.neighbourhood;
-              const cityOrTown = address.city || address.town || address.municipality;
-              const regionOrProvince = address.state || address.province || address.region;
-              const parts = [localArea, cityOrTown, regionOrProvince, address.country].filter(Boolean);
-              locationParts = [...new Set(parts)];
+            let locationName = null;
+
+            try {
+              // Try Nominatim first
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, { 
+                signal: controller.signal,
+                headers: {
+                  'Accept-Language': 'en-US,en;q=0.9'
+                }
+              });
+              if (res.ok) {
+                const data = await res.json();
+                const address = data.address || {};
+                const parts = [
+                  address.village || address.suburb || address.barangay || address.neighbourhood,
+                  address.city || address.town || address.municipality,
+                  address.state || address.province || address.region,
+                  address.country
+                ].filter(Boolean);
+                if (parts.length > 0) locationName = [...new Set(parts)].join(', ');
+              }
+            } catch (e) {
+              console.warn('Nominatim failed, trying fallback');
             }
-            const ipInfo = await getIpInfo();
+
+            if (!locationName) {
+              // Fallback to BigDataCloud
+              const fbRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`, { signal: controller.signal });
+              if (fbRes.ok) {
+                const data = await fbRes.json();
+                const parts = [data.locality, data.city, data.principalSubdivision, data.countryName].filter(Boolean);
+                if (parts.length > 0) locationName = [...new Set(parts)].join(', ');
+              }
+            }
+
+            clearTimeout(id);
+            const ipInfo = await ipPromise; // Wait for IP info to finish
+            
+            // If both geocoders failed, fallback to Lat/Lon display instead of IP
+            if (!locationName) {
+               locationName = `GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)} (Address lookup failed)`;
+            }
+
             resolve({
               ip: ipInfo.ip,
-              location: locationParts.length > 0 ? locationParts.join(', ') : (ipInfo.location || 'Unknown'),
+              location: locationName,
               isp: ipInfo.isp,
-              locationType: 'Precise',
+              locationType: 'Precise (GPS)',
               lat,
               lon,
               gpsConsentGranted: true,
               gpsConsentTimestamp: Date.now()
             });
           } catch (e) {
-            const ipInfo = await getIpInfo();
+            const ipInfo = await ipPromise;
             resolve({
               ...ipInfo,
-              locationType: 'Precise',
+              location: `GPS: ${lat.toFixed(4)}, ${lon.toFixed(4)}`, // Show coordinates if API crashes
+              locationType: 'Precise (GPS)',
               lat,
               lon,
               gpsConsentGranted: true,
@@ -231,15 +278,27 @@ export const getLocationWithConsent = async (isResident = false) => {
               icon: 'warning',
               confirmButtonColor: '#3182ce'
             });
+            resolve(null); // Explicit deny aborts login
+          } else {
+            // Timeout (3) or Position Unavailable (2)
+            // Do NOT silently abort! Fallback to IP location so login can proceed!
+            const ipInfo = await ipPromise;
+            resolve({
+              ...ipInfo,
+              locationType: 'Approximate (GPS Failed/Timeout)',
+              gpsConsentGranted: true,
+              gpsConsentTimestamp: Date.now()
+            });
           }
-          resolve(null);
         },
-        { timeout: 3000, maximumAge: 0 }
+        // maximumAge: 60000 caches the location for 1 minute so subsequent logins are instant
+        { timeout: 10000, maximumAge: 60000 } 
       );
     });
   } catch (e) {
     console.error("Error obtaining location with consent:", e);
-    return null;
+    // Ultimate fallback if something completely crashes
+    return await getIpInfo();
   }
 };
 

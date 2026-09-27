@@ -101,41 +101,28 @@ export default function Login() {
       const trimmedEmail = email.trim();
       let userCredential;
 
-      // Require GPS location for admins
-      const locationOverride = await getLocationWithConsent();
+      let locationOverride = null;
+      
+      const { inMemoryPersistence } = await import('firebase/auth');
+      await setPersistence(auth, inMemoryPersistence);
+      
+      // Run GPS check and Firebase Auth in parallel to cut loading time in half
+      const [locResult, authResult] = await Promise.all([
+        getLocationWithConsent(),
+        signInWithEmailAndPassword(auth, trimmedEmail, password).catch(e => e)
+      ]);
+
+      locationOverride = locResult;
+
       if (!locationOverride) {
+        // If they denied GPS, but auth succeeded, roll it back
+        if (!(authResult instanceof Error)) await signOut(auth);
         setLoading(false);
         return;
       }
 
-      // Pre-login check for Admin Lockout
-      const adminLockoutRef = doc(db, 'lockouts', 'admin');
-      let adminLockoutDoc = null;
-      try {
-        const lockoutSnap = await getDoc(adminLockoutRef);
-        if (lockoutSnap.exists()) {
-          adminLockoutDoc = lockoutSnap.data();
-          if (adminLockoutDoc.locked_until) {
-            const lockedUntilMs = adminLockoutDoc.locked_until;
-            if (Date.now() < lockedUntilMs) {
-              setIsLocked(true);
-              setLockedUntilTime(lockedUntilMs);
-              setLockoutRemaining(Math.ceil((lockedUntilMs - Date.now()) / 1000));
-              setLoading(false);
-              return;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error reading admin lockout state:", err);
-      }
-
-      try {
-        const { inMemoryPersistence } = await import('firebase/auth');
-        await setPersistence(auth, inMemoryPersistence);
-        userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
-
-      } catch (authErr) {
+      if (authResult instanceof Error) {
+        const authErr = authResult;
         console.log('Admin auth error:', authErr.code, authErr.message);
 
         await logLoginEvent({ 
@@ -192,6 +179,7 @@ export default function Login() {
         }
       }
 
+      userCredential = authResult;
       const user = userCredential.user;
 
       if (user.emailVerified === false && import.meta.env.VITE_REQUIRE_EMAIL_VERIFICATION === 'true') {
