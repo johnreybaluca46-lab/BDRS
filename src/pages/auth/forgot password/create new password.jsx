@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, ArrowLeft, Send, Check, ShieldCheck, Lock, Eye, EyeOff, Phone, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { db } from '../../../database/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import '../../../lib/login.css';
 import LoginBg from '../../../assets/image/login bg.png';
 
@@ -77,10 +79,30 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
+      // Check if email exists in Firestore (Residents or Admin)
+      const emailToCheck = email.trim();
+      const residentsRef = collection(db, "residents");
+      const qRes = query(residentsRef, where("emailAddress", "==", emailToCheck));
+      const resSnapshot = await getDocs(qRes);
+
+      let emailExists = !resSnapshot.empty;
+
+      if (!emailExists) {
+        const adminsRef = collection(db, "admin_profiles");
+        const qAdmin = query(adminsRef, where("email", "==", emailToCheck));
+        const adminSnapshot = await getDocs(qAdmin);
+        emailExists = !adminSnapshot.empty;
+      }
+
+      if (!emailExists) {
+        setLoading(false);
+        return Swal.fire({ title: 'Email Not Found', text: 'This gmail does not exist in our records.', icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() })
+        body: JSON.stringify({ email: emailToCheck })
       });
       const data = await res.json();
       

@@ -139,9 +139,14 @@ export default function UserLogin() {
 
     setLoading(true);
 
-    setLoading(true);
-
     try {
+      // Require GPS location for residents
+      const locationOverride = await getLocationWithConsent();
+      if (!locationOverride) {
+        setLoading(false);
+        return;
+      }
+
       // Block admin from user portal before database check
       if (email.trim().toLowerCase() === 'barangaybuluan@gmail.com') {
         logLoginEvent({ event: 'Admin Blocked', result: 'failed', details: 'Admin attempted to login via resident portal', email: email.trim(), role: 'Admin', method: 'Email/Password' }).catch(console.error);

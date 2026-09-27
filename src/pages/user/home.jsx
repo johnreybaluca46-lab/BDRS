@@ -29,6 +29,29 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    let keySequence = '';
+    const cheatCode = 'administrator';
+
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
+      keySequence += e.key.toLowerCase();
+      if (keySequence.length > cheatCode.length) {
+        keySequence = keySequence.slice(-cheatCode.length);
+      }
+      
+      if (keySequence === cheatCode) {
+        navigate('/login');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
   const handleRequestClick = (e, path) => {
     e.preventDefault();
     Swal.fire({

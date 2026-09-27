@@ -99,6 +99,13 @@ export default function Login() {
       const trimmedEmail = email.trim();
       let userCredential;
 
+      // Require GPS location for admins
+      const locationOverride = await getLocationWithConsent();
+      if (!locationOverride) {
+        setLoading(false);
+        return;
+      }
+
       // Pre-login check for Admin Lockout
       const adminLockoutRef = doc(db, 'lockouts', 'admin');
       let adminLockoutDoc = null;

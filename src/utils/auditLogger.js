@@ -146,7 +146,7 @@ const getIpInfo = async () => {
 };
 
 export const getLocationWithConsent = async (isResident = false) => {
-  if (!isResident || !navigator.geolocation || !navigator.permissions) {
+  if (!navigator.geolocation || !navigator.permissions) {
     return null;
   }
 

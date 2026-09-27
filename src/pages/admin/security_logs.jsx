@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SkeletonTable from '../../components/SkeletonTable';
 import Swal from 'sweetalert2';
 import { collection, query, orderBy, onSnapshot, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../database/firebase';
-import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateEmail } from 'firebase/auth';
-import { Shield, Search, RefreshCw, AlertTriangle, Database, Settings, ShieldCheck, User, Activity, LogIn, Lock, FileText, Calendar, ChevronLeft, ChevronRight, CheckCircle, Trash2, Edit, Globe, Monitor, MapPin, Info, X, Eye } from 'lucide-react';
+import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateEmail, signOut } from 'firebase/auth';
+import { Shield, Search, RefreshCw, AlertTriangle, Database, Settings, ShieldCheck, User, Activity, LogIn, Lock, FileText, Calendar, ChevronLeft, ChevronRight, CheckCircle, Trash2, Edit, Globe, Monitor, MapPin, Info, X, Eye, EyeOff } from 'lucide-react';
 import '../../lib/security_logs.css';
 import '../../lib/admin-layout.css';
 import AdminSidebar from '../../components/AdminSidebar';
 import AdminHeaderRight from '../../components/AdminHeaderRight';
 
 export default function SecurityLogs() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('activity');
   
   const [isCustomTimeout, setIsCustomTimeout] = useState(false);
@@ -40,6 +42,11 @@ export default function SecurityLogs() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [accountEmail, setAccountEmail] = useState('');
+
+  const [showEmailCurrentPassword, setShowEmailCurrentPassword] = useState(false);
+  const [showPassCurrentPassword, setShowPassCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     document.title = "Security & Audit Logs | BDRS";
@@ -657,7 +664,18 @@ export default function SecurityLogs() {
 
       await updatePassword(currentUser, newPassword);
 
-      Swal.fire('Success', 'Password updated successfully.', 'success');
+      Swal.fire({
+        title: 'Success',
+        text: 'Password updated successfully. You will now be logged out.',
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false
+      }).then(async () => {
+        await signOut(auth);
+        sessionStorage.clear();
+        navigate('/login', { replace: true, state: { loggedOut: true } });
+      });
+
       setPassCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -697,13 +715,22 @@ export default function SecurityLogs() {
 
           <div className="form-group" style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Current Password (Required)</label>
-            <input 
-              type="password" 
-              value={emailCurrentPassword} 
-              onChange={(e) => setEmailCurrentPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={showEmailCurrentPassword ? "text" : "password"} 
+                value={emailCurrentPassword} 
+                onChange={(e) => setEmailCurrentPassword(e.target.value)}
+                required
+                className="password-toggle-input"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowEmailCurrentPassword(!showEmailCurrentPassword)}
+                className="password-toggle-btn"
+              >
+                {showEmailCurrentPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </button>
+            </div>
           </div>
           
           <button 
@@ -722,24 +749,42 @@ export default function SecurityLogs() {
           
           <div className="form-group" style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>New Password</label>
-            <input 
-              type="password" 
-              value={newPassword} 
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={showNewPassword ? "text" : "password"} 
+                value={newPassword} 
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                className="password-toggle-input"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="password-toggle-btn"
+              >
+                {showNewPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </button>
+            </div>
           </div>
 
           <div className="form-group" style={{ marginBottom: '5px' }}>
             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Confirm New Password</label>
-            <input 
-              type="password" 
-              value={confirmPassword} 
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={showConfirmPassword ? "text" : "password"} 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="password-toggle-input"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="password-toggle-btn"
+              >
+                {showConfirmPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </button>
+            </div>
           </div>
           <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '20px' }}>
             Note: You will be logged out of other devices after changing your password.
@@ -747,13 +792,22 @@ export default function SecurityLogs() {
 
           <div className="form-group" style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem', color: '#334155' }}>Current Password (Required)</label>
-            <input 
-              type="password" 
-              value={passCurrentPassword} 
-              onChange={(e) => setPassCurrentPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                type={showPassCurrentPassword ? "text" : "password"} 
+                value={passCurrentPassword} 
+                onChange={(e) => setPassCurrentPassword(e.target.value)}
+                required
+                className="password-toggle-input"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassCurrentPassword(!showPassCurrentPassword)}
+                className="password-toggle-btn"
+              >
+                {showPassCurrentPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </button>
+            </div>
           </div>
           
           <button 
