@@ -51,7 +51,7 @@ export default function DownloadPage() {
               <p>Install BDRS on your Windows PC and get quick access to barangay services, anytime.</p>
               
               <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-                <a href="https://drive.google.com/file/d/1OjBYuFW6DIZiMahUYCLSdpmxoe8uRPvW/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="download-btn" style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <a href="https://drive.google.com/file/d/1w5ngo8zjuWVvNaIIxBAH7AmhoTPSIGH7/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="download-btn" style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <Download size={20} />
                   Download .EXE
                 </a>

@@ -23,8 +23,8 @@ function createWindow() {
     mainWindow.loadURL(`http://localhost:${port}`);
     mainWindow.webContents.openDevTools();
   } else {
-    // In production, load the built React app from dist
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    // In production, load the LIVE Vercel website so the desktop app auto-updates!
+    mainWindow.loadURL('https://bdrs.vercel.app');
   }
 }
 
