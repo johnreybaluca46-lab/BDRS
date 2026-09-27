@@ -9,7 +9,6 @@ import Logo from '../../assets/logo/barangay buluan seal.png';
 import WindowImg from '../../assets/illustraion/window download.png';
 import AndroidImg from '../../assets/illustraion/android download.png';
 import ContactFooter from '../../components/ContactFooter';
-import InstallPWA from '../../components/InstallPWA';
 
 export default function DownloadPage() {
   useEffect(() => {
@@ -56,7 +55,6 @@ export default function DownloadPage() {
                   <Download size={20} />
                   Download .EXE
                 </a>
-                <InstallPWA platform="windows" buttonClassName="download-btn" />
               </div>
               
               <div className="card-footer">
@@ -83,11 +81,10 @@ export default function DownloadPage() {
               <p>Install BDRS on your Android phone and stay connected to barangay services.</p>
               
               <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-                <a href="/downloads/BDRS-Android.apk" className="download-btn" download style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a2b56', color: 'white' }}>
+                <a href="/downloads/BDRS-Android.apk" className="download-btn" download style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white', borderColor: '#10b981' }}>
                   <Download size={20} />
                   Download .APK
                 </a>
-                <InstallPWA platform="android" buttonClassName="download-btn" />
               </div>
               
               <div className="card-footer">
