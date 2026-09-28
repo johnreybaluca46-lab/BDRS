@@ -48,9 +48,9 @@ function createWindow() {
   });
 
   // Always open devtools in production for debugging the blank screen
-  if (!isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // if (!isDev) {
+  //   mainWindow.webContents.openDevTools();
+  // }
 
   // --- AUTO UPDATER IPC EVENTS ---
   ipcMain.on('check-for-updates', () => {

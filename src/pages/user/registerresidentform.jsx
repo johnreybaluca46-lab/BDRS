@@ -834,11 +834,13 @@ export default function RegisterResidentForm() {
                                     <span>Your account is pending admin approval. Please DO NOT attempt to sign in until your status is approved.</span>
                                 </div>
 
-                                {!isNativeApp && (
-                                    <div className="res-success-actions">
+                                <div className="res-success-actions">
+                                    {isNativeApp ? (
+                                        <button className="btn-outline" onClick={() => navigate('/user-login')}><ArrowLeft size={18} /> Back to Portal</button>
+                                    ) : (
                                         <button className="btn-outline" onClick={() => handleBackToHome('/')}><Home size={18} /> Back to Home</button>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
