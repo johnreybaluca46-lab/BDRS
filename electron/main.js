@@ -12,10 +12,11 @@ function createWindow() {
     width: 1280,
     height: 800,
     title: "Barangay Document Request System",
-    icon: path.join(__dirname, '../public/pwa-512x512.png'),
+    icon: path.join(__dirname, '../src/assets/app icon/Barangay Buluan BDRS.png'),
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: false
     },
   });
 
