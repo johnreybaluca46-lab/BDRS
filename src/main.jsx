@@ -5,9 +5,15 @@ import App from './App.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
 import { registerSW } from 'virtual:pwa-register'
 
-registerSW({
-  immediate: true,
-})
+try {
+  if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+    registerSW({
+      immediate: true,
+    })
+  }
+} catch (e) {
+  console.error('Service Worker registration skipped:', e)
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

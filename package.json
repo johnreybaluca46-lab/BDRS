@@ -24,13 +24,29 @@
       "package.json",
       "!node_modules"
     ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "johnreybaluca46-lab",
+        "repo": "BDRS"
+      }
+    ],
     "win": {
-      "target": "portable"
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BDRS",
+      "artifactName": "BDRS-Setup-${version}.${ext}"
     }
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "cookie": "^2.0.1",
+    "electron-updater": "^6.8.9",
     "firebase": "^12.17.1",
     "firebase-admin": "^11.11.1",
     "html2pdf.js": "^0.14.0",

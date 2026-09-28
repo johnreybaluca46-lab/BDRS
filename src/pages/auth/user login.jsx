@@ -406,14 +406,15 @@ export default function UserLogin() {
               </span>
             </div>
 
-            <div className="divider">
-              <span>or</span>
-            </div>
-
             {!isNativeApp && (
-              <button type="button" className="btn-staff" onClick={() => navigate('/')}>
-                <Home size={18} /> Back to Home Page
-              </button>
+              <>
+                <div className="divider">
+                  <span>or</span>
+                </div>
+                <button type="button" className="btn-staff" onClick={() => navigate('/')}>
+                  <Home size={18} /> Back to Home Page
+                </button>
+              </>
             )}
           </form>
 

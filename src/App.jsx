@@ -45,6 +45,8 @@ import UserApprovedRequests from './pages/user/user register/approved_requests';
 import UserPaymentProcessingRequests from './pages/user/user register/payment_processing_requests';
 import UserCompletedRequests from './pages/user/user register/completed_requests';
 import UserRejectedRequests from './pages/user/user register/rejected_requests';
+import SplashScreen from './pages/user/splashscreen/splashscreen';
+import AutoUpdater from './components/AutoUpdater';
 
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -88,7 +90,9 @@ const ResidentRouteGuard = () => {
 const PublicRouteGuard = ({ children }) => {
   const { isMaintenanceActive } = useMaintenance();
   const location = useLocation();
-  if (isMaintenanceActive) {
+  
+  // Allow access to the download page even during maintenance
+  if (isMaintenanceActive && location.pathname !== '/download') {
     return <Maintenance />;
   }
   
@@ -97,7 +101,7 @@ const PublicRouteGuard = ({ children }) => {
   const publicPages = ['/', '/about', '/services', '/contact', '/download'];
   
   if (isNativeApp && publicPages.includes(path)) {
-    return <Navigate to="/user-login" replace />;
+    return <Navigate to="/splashscreen" replace />;
   }
 
   return children;
@@ -150,6 +154,7 @@ function App() {
     <AuthProvider>
       <MaintenanceProvider>
         <Router>
+          <AutoUpdater />
           <MaintenanceWarning />
           <ScrollToTop />
         <div className="app-container">
@@ -159,12 +164,13 @@ function App() {
             <Route path="/about" element={<PublicRouteGuard><About /></PublicRouteGuard>} />
             <Route path="/services" element={<PublicRouteGuard><Service /></PublicRouteGuard>} />
             <Route path="/contact" element={<PublicRouteGuard><Contact /></PublicRouteGuard>} />
-            <Route path="/download" element={<Maintenance />} />
+            <Route path="/download" element={<PublicRouteGuard><DownloadPage /></PublicRouteGuard>} />
 
             <Route path="/register" element={<PublicRouteGuard><RegisterResidentForm /></PublicRouteGuard>} />
             <Route path="/status" element={<PublicRouteGuard><RegistrationStatus /></PublicRouteGuard>} />
 
             {/* User Login - Blocked during maintenance */}
+            <Route path="/splashscreen" element={<PublicRouteGuard><SplashScreen /></PublicRouteGuard>} />
             <Route path="/user-login" element={<PublicRouteGuard><UserLogin /></PublicRouteGuard>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 

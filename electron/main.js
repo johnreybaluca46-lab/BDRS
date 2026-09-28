@@ -1,6 +1,11 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const { autoUpdater } = require('electron-updater');
+
+// Disable auto-download so we can ask the user first
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -37,10 +42,53 @@ function createWindow() {
     console.log('RENDERER CRASHED');
   });
 
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    console.log('[Renderer]', level, message, sourceId, line);
+  });
+
   // Always open devtools in production for debugging the blank screen
   if (!isDev) {
     mainWindow.webContents.openDevTools();
   }
+
+  // --- AUTO UPDATER IPC EVENTS ---
+  ipcMain.on('check-for-updates', () => {
+    if (!isDev) {
+      autoUpdater.checkForUpdates().catch(err => {
+        mainWindow.webContents.send('update-error', err.message);
+      });
+    }
+  });
+
+  ipcMain.on('download-update', () => {
+    autoUpdater.downloadUpdate().catch(err => {
+      mainWindow.webContents.send('update-error', err.message);
+    });
+  });
+
+  ipcMain.on('install-update', () => {
+    autoUpdater.quitAndInstall();
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    mainWindow.webContents.send('update-available', info);
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    mainWindow.webContents.send('update-not-available', info);
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    mainWindow.webContents.send('update-download-progress', progressObj);
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    mainWindow.webContents.send('update-downloaded', info);
+  });
+
+  autoUpdater.on('error', (err) => {
+    mainWindow.webContents.send('update-error', err.message);
+  });
 }
 
 app.whenReady().then(() => {
