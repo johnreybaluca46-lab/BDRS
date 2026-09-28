@@ -41,6 +41,9 @@ export default function RegisterResidentForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
+    // Fix for Electron "file://" URL
+    const baseUrl = isNativeApp ? (settings?.officialWebsite || "https://bdrs-five.vercel.app") : window.location.origin;
+
     const [formData, setFormData] = useState({
         fullName: '',
         dateOfBirth: '',
@@ -789,7 +792,7 @@ export default function RegisterResidentForm() {
                                         <div className="res-success-qr-box">
                                             {generatedQrToken && (
                                                 <QRCode 
-                                                    value={`${window.location.origin}/status?token=${generatedQrToken}`} 
+                                                    value={`${baseUrl}/status?token=${generatedQrToken}`} 
                                                     size={160}
                                                     style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                                                     level="H"
@@ -802,7 +805,7 @@ export default function RegisterResidentForm() {
                                         {generatedQrToken && (
                                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px', flexWrap: 'wrap' }}>
                                                 <a 
-                                                    href={`${window.location.origin}/status?token=${generatedQrToken}`}
+                                                    href={`${baseUrl}/status?token=${generatedQrToken}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="btn-primary"
@@ -814,7 +817,7 @@ export default function RegisterResidentForm() {
                                                     className="btn-outline" 
                                                     type="button"
                                                     onClick={() => {
-                                                        navigator.clipboard.writeText(`${window.location.origin}/status?token=${generatedQrToken}`);
+                                                        navigator.clipboard.writeText(`${baseUrl}/status?token=${generatedQrToken}`);
                                                         Swal.fire({ title: 'Copied!', text: 'Status link copied to clipboard.', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
                                                     }}
                                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
@@ -831,9 +834,11 @@ export default function RegisterResidentForm() {
                                     <span>Your account is pending admin approval. Please DO NOT attempt to sign in until your status is approved.</span>
                                 </div>
 
-                                <div className="res-success-actions">
-                                    <button className="btn-outline" onClick={() => handleBackToHome('/')}><Home size={18} /> Back to Home</button>
-                                </div>
+                                {!isNativeApp && (
+                                    <div className="res-success-actions">
+                                        <button className="btn-outline" onClick={() => handleBackToHome('/')}><Home size={18} /> Back to Home</button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
