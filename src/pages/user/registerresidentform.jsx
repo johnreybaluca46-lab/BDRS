@@ -501,9 +501,13 @@ export default function RegisterResidentForm() {
             <main className="register-main">
                 {activeStep !== 3 && (
                     <>
-                        {!isNativeApp && (
+                        {!isNativeApp ? (
                             <Link to="/" className="back-link">
                                 <ArrowLeft size={18} /> Back to Home
+                            </Link>
+                        ) : (
+                            <Link to="/user-login" className="back-link">
+                                <ArrowLeft size={18} /> Back to Portal
                             </Link>
                         )}
 
