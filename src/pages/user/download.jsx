@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar';
 import { Download, Info, ShieldCheck, Monitor, Smartphone } from 'lucide-react';
 import '../../lib/download.css';
@@ -81,10 +82,20 @@ export default function DownloadPage() {
               <p>Install BDRS on your Android phone and stay connected to barangay services.</p>
               
               <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-                <a href="/downloads/BDRS-Android.apk" className="download-btn" download style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white', borderColor: '#10b981' }}>
+                <button 
+                  onClick={() => Swal.fire({
+                    title: 'Coming Soon!',
+                    text: 'The Android App is currently under development and will be available soon.',
+                    icon: 'info',
+                    confirmButtonText: 'Got it',
+                    confirmButtonColor: '#10b981'
+                  })}
+                  className="download-btn" 
+                  style={{ cursor: 'pointer', border: 'none', textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white' }}
+                >
                   <Download size={20} />
                   Download .APK
-                </a>
+                </button>
               </div>
               
               <div className="card-footer">
