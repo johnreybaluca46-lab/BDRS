@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../database/firebase';
 import { signOut } from 'firebase/auth';
+import { useAuth } from './AuthContext';
 
 const MaintenanceContext = createContext();
 
@@ -12,6 +13,8 @@ export function MaintenanceProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [isModalDismissed, setIsModalDismissed] = useState(false);
   const prevStartTimeRef = useRef(null);
+  
+  const { userRole } = useAuth();
 
   useEffect(() => {
     // 1. Single active Firestore listener
@@ -87,12 +90,11 @@ export function MaintenanceProvider({ children }) {
   // Automatically log out resident users when maintenance becomes active
   useEffect(() => {
     if (effectiveStatus === 'active') {
-      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-      if (!isAdmin && auth.currentUser) {
+      if (userRole !== 'admin' && auth.currentUser) {
         signOut(auth).catch(err => console.error('Auto logout error:', err));
       }
     }
-  }, [effectiveStatus]);
+  }, [effectiveStatus, userRole]);
 
   if (loading) {
     return <div style={{ display: 'none' }}>Checking system status...</div>; // Minimal hidden loader to prevent flash of content
