@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo/barangay buluan seal.png';
 import './Navbar.css';
 
+const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+
 export default function Navbar({ blockNavigation = false, onBlockedNavigation = null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [clickCount, setClickCount] = useState(0);
@@ -71,10 +73,12 @@ export default function Navbar({ blockNavigation = false, onBlockedNavigation = 
             <Phone size={22} strokeWidth={2.5} />
             <span>Contact</span>
           </Link>
-          <Link to="/download" className={`nav-link ${isActive('/download')}`} onClick={(e) => handleLinkClick(e, '/download')}>
-            <Download size={22} strokeWidth={2.5} />
-            <span>Download</span>
-          </Link>
+          {!isNativeApp && (
+            <Link to="/download" className={`nav-link ${isActive('/download')}`} onClick={(e) => handleLinkClick(e, '/download')}>
+              <Download size={22} strokeWidth={2.5} />
+              <span>Download</span>
+            </Link>
+          )}
           <Link to="/user-login" className={`nav-link ${isActive('/user-login')}`} onClick={(e) => handleLinkClick(e, '/user-login')}>
             <LogIn size={22} strokeWidth={2.5} />
             <span>Sign In</span>

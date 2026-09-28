@@ -9,6 +9,8 @@ import BannerImg from '../../assets/image/banner 2.png';
 import Logo from '../../assets/logo/barangay buluan seal.png';
 import '../../lib/registerresidentform.css'; // Reuse some form styles
 
+const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+
 export default function RegistrationStatus() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -59,11 +61,13 @@ export default function RegistrationStatus() {
           <AlertTriangle size={48} color="#ef4444" />
           <h3>Status Unavailable</h3>
           <p>{error}</p>
-          <div style={{ marginTop: '20px' }}>
-            <Link to="/" className="btn-outline">
-              <ArrowLeft size={18} /> Back to Home
-            </Link>
-          </div>
+          {!isNativeApp && (
+            <div style={{ marginTop: '20px' }}>
+              <Link to="/" className="btn-outline">
+                <ArrowLeft size={18} /> Back to Home
+              </Link>
+            </div>
+          )}
         </div>
       );
     }
@@ -121,9 +125,11 @@ export default function RegistrationStatus() {
                Log In Now
              </Link>
            ) : (
-             <Link to="/" className="btn-outline" style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}>
-               Return to Home
-             </Link>
+             !isNativeApp && (
+               <Link to="/" className="btn-outline" style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}>
+                 Return to Home
+               </Link>
+             )
            )}
         </div>
       </div>

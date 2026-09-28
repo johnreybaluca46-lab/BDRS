@@ -25,6 +25,8 @@ import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeB
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useSettings } from '../../context/SettingsContext';
 
+const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+
 export default function RegisterResidentForm() {
     const { settings } = useSettings();
     const navigate = useNavigate();
@@ -496,9 +498,11 @@ export default function RegisterResidentForm() {
             <main className="register-main">
                 {activeStep !== 3 && (
                     <>
-                        <Link to="/" className="back-link">
-                            <ArrowLeft size={18} /> Back to Home
-                        </Link>
+                        {!isNativeApp && (
+                            <Link to="/" className="back-link">
+                                <ArrowLeft size={18} /> Back to Home
+                            </Link>
+                        )}
 
                         <div className="register-header">
                             <div className="register-header-icon">
