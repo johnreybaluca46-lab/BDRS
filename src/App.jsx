@@ -47,6 +47,7 @@ import UserCompletedRequests from './pages/user/user register/completed_requests
 import UserRejectedRequests from './pages/user/user register/rejected_requests';
 import SplashScreen from './pages/user/splashscreen/splashscreen';
 import AutoUpdater from './components/AutoUpdater';
+import NativeOfflineOverlay from './components/NativeOfflineOverlay';
 
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -155,6 +156,7 @@ function App() {
     <AuthProvider>
       <MaintenanceProvider>
         <Router>
+          <NativeOfflineOverlay />
           <AutoUpdater />
           <MaintenanceWarning />
           <ScrollToTop />
