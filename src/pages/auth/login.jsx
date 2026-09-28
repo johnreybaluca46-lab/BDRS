@@ -98,12 +98,11 @@ export default function Login() {
     if (justUnlocked) setJustUnlocked(false);
 
     setLoading(true);
+    let locationOverride = null;
 
     try {
       const trimmedEmail = email.trim();
       let userCredential;
-
-      let locationOverride = null;
       
       const { inMemoryPersistence } = await import('firebase/auth');
       await setPersistence(auth, inMemoryPersistence);
@@ -117,7 +116,7 @@ export default function Login() {
         const authErr = authResult;
         console.log('Admin auth error:', authErr.code, authErr.message);
 
-        await logLoginEvent({ 
+        logLoginEvent({ 
           event: 'Admin Login Failed', 
           result: 'failed', 
           details: authErr.message || authErr.code, 
@@ -125,10 +124,16 @@ export default function Login() {
           role: 'Admin',
           method: 'Email/Password',
           locationOverride
-        });
+        }).catch(console.error);
         
         let recentlyLocked = false;
         if (authErr.code === 'auth/wrong-password' || authErr.code === 'auth/invalid-credential') {
+          const adminLockoutRef = doc(db, 'admin_lockouts', trimmedEmail);
+          let adminLockoutDoc = null;
+          try {
+            const snap = await getDoc(adminLockoutRef);
+            if (snap.exists()) adminLockoutDoc = snap.data();
+          } catch(e) {}
           const currentAttempts = (adminLockoutDoc?.failed_attempts || 0) + 1;
           const updates = { failed_attempts: currentAttempts };
           
@@ -202,6 +207,7 @@ export default function Login() {
 
       // Reset attempts
       try {
+        const adminLockoutRef = doc(db, 'admin_lockouts', trimmedEmail);
         await setDoc(adminLockoutRef, { failed_attempts: 0, locked_until: null }, { merge: true });
       } catch (err) {}
 

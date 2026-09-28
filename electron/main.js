@@ -24,7 +24,22 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // In production, load the local built files instead of the Vercel URL
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html')).catch(err => {
+      console.log('FAILED TO LOAD FILE:', path.join(__dirname, '../dist/index.html'), err);
+    });
+  }
+
+  mainWindow.webContents.on('did-fail-load', (e, errorCode, errorDescription) => {
+    console.log('DID-FAIL-LOAD:', errorCode, errorDescription);
+  });
+  
+  mainWindow.webContents.on('crashed', (e) => {
+    console.log('RENDERER CRASHED');
+  });
+
+  // Always open devtools in production for debugging the blank screen
+  if (!isDev) {
+    mainWindow.webContents.openDevTools();
   }
 }
 

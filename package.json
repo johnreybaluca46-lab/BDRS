@@ -18,6 +18,12 @@
     "directories": {
       "output": "../BDRS-Build"
     },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!node_modules"
+    ],
     "win": {
       "target": "portable"
     }

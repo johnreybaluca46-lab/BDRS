@@ -157,12 +157,13 @@ export default function ViewDocumentRequest() {
     const feeStr = String(requestData?.totalFee || '0').toLowerCase().trim();
     const parsedFee = parseFloat(feeStr);
     const isFree = feeStr === 'free' || feeStr === '0' || feeStr === '0.00' || parsedFee === 0 || isNaN(parsedFee);
+    const isOnlineFree = isFree && (requestData?.deliveryMethod === 'Online PDF' || requestData?.deliveryMethod === 'Online Pick up');
 
     Swal.fire({
       title: 'Confirm Approval',
-      text: isFree 
-        ? 'Are you sure you want to approve this request? Since it is free, it will be immediately marked as Completed.' 
-        : 'Are you sure you want to approve this request? It will be moved to the Payment section.',
+      text: isOnlineFree 
+        ? 'Are you sure you want to approve this request? Since it is free and online, it will be immediately marked as Completed so the resident can download it.' 
+        : 'Are you sure you want to approve this request? It will be moved to the Approved section.',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#48bb78',
@@ -172,7 +173,7 @@ export default function ViewDocumentRequest() {
       if (result.isConfirmed) {
         setIsProcessing(true);
         try {
-          if (isFree) {
+          if (isOnlineFree) {
             const verificationToken = crypto.randomUUID();
             await updateDoc(doc(db, 'requests', id), {
               status: 'Processing Payment',
@@ -191,10 +192,10 @@ export default function ViewDocumentRequest() {
                 timestamp: serverTimestamp(),
               });
             }
-            await logActivity({ action: 'Request Approved', targetType: 'document_request', targetId: id, description: `Approved free request and moved to Processing for ${requestData?.type || "Unknown"}` });
+            await logActivity({ action: 'Request Approved', targetType: 'document_request', targetId: id, description: `Approved free online request and moved to Processing Payment for ${requestData?.type || "Unknown"}` });
             Swal.fire({
-              title: 'Approved & Processing!',
-              text: 'The request is free and has been automatically moved to Processing Payment.',
+              title: 'Approved!',
+              text: 'The request is free online and has been moved to Payment Processing so you can prepare it.',
               icon: 'success'
             });
             navigate('/admin/payment');
@@ -220,7 +221,7 @@ export default function ViewDocumentRequest() {
             await logActivity({ action: 'Request Approved', targetType: 'document_request', targetId: id, description: `Approved request for ${requestData?.type || "Unknown"}` });
             Swal.fire({
               title: 'Approved!',
-              text: 'The request has been approved and moved to Payment.',
+              text: 'The request has been approved and moved to the Approved section.',
               icon: 'success'
             });
             navigate('/admin/payment');

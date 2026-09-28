@@ -142,9 +142,9 @@ export default function UserLogin() {
     }
 
     setLoading(true);
+    let locationOverride = null;
 
     try {
-      let locationOverride = null;
       let userCredential = null;
       
       const { inMemoryPersistence } = await import('firebase/auth');
@@ -185,7 +185,7 @@ export default function UserLogin() {
       const residentData = residentDocSnap.data();
 
       if (residentData.status === 'Disabled' || residentData.status === 'Blocked' || residentData.status === 'Disabled Account') {
-        await logActivity('Failed Login Attempt', `Account is ${residentData.status}`, 'failed_login', email.trim(), 'user');
+        logActivity('Failed Login Attempt', `Account is ${residentData.status}`, 'failed_login', email.trim(), 'user').catch(console.error);
         await signOut(auth);
         showAccountDisabledAlert();
         setLoading(false);
@@ -193,7 +193,7 @@ export default function UserLogin() {
       }
       
       if (residentData.status === 'Pending') {
-        await logActivity('Failed Login Attempt', `Account is Pending`, 'failed_login', email.trim(), 'user');
+        logActivity('Failed Login Attempt', `Account is Pending`, 'failed_login', email.trim(), 'user').catch(console.error);
         await signOut(auth);
         showAccountPendingAlert();
         setLoading(false);
@@ -201,7 +201,7 @@ export default function UserLogin() {
       }
 
       if (residentData.status === 'Rejected') {
-        await logActivity('Failed Login Attempt', `Account is Rejected`, 'failed_login', email.trim(), 'user');
+        logActivity('Failed Login Attempt', `Account is Rejected`, 'failed_login', email.trim(), 'user').catch(console.error);
         await signOut(auth);
         showAccountRejectedAlert();
         setLoading(false);

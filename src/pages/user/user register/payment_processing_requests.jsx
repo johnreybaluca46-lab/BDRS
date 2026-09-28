@@ -165,9 +165,29 @@ export default function OnlinePaymentRequests() {
                         </div>
                       </div>
                       <div className="approved-message-box" style={{ backgroundColor: '#ebf8ff', borderColor: '#bee3f8', color: '#2b6cb0' }}>
-                        <strong>Your payment is being verified.</strong>
-                        <br/>
-                        You will be notified once the administrator confirms it.
+                        {request.deliveryMethod === 'Barangay Pickup' || request.deliveryMethod === 'Barangay Pick up' ? (
+                          <>
+                            <strong>Please proceed to the barangay hall to pay and claim your document.</strong>
+                            <br/>
+                            Expires on: {request.approvedAt ? new Date(request.approvedAt.seconds * 1000 + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown'}
+                          </>
+                        ) : (request.totalFee === 'Free' || request.totalFee === '0' || parseFloat(request.totalFee || 0) === 0) ? (
+                          <>
+                            <strong>Your free online request is being processed.</strong>
+                            <br/>
+                            Please wait while the administrator prepares your document.
+                            <br/>
+                            Expires on: {request.approvedAt ? new Date(request.approvedAt.seconds * 1000 + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown'}
+                          </>
+                        ) : (
+                          <>
+                            <strong>You have successfully sent the proof of payment.</strong>
+                            <br/>
+                            Your payment is currently being verified.
+                            <br/>
+                            Expires on: {request.approvedAt ? new Date(request.approvedAt.seconds * 1000 + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown'}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

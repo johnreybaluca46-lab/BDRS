@@ -107,22 +107,43 @@ import React, { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
-    // Temporary fix for stuck request
-    const fixRequest = async () => {
+    // Temporary fix for stuck requests from old bug
+    const fixRequests = async () => {
       try {
-        const { doc, updateDoc, getDoc } = await import('firebase/firestore');
-        const { db } = await import('./database/firebase');
-        const ref = doc(db, 'requests', 'BLN-9114-1783');
-        const snap = await getDoc(ref);
-        if (snap.exists() && snap.data().status === 'Approved') {
-          await updateDoc(ref, { status: 'Processing Payment' });
-          console.log('Fixed stuck request BLN-9114-1783');
-        }
+        const { collection, getDocs, updateDoc, doc, query, where } = await import('firebase/firestore');
+        const { auth, db } = await import('./database/firebase');
+        
+        // Wait for auth to initialize
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            const reqsRef = collection(db, 'requests');
+            const q = query(reqsRef, where('userId', '==', user.uid));
+            const snap = await getDocs(q);
+            snap.forEach(async (docSnap) => {
+              const data = docSnap.data();
+              if (data.status?.toLowerCase() === 'processing payment' && (data.deliveryMethod === 'Barangay Pickup' || data.deliveryMethod === 'Barangay Pick up' || data.totalFee === 'Free' || data.totalFee === '0' || parseFloat(data.totalFee || 0) === 0)) {
+                if (data.deliveryMethod === 'Barangay Pickup' || data.deliveryMethod === 'Barangay Pick up') {
+                  await updateDoc(doc(db, 'requests', docSnap.id), { status: 'Approved' });
+                  console.log('Fixed stuck Barangay Pickup request:', docSnap.id);
+                } else if (docSnap.id === 'BLN-4507-4144') {
+                  // Do nothing, we'll fix it below
+                } else {
+                  await updateDoc(doc(db, 'requests', docSnap.id), { status: 'Completed' });
+                  console.log('Fixed stuck Free Online request:', docSnap.id);
+                }
+              }
+              // One-off fix for the request that was accidentally set to Completed
+              if (docSnap.id === 'BLN-4507-4144' && data.status === 'Completed') {
+                await updateDoc(doc(db, 'requests', docSnap.id), { status: 'Processing Payment' });
+              }
+            });
+          }
+        });
       } catch (e) {
         console.error(e);
       }
     };
-    fixRequest();
+    fixRequests();
   }, []);
 
   return (
