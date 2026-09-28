@@ -55,7 +55,9 @@ export default function NetworkCheckModal({ isOpen, onClose, onProceed }) {
           const id = setTimeout(() => controller.abort(), timeoutMs);
           
           // Fetch a small file (favicon) to check latency
-          await fetch(`/favicon.ico?cb=${Date.now()}_${Math.random()}`, {
+          const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+          const pingUrl = isNativeApp ? `https://bdrs-five.vercel.app/favicon.ico?cb=${Date.now()}_${Math.random()}` : `/favicon.ico?cb=${Date.now()}_${Math.random()}`;
+          await fetch(pingUrl, {
             method: 'HEAD',
             cache: 'no-store',
             signal: controller.signal

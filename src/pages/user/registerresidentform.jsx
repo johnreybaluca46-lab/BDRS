@@ -42,7 +42,7 @@ export default function RegisterResidentForm() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
     // Fix for Electron "file://" URL
-    const baseUrl = isNativeApp ? (settings?.officialWebsite || "https://bdrs-five.vercel.app") : window.location.origin;
+    const baseUrl = (isNativeApp ? (settings?.officialWebsite || "https://bdrs-five.vercel.app") : window.location.origin).replace(/\/$/, "");
 
     const [formData, setFormData] = useState({
         fullName: '',

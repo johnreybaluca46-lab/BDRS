@@ -39,7 +39,7 @@ export default function SplashScreen() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    const hasSeenSplash = localStorage.getItem('hasSeenSplash');
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     if (hasSeenSplash) {
       navigate('/user-login', { replace: true });
     }
@@ -49,7 +49,7 @@ export default function SplashScreen() {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
-      localStorage.setItem('hasSeenSplash', 'true');
+      sessionStorage.setItem('hasSeenSplash', 'true');
       navigate('/user-login', { replace: true });
     }
   };
