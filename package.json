@@ -21,7 +21,8 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "src/assets/app icon/**/*"
     ],
     "publish": [
       {

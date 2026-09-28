@@ -39,6 +39,8 @@ export default function Navbar({ blockNavigation = false, onBlockedNavigation = 
     return location.pathname === path ? 'active' : '';
   };
 
+  if (isNativeApp) return null;
+
   return (
     <>
       <header className="navbar">

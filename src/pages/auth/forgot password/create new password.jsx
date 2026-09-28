@@ -13,7 +13,8 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
 
   // Use environment variable for the Vercel Backend URL, fallback to local relative path
-  const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || '';
+  const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+  const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || (isNativeApp ? 'https://bdrs-five.vercel.app' : '');
 
   // Step 1: Email
   const [email, setEmail] = useState('');

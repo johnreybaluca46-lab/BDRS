@@ -15,7 +15,8 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [sessionExpired, setSessionExpired] = useState(false);
 
-    const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || '';
+    const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+    const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || (isNativeApp ? 'https://bdrs-five.vercel.app' : '');
 
     useEffect(() => {
         let isMounted = true;
