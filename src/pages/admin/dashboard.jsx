@@ -153,16 +153,26 @@ export default function Dashboard() {
 
     const unsubResStats = onSnapshot(collection(db, 'residents'), (snapshot) => {
       let activeCount = 0;
+      let registeredCount = 0;
+      let pendingCount = 0;
+      let rejectedCount = 0;
+
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (data.login_status === 'Active' && data.last_seen) {
+        
+        if (data.status === 'Approved') registeredCount++;
+        else if (data.status === 'Pending') pendingCount++;
+        else if (data.status === 'Rejected') rejectedCount++;
+
+        // Only Approved users can be active anyway, but let's be safe
+        if (data.status === 'Approved' && data.login_status === 'Active' && data.last_seen) {
           const lastSeenTime = data.last_seen.toMillis ? data.last_seen.toMillis() : (data.last_seen.seconds * 1000);
           if (Date.now() - lastSeenTime < 300000) { // 5 minutes timeout
             activeCount++;
           }
         }
       });
-      const newResStats = { registered: snapshot.size, active: activeCount, pending: 0, rejected: 0 };
+      const newResStats = { registered: registeredCount, active: activeCount, pending: pendingCount, rejected: rejectedCount };
       setResStats(newResStats);
       sessionStorage.setItem('adminDashboardResStats', JSON.stringify(newResStats));
     });
