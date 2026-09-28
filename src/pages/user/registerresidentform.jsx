@@ -804,19 +804,20 @@ export default function RegisterResidentForm() {
                                         </p>
                                         {generatedQrToken && (
                                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px', flexWrap: 'wrap' }}>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => navigate(`/status?token=${generatedQrToken}`)}
+                                                <a 
+                                                    href={`https://bdrs-five.vercel.app/status?token=${generatedQrToken}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     className="btn-primary"
-                                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                                 >
                                                     <ExternalLink size={16} /> View Status
-                                                </button>
+                                                </a>
                                                 <button 
                                                     className="btn-outline" 
                                                     type="button"
                                                     onClick={() => {
-                                                        navigator.clipboard.writeText(`${baseUrl}/status?token=${generatedQrToken}`);
+                                                        navigator.clipboard.writeText(`https://bdrs-five.vercel.app/status?token=${generatedQrToken}`);
                                                         Swal.fire({ title: 'Copied!', text: 'Status link copied to clipboard.', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
                                                     }}
                                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}

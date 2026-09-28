@@ -23,6 +23,15 @@ function createWindow() {
   // Hide the default menu bar
   mainWindow.setMenuBarVisibility(false);
 
+  // Force links with target="_blank" to open in the user's default OS browser (like Chrome)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http:') || url.startsWith('https:')) {
+      require('electron').shell.openExternal(url);
+      return { action: 'deny' };
+    }
+    return { action: 'allow' };
+  });
+
   if (isDev) {
     // In dev mode, wait for Vite dev server (usually localhost:5173)
     const port = process.env.PORT || 5173;
