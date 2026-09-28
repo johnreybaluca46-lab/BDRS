@@ -80,26 +80,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      // Check if email exists in Firestore (Residents or Admin)
       const emailToCheck = email.trim();
-      const residentsRef = collection(db, "residents");
-      const qRes = query(residentsRef, where("emailAddress", "==", emailToCheck));
-      const resSnapshot = await getDocs(qRes);
-
-      let emailExists = !resSnapshot.empty;
-
-      if (!emailExists) {
-        const adminsRef = collection(db, "admin_profiles");
-        const qAdmin = query(adminsRef, where("email", "==", emailToCheck));
-        const adminSnapshot = await getDocs(qAdmin);
-        emailExists = !adminSnapshot.empty;
-      }
-
-      if (!emailExists) {
-        setLoading(false);
-        return Swal.fire({ title: 'Email Not Found', text: 'This gmail does not exist in our records.', icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-      }
-
       const res = await fetch(`${API_BASE_URL}/api/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,6 +97,7 @@ export default function ForgotPassword() {
         Swal.fire({ title: 'Notice', text: data.message || 'Something went wrong.', icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
       }
     } catch (err) {
+      console.error("Forgot Password Error:", err);
       Swal.fire({ title: 'Error', text: `Service temporarily unavailable. Please try again later.`, icon: 'error', toast: true, position: 'top-end', showConfirmButton: false, timer: 8000 });
     }
     setLoading(false);

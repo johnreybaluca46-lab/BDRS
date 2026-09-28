@@ -804,15 +804,14 @@ export default function RegisterResidentForm() {
                                         </p>
                                         {generatedQrToken && (
                                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px', flexWrap: 'wrap' }}>
-                                                <a 
-                                                    href={`${baseUrl}/status?token=${generatedQrToken}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => navigate(`/status?token=${generatedQrToken}`)}
                                                     className="btn-primary"
-                                                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                                 >
                                                     <ExternalLink size={16} /> View Status
-                                                </a>
+                                                </button>
                                                 <button 
                                                     className="btn-outline" 
                                                     type="button"
