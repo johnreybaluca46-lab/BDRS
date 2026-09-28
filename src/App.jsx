@@ -101,7 +101,8 @@ const PublicRouteGuard = ({ children }) => {
   const publicPages = ['/', '/about', '/services', '/contact', '/download'];
   
   if (isNativeApp && publicPages.includes(path)) {
-    return <Navigate to="/splashscreen" replace />;
+    const hasSeenSplash = localStorage.getItem('hasSeenSplash');
+    return <Navigate to={hasSeenSplash ? "/user-login" : "/splashscreen"} replace />;
   }
 
   return children;
