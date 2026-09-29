@@ -15,7 +15,6 @@ import { auth, db, storage } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { showMissingInformationAlert } from '../../../utils/sweetAlerts';
 import { compressImageToBase64 } from '../../../lib/imageUtils';
-import pkg from '../../../../package.json';
 
 export default function UserProfile() {
   const [loading, setLoading] = useState(true);
@@ -406,7 +405,7 @@ export default function UserProfile() {
                     <div className="meta-text">
                       <span className="meta-label">App Version</span>
                       <span className="meta-value" style={{ color: '#718096', fontSize: '0.8rem' }}>
-                        v{pkg.version}
+                        v{__APP_VERSION__}
                       </span>
                     </div>
                   </div>
