@@ -77,21 +77,25 @@ export default function DownloadPage() {
               <h2>BDRS for Windows</h2>
               <p>Install BDRS on your Windows PC and get quick access to barangay services, anytime.</p>
               
-              <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <a 
                   href="https://github.com/johnreybaluca46-lab/BDRS/releases/download/v1.0.1/BDRS-Setup-1.0.1.exe" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="download-btn" 
-                  style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                  style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '0' }}
                   onClick={() => setDownloadCount(prev => prev + 1)}
                 >
                   <Download size={20} />
                   Download .EXE
                 </a>
+                <div style={{ color: '#3182ce', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Download size={14} />
+                  {formatNumber(downloadCount)} Downloads
+                </div>
               </div>
               
-              <div className="card-footer" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div className="card-footer">
                 <div className="footer-item">
                   <Monitor size={16} />
                   Windows 10 / 11
@@ -100,11 +104,6 @@ export default function DownloadPage() {
                 <div className="footer-item">
                   <ShieldCheck size={16} />
                   Safe & Secure
-                </div>
-                <div className="footer-divider"></div>
-                <div className="footer-item" style={{ color: '#3182ce', fontWeight: 'bold' }}>
-                  <Download size={16} />
-                  {formatNumber(downloadCount)} Downloads
                 </div>
               </div>
             </div>
@@ -119,7 +118,7 @@ export default function DownloadPage() {
               <h2>BDRS for Android</h2>
               <p>Install BDRS on your Android phone and stay connected to barangay services.</p>
               
-              <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <button 
                   onClick={() => Swal.fire({
                     title: 'Coming Soon!',
@@ -129,14 +128,18 @@ export default function DownloadPage() {
                     confirmButtonColor: '#10b981'
                   })}
                   className="download-btn" 
-                  style={{ cursor: 'pointer', border: 'none', textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white' }}
+                  style={{ cursor: 'pointer', border: 'none', textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white', marginBottom: '0' }}
                 >
                   <Download size={20} />
                   Download .APK
                 </button>
+                <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Download size={14} />
+                  {formatNumber(downloadCount)} Downloads
+                </div>
               </div>
               
-              <div className="card-footer" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div className="card-footer">
                 <div className="footer-item">
                   <Smartphone size={16} />
                   Android 8.0+
@@ -145,11 +148,6 @@ export default function DownloadPage() {
                 <div className="footer-item">
                   <ShieldCheck size={16} />
                   Safe & Secure
-                </div>
-                <div className="footer-divider"></div>
-                <div className="footer-item" style={{ color: '#10b981', fontWeight: 'bold' }}>
-                  <Download size={16} />
-                  {formatNumber(downloadCount)} Downloads
                 </div>
               </div>
             </div>
