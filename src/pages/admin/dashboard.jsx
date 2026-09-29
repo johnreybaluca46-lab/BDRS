@@ -210,6 +210,7 @@ export default function Dashboard() {
       case 'pending': return 'status-pending';
       case 'approved': return 'status-approved';
       case 'completed': return 'status-completed';
+      case 'processing payment': return 'status-processing';
       case 'rejected': return 'status-rejected';
       case 'trash': return 'status-rejected';
       default: return '';

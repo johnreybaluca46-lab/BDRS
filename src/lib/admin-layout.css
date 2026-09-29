@@ -376,6 +376,11 @@
   color: #6b46c1;
 }
 
+.status-processing {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
 .view-all-link {
   display: inline-block;
   margin-top: 20px;
