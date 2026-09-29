@@ -12,7 +12,8 @@ import AndroidImg from '../../assets/illustraion/android download.png';
 import ContactFooter from '../../components/ContactFooter';
 
 export default function DownloadPage() {
-  const [downloadCount, setDownloadCount] = useState(0);
+  const [exeCount, setExeCount] = useState(0);
+  const [apkCount, setApkCount] = useState(0);
 
   useEffect(() => {
     document.title = "BDRS | Download";
@@ -22,17 +23,23 @@ export default function DownloadPage() {
     fetch('https://api.github.com/repos/johnreybaluca46-lab/BDRS/releases')
       .then(res => res.json())
       .then(data => {
-        let count = 0;
+        let exe = 0;
+        let apk = 0;
         if (Array.isArray(data)) {
           data.forEach(release => {
             if (release.assets && Array.isArray(release.assets)) {
               release.assets.forEach(asset => {
-                count += asset.download_count || 0;
+                if (asset.name.endsWith('.exe')) {
+                  exe += asset.download_count || 0;
+                } else if (asset.name.endsWith('.apk')) {
+                  apk += asset.download_count || 0;
+                }
               });
             }
           });
         }
-        setDownloadCount(count);
+        setExeCount(exe);
+        setApkCount(apk);
       })
       .catch(err => console.error('Error fetching download count:', err));
   }, []);
@@ -84,14 +91,14 @@ export default function DownloadPage() {
                   rel="noopener noreferrer" 
                   className="download-btn" 
                   style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '0' }}
-                  onClick={() => setDownloadCount(prev => prev + 1)}
+                  onClick={() => setExeCount(prev => prev + 1)}
                 >
                   <Download size={20} />
                   Download .EXE
                 </a>
                 <div style={{ color: '#3182ce', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Download size={14} />
-                  {formatNumber(downloadCount)} Downloads
+                  {formatNumber(exeCount)} Downloads
                 </div>
               </div>
               
@@ -135,7 +142,7 @@ export default function DownloadPage() {
                 </button>
                 <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Download size={14} />
-                  {formatNumber(downloadCount)} Downloads
+                  {formatNumber(apkCount)} Downloads
                 </div>
               </div>
               
