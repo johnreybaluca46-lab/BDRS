@@ -103,7 +103,7 @@ export default function DownloadPage() {
                 </div>
                 <div className="footer-divider"></div>
                 <div className="footer-item" style={{ color: '#3182ce', fontWeight: 'bold' }}>
-                  <Users size={16} />
+                  <Download size={16} />
                   {formatNumber(downloadCount)} Downloads
                 </div>
               </div>
