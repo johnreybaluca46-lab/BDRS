@@ -29,7 +29,7 @@ export default function DownloadPage() {
           <p>Choose your device and install the Barangay Document Request System.</p>
           <div className="version-badge">
             <Info size={16} />
-            Latest version: 1.0.0
+            Latest version: {__APP_VERSION__}
           </div>
         </div>
         
