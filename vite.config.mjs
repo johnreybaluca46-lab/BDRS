@@ -2,6 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import fs from 'fs'
+
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
+
 // https://vite.dev/config/
 export default defineConfig({
   base: process.env.ELECTRON == 'true' || process.env.CAPACITOR == 'true' ? './' : '/',
@@ -57,4 +61,7 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  }
 })
