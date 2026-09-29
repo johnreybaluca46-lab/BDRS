@@ -80,6 +80,10 @@ function createWindow() {
     autoUpdater.quitAndInstall();
   });
 
+  ipcMain.on('close-app', () => {
+    app.quit();
+  });
+
   autoUpdater.on('update-available', (info) => {
     mainWindow.webContents.send('update-available', info);
   });

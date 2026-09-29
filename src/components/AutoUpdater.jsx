@@ -4,6 +4,7 @@ import './AutoUpdater.css';
 export default function AutoUpdater() {
   const [updateStatus, setUpdateStatus] = useState('idle'); // idle, available, downloading, ready, error
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadStats, setDownloadStats] = useState({ transferred: 0, total: 0, speed: 0 });
   const [errorMessage, setErrorMessage] = useState('');
   
   const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
@@ -35,6 +36,11 @@ export default function AutoUpdater() {
     const handleDownloadProgress = (event, progressObj) => {
       setUpdateStatus('downloading');
       setDownloadProgress(Math.round(progressObj.percent));
+      setDownloadStats({
+        transferred: progressObj.transferred || 0,
+        total: progressObj.total || 0,
+        speed: progressObj.bytesPerSecond || 0
+      });
     };
 
     const handleUpdateDownloaded = () => {
@@ -75,6 +81,21 @@ export default function AutoUpdater() {
     }
   };
 
+  const handleCloseApp = () => {
+    const { ipcRenderer } = window.require ? window.require('electron') : {};
+    if (ipcRenderer) {
+      ipcRenderer.send('close-app');
+    }
+  };
+
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   // Do not render anything if there's no active update state
   if (updateStatus === 'idle') return null;
 
@@ -102,7 +123,12 @@ export default function AutoUpdater() {
                 style={{ width: `${downloadProgress}%` }}
               ></div>
             </div>
-            <p className="update-progress-text">{downloadProgress}%</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+              <p className="update-progress-text" style={{ margin: 0, fontWeight: 'bold' }}>{downloadProgress}%</p>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
+                {formatBytes(downloadStats.transferred)} / {formatBytes(downloadStats.total)} • {formatBytes(downloadStats.speed)}/s
+              </p>
+            </div>
           </>
         )}
 
@@ -110,6 +136,7 @@ export default function AutoUpdater() {
           <>
             <p className="update-modal-message">Update downloaded and ready to install.</p>
             <div className="update-modal-actions" style={{ justifyContent: 'center' }}>
+              <button className="update-btn-later" onClick={handleCloseApp}>Close App</button>
               <button className="update-btn-now" onClick={handleInstallAndRestart}>Install & Restart</button>
             </div>
           </>
