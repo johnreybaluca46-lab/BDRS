@@ -34,9 +34,19 @@ export function AuthProvider({ children }) {
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && data.customToken) {
+                        // FORCE LOGOUT IF ADMIN CLOSED TAB
+                        if (data.role === 'admin' && !sessionStorage.getItem('adminSessionActive')) {
+                            await fetch(`${API_BASE_URL}/api/session-logout`, { method: 'POST', credentials: 'include' });
+                            throw new Error('Admin tab was closed, session terminated.');
+                        }
+
                         // Sign in with the custom token silently
                         const userCred = await signInWithCustomToken(auth, data.customToken);
                         if (isMounted) {
+                            // Only admins have this flag, make sure it stays active in this tab
+                            if (data.role === 'admin') {
+                                sessionStorage.setItem('adminSessionActive', 'true');
+                            }
                             setUserRole(data.role);
                             setUserData(data.user);
                             setCurrentUser(userCred.user);
@@ -147,6 +157,7 @@ export function AuthProvider({ children }) {
         } catch (e) {
             console.error('Logout request failed', e);
         }
+        sessionStorage.removeItem('adminSessionActive');
         await signOut(auth);
         setCurrentUser(null);
         setUserRole(null);

@@ -237,6 +237,7 @@ export default function Login() {
   };
 
   const redirectUser = (userEmail) => {
+    sessionStorage.setItem('adminSessionActive', 'true');
     navigate('/admin/dashboard');
   };
 
