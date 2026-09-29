@@ -15,6 +15,7 @@ import { auth, db, storage } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { showMissingInformationAlert } from '../../../utils/sweetAlerts';
 import { compressImageToBase64 } from '../../../lib/imageUtils';
+import pkg from '../../../../package.json';
 
 export default function UserProfile() {
   const [loading, setLoading] = useState(true);
@@ -396,6 +397,16 @@ export default function UserProfile() {
                       <span className="meta-label">Status</span>
                       <span className="meta-value" style={{ textTransform: 'capitalize' }}>
                         {residentData.status === 'Approved' ? 'Active' : (residentData.status || 'Active')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="meta-item" style={{ marginTop: '10px' }}>
+                    <Monitor size={16} className="meta-icon" style={{ color: '#718096' }} />
+                    <div className="meta-text">
+                      <span className="meta-label">App Version</span>
+                      <span className="meta-value" style={{ color: '#718096', fontSize: '0.8rem' }}>
+                        v{pkg.version}
                       </span>
                     </div>
                   </div>
