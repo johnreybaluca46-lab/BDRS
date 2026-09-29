@@ -136,7 +136,7 @@ export default function DownloadPage() {
                 </button>
               </div>
               
-              <div className="card-footer">
+              <div className="card-footer" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
                 <div className="footer-item">
                   <Smartphone size={16} />
                   Android 8.0+
@@ -145,6 +145,11 @@ export default function DownloadPage() {
                 <div className="footer-item">
                   <ShieldCheck size={16} />
                   Safe & Secure
+                </div>
+                <div className="footer-divider"></div>
+                <div className="footer-item" style={{ color: '#10b981', fontWeight: 'bold' }}>
+                  <Download size={16} />
+                  {formatNumber(downloadCount)} Downloads
                 </div>
               </div>
             </div>
