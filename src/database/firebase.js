@@ -17,7 +17,7 @@ const firebaseConfig = {
 };
 
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
 
@@ -25,6 +25,11 @@ import { getFunctions } from "firebase/functions";
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Enable persistent local cache so data loads instantly across tabs/reloads
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
