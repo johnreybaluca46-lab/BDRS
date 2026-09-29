@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar';
-import { Download, Info, ShieldCheck, Monitor, Smartphone } from 'lucide-react';
+import { Download, Info, ShieldCheck, Monitor, Smartphone, Users } from 'lucide-react';
 import '../../lib/download.css';
 
 // Import images
@@ -12,10 +12,36 @@ import AndroidImg from '../../assets/illustraion/android download.png';
 import ContactFooter from '../../components/ContactFooter';
 
 export default function DownloadPage() {
+  const [downloadCount, setDownloadCount] = useState(0);
+
   useEffect(() => {
     document.title = "BDRS | Download";
     window.scrollTo(0, 0);
+
+    // Fetch actual download counts from GitHub Releases
+    fetch('https://api.github.com/repos/johnreybaluca46-lab/BDRS/releases')
+      .then(res => res.json())
+      .then(data => {
+        let count = 0;
+        if (Array.isArray(data)) {
+          data.forEach(release => {
+            if (release.assets && Array.isArray(release.assets)) {
+              release.assets.forEach(asset => {
+                count += asset.download_count || 0;
+              });
+            }
+          });
+        }
+        setDownloadCount(count);
+      })
+      .catch(err => console.error('Error fetching download count:', err));
   }, []);
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return num.toString();
+  };
 
   return (
     <div className="download-page">
@@ -52,13 +78,20 @@ export default function DownloadPage() {
               <p>Install BDRS on your Windows PC and get quick access to barangay services, anytime.</p>
               
               <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-                <a href="https://github.com/johnreybaluca46-lab/BDRS/releases/download/v1.0.1/BDRS-Setup-1.0.1.exe" target="_blank" rel="noopener noreferrer" className="download-btn" style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <a 
+                  href="https://github.com/johnreybaluca46-lab/BDRS/releases/download/v1.0.1/BDRS-Setup-1.0.1.exe" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="download-btn" 
+                  style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                  onClick={() => setDownloadCount(prev => prev + 1)}
+                >
                   <Download size={20} />
                   Download .EXE
                 </a>
               </div>
               
-              <div className="card-footer">
+              <div className="card-footer" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
                 <div className="footer-item">
                   <Monitor size={16} />
                   Windows 10 / 11
@@ -67,6 +100,11 @@ export default function DownloadPage() {
                 <div className="footer-item">
                   <ShieldCheck size={16} />
                   Safe & Secure
+                </div>
+                <div className="footer-divider"></div>
+                <div className="footer-item" style={{ color: '#3182ce', fontWeight: 'bold' }}>
+                  <Users size={16} />
+                  {formatNumber(downloadCount)} Downloads
                 </div>
               </div>
             </div>
