@@ -69,23 +69,15 @@ export default function NativeOfflineOverlay() {
         flexDirection: 'column',
         alignItems: 'center'
       }}>
-        <div style={{ position: 'relative', marginBottom: '20px' }}>
-          <WifiOff size={64} color="#e53e3e" />
-          <div style={{
-            position: 'absolute',
-            bottom: -5, right: -5,
-            backgroundColor: 'white',
-            borderRadius: '50%',
-            padding: '2px'
-          }}>
-            <Loader2 size={24} color="#3182ce" style={{ animation: 'spin 1s linear infinite' }} />
-          </div>
-        </div>
+        <WifiOff size={64} color="#e53e3e" style={{ marginBottom: '20px' }} />
         
         <h2 style={{ color: '#2d3748', margin: '0 0 10px 0', fontSize: '1.5rem' }}>Connection Lost</h2>
-        <p style={{ color: '#718096', margin: 0, fontSize: '1rem', fontWeight: 500 }}>
-          Reconnecting to the server...
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Loader2 size={20} color="#3182ce" style={{ animation: 'spin 1s linear infinite' }} />
+          <p style={{ color: '#718096', margin: 0, fontSize: '1rem', fontWeight: 500 }}>
+            Reconnecting to the server...
+          </p>
+        </div>
       </div>
 
       <style>{`
