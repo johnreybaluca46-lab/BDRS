@@ -59,7 +59,8 @@ export default function RegisterResidentForm() {
         lengthOfStay: '',
         placeOfBirth: '',
         nationality: 'Filipino',
-        completeAddress: ''
+        completeAddress: '',
+        validIdType: 'Barangay ID'
     });
 
     const [passwordStrength, setPasswordStrength] = useState({
@@ -115,15 +116,27 @@ export default function RegisterResidentForm() {
     const [photo2x2Base64, setPhoto2x2Base64] = useState(null);
     const photoInputRef = React.useRef(null);
 
-    const handlePhotoUpload = async (e) => {
+    const [validId, setValidId] = useState(null);
+    const [validIdBase64, setValidIdBase64] = useState(null);
+    const validIdInputRef = React.useRef(null);
+
+    const handlePhotoUpload = async (e, type) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setPhoto2x2(file);
             try {
                 const base64 = await compressImageToBase64(file);
-                setPhoto2x2Base64(base64);
-                if (photoInputRef.current && photoInputRef.current.closest('.upload-dropzone')) {
-                    photoInputRef.current.closest('.upload-dropzone').classList.remove('error-border');
+                if (type === 'validId') {
+                    setValidId(file);
+                    setValidIdBase64(base64);
+                    if (validIdInputRef.current && validIdInputRef.current.closest('.upload-dropzone')) {
+                        validIdInputRef.current.closest('.upload-dropzone').classList.remove('error-border');
+                    }
+                } else {
+                    setPhoto2x2(file);
+                    setPhoto2x2Base64(base64);
+                    if (photoInputRef.current && photoInputRef.current.closest('.upload-dropzone')) {
+                        photoInputRef.current.closest('.upload-dropzone').classList.remove('error-border');
+                    }
                 }
             } catch (err) {
                 console.error("Error compressing photo:", err);
@@ -135,11 +148,11 @@ export default function RegisterResidentForm() {
         e.preventDefault();
     };
 
-    const handleDrop = (e) => {
+    const handleDrop = (e, type) => {
         e.preventDefault();
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             const eFake = { target: { files: e.dataTransfer.files } };
-            handlePhotoUpload(eFake);
+            handlePhotoUpload(eFake, type);
         }
     };
 
@@ -272,6 +285,7 @@ export default function RegisterResidentForm() {
                     qrToken: qrToken,
                     status: 'Pending',
                     photo2x2: photo2x2Base64,
+                    validId: validIdBase64,
                     registeredAt: serverTimestamp()
                 });
                 
@@ -698,8 +712,8 @@ export default function RegisterResidentForm() {
                                 
                                 <div className="form-group full-width" id="field-photo2x2">
                                     <label className="form-label">Upload Photo (with white background) <span className="required-asterisk">*</span></label>
-                                    <div className="upload-dropzone" onClick={() => photoInputRef.current.click()} onDragOver={handleDragOver} onDrop={handleDrop}>
-                                        <input type="file" required ref={photoInputRef} onChange={handlePhotoUpload} accept="image/*" style={{display: 'none'}} />
+                                    <div className="upload-dropzone" onClick={() => photoInputRef.current.click()} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, 'photo')}>
+                                        <input type="file" required ref={photoInputRef} onChange={(e) => handlePhotoUpload(e, 'photo')} accept="image/*" style={{display: 'none'}} />
                                         {photo2x2Base64 ? (
                                             <img src={photo2x2Base64} alt="2x2" style={{maxHeight: '100px', borderRadius: '8px'}} />
                                         ) : (
@@ -716,12 +730,37 @@ export default function RegisterResidentForm() {
                                         <Info size={16} /> Note: The uploaded photo must be a formal profile picture with a plain white background.
                                     </div>
                                 </div>
+                                
+                                <div className="form-group full-width" id="field-validId">
+                                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <span>Upload Valid ID <span className="required-asterisk">*</span></span>
+                                        <select name="validIdType" value={formData.validIdType} onChange={handleChange} className="form-select" style={{ width: 'auto', padding: '6px 30px 6px 12px', fontSize: '0.85rem' }}>
+                                            <option value="Barangay ID">Barangay ID</option>
+                                            <option value="Voter's ID">Voter's ID</option>
+                                            <option value="National ID">National ID</option>
+                                        </select>
+                                    </label>
+                                    <div className="upload-dropzone" onClick={() => validIdInputRef.current.click()} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, 'validId')}>
+                                        <input type="file" required ref={validIdInputRef} onChange={(e) => handlePhotoUpload(e, 'validId')} accept="image/*" style={{display: 'none'}} />
+                                        {validIdBase64 ? (
+                                            <img src={validIdBase64} alt="Valid ID" style={{maxHeight: '100px', borderRadius: '8px'}} />
+                                        ) : (
+                                            <>
+                                                <UploadCloud size={32} color="#55627d" />
+                                                <div className="upload-text">
+                                                    <p><span className="upload-link">Click to upload</span> or drag and drop</p>
+                                                    <p className="upload-hint">PNG, JPG, JPEG (Max. 5MB)</p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="form-checkbox-group">
                                 <input type="checkbox" id="certify" checked={isCertified} onChange={(e) => setIsCertified(e.target.checked)} className="form-checkbox" required />
                                 <label htmlFor="certify" className="form-checkbox-label">
-                                    I hereby certify that the above information is true and correct.
+                                    I hereby certify that the above information is true and correct, and I agree to the <Link to="/about" target="_blank" style={{color: '#3182ce', textDecoration: 'underline'}}>Terms and Privacy Policy</Link>.
                                 </label>
                             </div>
 
@@ -759,6 +798,18 @@ export default function RegisterResidentForm() {
                                                 <div className="review-image-details">
                                                     <span className="review-image-name">Profile Photo</span>
                                                     <span className="review-image-meta">{photo2x2?.name}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="review-row">
+                                        <div className="review-label">{formData.validIdType}</div>
+                                        <div className="review-value">
+                                            <div className="review-image">
+                                                <img src={validIdBase64} alt="Valid ID" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                                                <div className="review-image-details">
+                                                    <span className="review-image-name">{formData.validIdType}</span>
+                                                    <span className="review-image-meta">{validId?.name}</span>
                                                 </div>
                                             </div>
                                         </div>

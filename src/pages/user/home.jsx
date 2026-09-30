@@ -37,12 +37,12 @@ export default function Home() {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         return;
       }
-      
+
       keySequence += e.key.toLowerCase();
       if (keySequence.length > cheatCode.length) {
         keySequence = keySequence.slice(-cheatCode.length);
       }
-      
+
       if (keySequence === cheatCode) {
         sessionStorage.setItem('loginUnlocked', 'true');
         navigate('/login');
@@ -69,7 +69,7 @@ export default function Home() {
       }
     });
   };
-  
+
   const scrollToServices = () => {
     const servicesSection = document.querySelector('.services-section');
     if (servicesSection) {
@@ -84,7 +84,7 @@ export default function Home() {
 
       <main className="hero-section">
         <div className="hero-content">
-          <h2 className="hero-title">Request Barangay<br/>Documents</h2>
+          <h2 className="hero-title">Request Barangay<br />Documents</h2>
           <p className="hero-subtitle">Fast, simple and hassle-free document request.</p>
 
           <div className="hero-buttons">
@@ -96,7 +96,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        
+
         <div className="hero-image-container">
           <img src={BannerImg} alt="Barangay Hall" className="hero-banner" />
         </div>
@@ -109,7 +109,7 @@ export default function Home() {
         </div>
         <div className="about-content">
           <p>
-            Welcome to Barangay Buluan, Municipality of Mabuhay, Zamboanga Sibugay. Our barangay is committed to providing accessible,
+            Welcome to Barangay Buluan, Municipality of Ipil, Zamboanga Sibugay. Our barangay is committed to providing accessible,
             efficient, transparent, and reliable public services to all residents. We strive to create a welcoming and responsive community where
             every resident can easily access the services and assistance they need.
           </p>
@@ -178,15 +178,15 @@ export default function Home() {
           <div className="header-underline"></div>
           <p>Request official barangay documents online quickly and conveniently.</p>
         </div>
-        
+
         <div className="services-grid">
           <div className="service-card">
             <img src={BarangayClearanceImg} alt="Barangay Clearance" className="service-icon" />
             <h3 className="service-title">Barangay Clearance</h3>
             <p className="service-desc">Certificate issued to prove good moral character and residency.</p>
-            <Link 
-              to="/barangay-clearance" 
-              className="service-btn" 
+            <Link
+              to="/barangay-clearance"
+              className="service-btn"
               style={{ textDecoration: 'none' }}
               onClick={(e) => handleRequestClick(e, '/barangay-clearance')}
             >
@@ -198,9 +198,9 @@ export default function Home() {
             <img src={CertificateOfResidencyImg} alt="Certificate of Residency" className="service-icon" />
             <h3 className="service-title">Certificate of Residency</h3>
             <p className="service-desc">Certificate issued to certify that a person is a resident of the barangay.</p>
-            <Link 
-              to="/certificate-of-residency" 
-              className="service-btn" 
+            <Link
+              to="/certificate-of-residency"
+              className="service-btn"
               style={{ textDecoration: 'none' }}
               onClick={(e) => handleRequestClick(e, '/certificate-of-residency')}
             >
@@ -212,9 +212,9 @@ export default function Home() {
             <img src={CertificateOfIndigencyImg} alt="Certificate of Indigency" className="service-icon" />
             <h3 className="service-title">Certificate of Indigency</h3>
             <p className="service-desc">Certificate for indigent residents for various legal and financial purposes.</p>
-            <Link 
-              to="/certificate-of-indigency" 
-              className="service-btn" 
+            <Link
+              to="/certificate-of-indigency"
+              className="service-btn"
               style={{ textDecoration: 'none' }}
               onClick={(e) => handleRequestClick(e, '/certificate-of-indigency')}
             >
@@ -226,9 +226,9 @@ export default function Home() {
             <img src={BusinessClearanceImg} alt="Business Permit" className="service-icon" />
             <h3 className="service-title">Business Permit</h3>
             <p className="service-desc">Certificate issued for business permit and other business transactions.</p>
-            <Link 
-              to="/business-clearance" 
-              className="service-btn" 
+            <Link
+              to="/business-clearance"
+              className="service-btn"
               style={{ textDecoration: 'none' }}
               onClick={(e) => handleRequestClick(e, '/business-clearance')}
             >
@@ -242,27 +242,27 @@ export default function Home() {
             <img src={ClockIcon} alt="Clock" className="info-icon" />
             <div className="info-text-group">
               <h4 className="info-title">No Waiting Online</h4>
-              <p className="info-desc">No online queue. Go directly<br/>to the Barangay Hall.</p>
+              <p className="info-desc">No online queue. Go directly<br />to the Barangay Hall.</p>
             </div>
           </div>
-          
+
           <div className="info-divider"></div>
-          
+
           <div className="info-item">
             <img src={InfoTicketIcon} alt="Ticket" className="info-icon" />
             <div className="info-text-group">
               <h4 className="info-title">Get Your Polling Number</h4>
-              <p className="info-desc">A unique Polling Number will be<br/>generated after submission.</p>
+              <p className="info-desc">A unique Polling Number will be<br />generated after submission.</p>
             </div>
           </div>
-          
+
           <div className="info-divider"></div>
-          
+
           <div className="info-item">
             <img src={HallIcon} alt="Hall" className="info-icon" />
             <div className="info-text-group">
               <h4 className="info-title">Visit the Barangay Hall</h4>
-              <p className="info-desc">Present your Polling Number and<br/>claim your document.</p>
+              <p className="info-desc">Present your Polling Number and<br />claim your document.</p>
             </div>
           </div>
         </div>

@@ -72,7 +72,7 @@ export default function RegistrationStatus() {
       );
     }
 
-    const { resNumber, residentId, status, updatedAt, submittedAt } = statusData;
+    const { resNumber, residentId, status, updatedAt, submittedAt, rejectReason } = statusData;
     const displayId = resNumber || residentId || 'N/A';
     const displayDate = updatedAt || submittedAt;
     
@@ -116,7 +116,16 @@ export default function RegistrationStatus() {
             </span>
           </div>
 
-          <p className="status-description">{description}</p>
+          {status === 'Rejected' && (
+            <div className="status-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px', borderBottom: 'none' }}>
+              <span className="status-label" style={{ color: '#b91c1c' }}>Reason for Rejection:</span>
+              <span className="status-value" style={{ fontWeight: 'normal', color: '#475569', backgroundColor: '#fef2f2', padding: '12px', borderRadius: '6px', width: '100%', boxSizing: 'border-box', border: '1px solid #fca5a5' }}>
+                {rejectReason || 'No specific reason provided.'}
+              </span>
+            </div>
+          )}
+
+          <p className="status-description" style={{ marginTop: status === 'Rejected' ? '15px' : '25px' }}>{description}</p>
         </div>
 
         <div className="status-actions">

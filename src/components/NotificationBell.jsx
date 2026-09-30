@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, FileText, Check, X, Clock, Trash2, Mail, Users, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -123,9 +123,9 @@ export default function NotificationBell() {
     }
     
     if (auth.currentUser) {
-      updateDoc(doc(db, 'admin_profiles', auth.currentUser.uid), {
+      setDoc(doc(db, 'admin_profiles', auth.currentUser.uid), {
         notification_lastReadTime: latestTime
-      }).catch(err => console.error('Failed to mark as read', err));
+      }, { merge: true }).catch(err => console.error('Failed to mark as read', err));
     }
   };
 
@@ -134,9 +134,9 @@ export default function NotificationBell() {
     const newDeleted = [...new Set([...deletedIds, ...currentIds])];
     
     if (auth.currentUser) {
-      updateDoc(doc(db, 'admin_profiles', auth.currentUser.uid), {
+      setDoc(doc(db, 'admin_profiles', auth.currentUser.uid), {
         notification_deletedIds: newDeleted
-      }).catch(err => console.error('Failed to delete all', err));
+      }, { merge: true }).catch(err => console.error('Failed to delete all', err));
     }
   };
 
@@ -144,9 +144,9 @@ export default function NotificationBell() {
     const newDeleted = [...deletedIds, id];
     
     if (auth.currentUser) {
-      updateDoc(doc(db, 'admin_profiles', auth.currentUser.uid), {
+      setDoc(doc(db, 'admin_profiles', auth.currentUser.uid), {
         notification_deletedIds: newDeleted
-      }).catch(err => console.error('Failed to delete', err));
+      }, { merge: true }).catch(err => console.error('Failed to delete', err));
     }
   };
 
@@ -264,7 +264,10 @@ export default function NotificationBell() {
   };
 
   const visibleNotifications = notifications.filter(n => !deletedIds.includes(n.id));
-  const unreadCount = visibleNotifications.filter(r => (r.timestamp ? r.timestamp.toMillis() : Date.now()) > lastReadTime).length;
+  const unreadCount = visibleNotifications.filter(r => {
+    const notifTime = r.timestamp ? r.timestamp.toMillis() : 0;
+    return notifTime > lastReadTime;
+  }).length;
   
   const displayUnreadCount = notifications.length > 0 ? unreadCount : cachedUnread;
 

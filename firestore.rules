@@ -48,7 +48,7 @@ service cloud.firestore {
                       'emailAddress', 'contactNumber', 'sex', 'dateOfBirth', 
                       'civilStatus', 'purok', 'houseNo', 'occupation', 'lengthOfStay',
                       'placeOfBirth', 'nationality', 'completeAddress',
-                      'photo2x2', 'validId', 'registeredAt'
+                      'photo2x2', 'validId', 'validIdType', 'registeredAt'
                     ]); 
 
       allow update: if 
@@ -59,7 +59,7 @@ service cloud.firestore {
          ])) ||
         // Rule for Admins approving/rejecting a registration
         (isAdmin() && 
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedAt', 'rejectedAt']) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedAt', 'rejectedAt', 'rejectReason']) &&
          resource.data.status == 'Pending' &&
          request.resource.data.status in ['Approved', 'Rejected'] &&
          (
@@ -85,7 +85,7 @@ service cloud.firestore {
                     
       // Admin Update: Only Admins can sync the public status to Approved/Rejected
       allow update: if isAdmin() && 
-                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'rejectReason']) &&
                     resource.data.status == 'Pending' &&
                     request.resource.data.status in ['Approved', 'Rejected'] &&
                     request.resource.data.updatedAt == request.time;

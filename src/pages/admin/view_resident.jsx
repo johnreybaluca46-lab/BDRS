@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../database/firebase';
-import { doc, onSnapshot, collection, setDoc, serverTimestamp, writeBatch, query, where, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, collection, setDoc, serverTimestamp, writeBatch, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { logActivity } from '../../utils/auditLogger';
 
 import '../../lib/admin-layout.css';
@@ -77,7 +77,9 @@ export default function ViewResident() {
             name: data.fullName || 'N/A',
             date: formattedDate,
             status: data.status || 'Registered',
-            idPicture: data.photo2x2 || null
+            idPicture: data.photo2x2 || null,
+            validId: data.validId || null,
+            validIdType: data.validIdType || 'Valid ID'
           });
         } else {
           setResidentData(null);
@@ -242,6 +244,130 @@ export default function ViewResident() {
     completeAddress: 'Complete Address'
   };
 
+  const handleApprove = () => {
+    Swal.fire({
+      title: 'Approve Resident?',
+      text: `Are you sure you want to approve ${residentData?.name}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#38a169',
+      cancelButtonColor: '#a0aec0',
+      confirmButtonText: 'Yes, approve!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const batch = writeBatch(db);
+          const actualId = residentData.id;
+          batch.update(doc(db, 'residents', actualId), {
+            status: 'Approved',
+            approvedAt: serverTimestamp()
+          });
+          if (residentData?.qrToken) {
+            batch.update(doc(db, 'registration_status', residentData.qrToken), {
+              status: 'Approved',
+              updatedAt: serverTimestamp()
+            });
+          }
+          await batch.commit();
+          await logActivity({
+            action: 'Resident Approved',
+            targetType: 'Resident',
+            targetId: actualId,
+            description: `Approved registration for ${residentData?.name}`
+          });
+          Swal.fire('Approved!', `${residentData?.name} is now registered.`, 'success').then(() => {
+             navigate('/admin/resident-approval');
+          });
+        } catch (error) {
+          console.error("Error approving resident:", error);
+          Swal.fire('Error!', 'There was an error approving the resident.', 'error');
+        }
+      }
+    });
+  };
+
+  const handleReject = async () => {
+    const { value: reason } = await Swal.fire({
+      title: 'Reject Resident?',
+      text: `Please provide a reason for rejecting ${residentData?.name}'s registration:`,
+      input: 'textarea',
+      inputPlaceholder: 'Type your reason here...',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e53e3e',
+      cancelButtonColor: '#a0aec0',
+      confirmButtonText: 'Yes, reject!',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to provide a reason!'
+        }
+      }
+    });
+
+    if (reason) {
+      try {
+        const batch = writeBatch(db);
+        const actualId = residentData.id;
+        batch.update(doc(db, 'residents', actualId), {
+          status: 'Rejected',
+          rejectReason: reason,
+          rejectedAt: serverTimestamp()
+        });
+        if (residentData?.qrToken) {
+          batch.update(doc(db, 'registration_status', residentData.qrToken), {
+            status: 'Rejected',
+            rejectReason: reason,
+            updatedAt: serverTimestamp()
+          });
+        }
+        await batch.commit();
+        await logActivity({
+          action: 'Resident Rejected',
+          targetType: 'Resident',
+          targetId: actualId,
+          description: `Rejected registration for ${residentData?.name}. Reason: ${reason}`
+        });
+        Swal.fire('Rejected!', `${residentData?.name}'s registration has been rejected.`, 'success').then(() => {
+           navigate('/admin/resident-approval');
+        });
+      } catch (error) {
+        console.error("Error rejecting resident:", error);
+        Swal.fire('Error!', 'There was an error rejecting the resident.', 'error');
+      }
+    }
+  };
+
+  const handleDeleteResident = () => {
+    Swal.fire({
+      title: 'Delete Resident?',
+      text: `Are you sure you want to delete ${residentData?.name}? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e53e3e',
+      cancelButtonColor: '#a0aec0',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const actualId = residentData.id;
+          await deleteDoc(doc(db, 'residents', actualId));
+          await logActivity({
+            action: 'Resident Deleted',
+            targetType: 'Resident',
+            targetId: actualId,
+            description: `Deleted resident account for ${residentData?.name}`
+          });
+          Swal.fire('Deleted!', 'The resident has been deleted.', 'success').then(() => {
+            navigate(residentData?.status === 'Pending' || residentData?.status === 'Rejected' ? '/admin/resident-approval' : '/admin/residents');
+          });
+        } catch (error) {
+          console.error("Error deleting resident:", error);
+          Swal.fire('Error!', 'There was an error deleting the resident.', 'error');
+        }
+      }
+    });
+  };
+
   return (
     <div className="admin-dashboard-container">
       {/* Sidebar */}
@@ -273,6 +399,22 @@ export default function ViewResident() {
           <div className="request-details-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
               <h2 className="card-title" style={{ marginBottom: 0 }}>Resident Details</h2>
+              <div className="request-status-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h4 className="section-subtitle" style={{ textAlign: 'center', margin: '0 0 8px 0' }}>Resident Status</h4>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
+                  <span className={`status-badge-large ${getBadgeClass(residentData.status)}`}>
+                    {residentData.status === 'Approved' ? 'Registered' : residentData.status}
+                  </span>
+                  {residentData.status === 'Rejected' && (
+                    <div style={{ marginTop: '10px', backgroundColor: '#fef2f2', padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', maxWidth: '300px' }}>
+                      <span style={{ display: 'block', color: '#b91c1c', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px', textTransform: 'uppercase' }}>Reason for Rejection</span>
+                      <span style={{ color: '#475569', fontSize: '0.9rem', wordBreak: 'break-word' }}>
+                        {residentData.rejectReason || 'No specific reason provided.'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             
             <div className="details-top-section">
@@ -315,23 +457,38 @@ export default function ViewResident() {
               </div>
             </div>
             
-            <div className="details-divider"></div>
-            
-            <div className="details-bottom-section">
-              <div className="request-status-section" style={{ width: '100%', textAlign: 'center' }}>
-                <h4 className="section-subtitle" style={{ textAlign: 'center', width: '100%' }}>Resident Status</h4>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                  <span className={`status-badge-large ${getBadgeClass(residentData.status)}`}>
-                    {residentData.status === 'Approved' ? 'Registered' : residentData.status}
-                  </span>
+            {residentData.validId && (
+              <>
+                <div className="details-divider"></div>
+                <div className="details-bottom-section" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+                  <div className="valid-id-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <span style={{ fontSize: '0.9rem', color: '#4a5568', fontWeight: '600' }}>Uploaded {residentData.validIdType}</span>
+                    <img src={residentData.validId} alt="Valid ID" style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }} />
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
             
-            <div className="details-actions">
+            <div className="details-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
               <button className="btn-back" onClick={() => navigate(residentData?.status === 'Pending' || residentData?.status === 'Rejected' ? '/admin/resident-approval' : '/admin/residents')}>
-                {residentData?.status === 'Pending' ? 'Back to Approval' : 'Back to Residents'}
+                {residentData?.status === 'Pending' || residentData?.status === 'Rejected' ? 'Back to Approval' : 'Back to Residents'}
               </button>
+              
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {residentData?.status === 'Pending' && (
+                  <>
+                    <button className="btn-approve" onClick={handleApprove} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#38a169', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}>
+                      <CheckCircle size={18} /> Approve
+                    </button>
+                    <button className="btn-reject" onClick={handleReject} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}>
+                      <XCircle size={18} /> Reject
+                    </button>
+                  </>
+                )}
+                <button className="btn-reject" onClick={handleDeleteResident} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}>
+                  <Trash2 size={18} /> Delete
+                </button>
+              </div>
             </div>
           </div>
           )}

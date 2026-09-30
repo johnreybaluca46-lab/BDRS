@@ -16,7 +16,16 @@ import {
   Mail,
   Save,
   Database,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ArrowRight,
+  Clock,
+  CalendarX,
+  Coins
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { signOut } from 'firebase/auth';
@@ -30,6 +39,36 @@ import AdminSidebar from '../../components/AdminSidebar';
 
 const COLORS = ['#3182ce', '#48bb78', '#ecc94b', '#e53e3e', '#805ad5', '#e53e3e'];
 
+const formatCurrencyAbbreviated = (num) => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return num.toString();
+};
+
+const StatCard = ({ title, value, icon: Icon, colorTheme, trend, trendValue, trendText, linkText, linkTo, valuePrefix = '', style, className = '' }) => {
+  return (
+    <div className={`summary-card new-card-${colorTheme} ${className}`} style={style}>
+      <div className="summary-card-header">
+        <div className="summary-card-icon-wrapper">
+          <Icon size={22} strokeWidth={2.5} />
+        </div>
+        <span className="summary-card-title">{title}</span>
+      </div>
+      <div className="summary-card-body">
+        <div className="summary-card-value-wrapper">
+          <span className="summary-card-value">{valuePrefix}{value}</span>
+        </div>
+      </div>
+      <Link to={linkTo} className="summary-card-link-btn">
+        {linkText} <ArrowRight size={14} />
+      </Link>
+      <div className="summary-card-bg-icon">
+        <Icon size={120} strokeWidth={1.5} />
+      </div>
+    </div>
+  );
+};
+
 const Reports = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,7 +76,7 @@ const Reports = () => {
   const [residents, setResidents] = useState([]);
   const [savedReports, setSavedReports] = useState({});
   const [isSaving, setIsSaving] = useState(false);
-  
+  const [showPaidTable, setShowPaidTable] = useState(true);
   // Filters
   const currentMonth = new Date().toISOString().slice(0, 7);
   
@@ -379,19 +418,23 @@ const Reports = () => {
     });
   };
 
-
-
   const renderResidentReports = () => (
     <div style={{ display: 'grid', gridTemplateColumns: reportType === 'All Reports' ? '1fr 1fr' : '1fr 2fr', gap: '24px' }}>
       {/* Summary Section */}
       <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2d3748', marginBottom: '20px' }}>Resident Registration Summary</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-          <div className="summary-card card-blue" style={{ padding: '20px', alignItems: 'center' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem' }}>Registered</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem' }}>{resStats.registered}</span>
-          </div>
-
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+          <StatCard 
+            title="Resident Registered" 
+            value={resStats.registered} 
+            icon={Users} 
+            colorTheme="blue" 
+            trend="up" 
+            trendValue="+7%" 
+            trendText="vs. last 7 days" 
+            linkText="View all" 
+            linkTo="/admin/residents" 
+          />
         </div>
       </div>
 
@@ -454,34 +497,84 @@ const Reports = () => {
       <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2d3748', marginBottom: '20px' }}>Summary</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-          <div className="summary-card card-yellow" style={{ padding: '20px', alignItems: 'center', backgroundColor: '#fffff0', borderColor: '#fefcbf' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem', color: '#b7791f' }}>Total Earned</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem', color: '#975a16' }}>₱{(stats.earned || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-          </div>
-          <div className="summary-card card-blue" style={{ padding: '20px', alignItems: 'center' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem' }}>Total Requests</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem' }}>{stats.total}</span>
-          </div>
-          <div className="summary-card card-green" style={{ padding: '20px', alignItems: 'center' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem' }}>Paid</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem' }}>{stats.completed}</span>
-          </div>
-          <div className="summary-card card-green" style={{ padding: '20px', alignItems: 'center', backgroundColor: '#e6fffa', borderColor: '#b2f5ea', color: '#285e61' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem', color: '#2c7a7b' }}>Approved</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem', color: '#234e52' }}>{stats.approved}</span>
-          </div>
-          <div className="summary-card card-orange" style={{ padding: '20px', alignItems: 'center' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem' }}>Pending</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem' }}>{stats.pending}</span>
-          </div>
-          <div className="summary-card card-red" style={{ padding: '20px', alignItems: 'center', backgroundColor: '#fff5f5', borderColor: '#fed7d7', color: '#c53030' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem', color: '#e53e3e' }}>Expired</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem', color: '#9b2c2c' }}>{stats.expired}</span>
-          </div>
-          <div className="summary-card card-red" style={{ padding: '20px', alignItems: 'center' }}>
-            <span className="summary-card-title" style={{ marginBottom: '8px', fontSize: '0.9rem' }}>Rejected</span>
-            <span className="summary-card-value" style={{ fontSize: '2.2rem' }}>{stats.trash}</span>
-          </div>
+          <StatCard 
+            title="Total Earned" 
+            value={formatCurrencyAbbreviated(stats.earned || 0)} 
+            valuePrefix="₱"
+            icon={Coins} 
+            colorTheme="gold" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View details" 
+            linkTo="/admin/completed" 
+          />
+          <StatCard 
+            title="Total Requests" 
+            value={stats.total} 
+            icon={FileText} 
+            colorTheme="blue" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View all" 
+            linkTo="/admin/document-requests" 
+          />
+          <StatCard 
+            title="Paid" 
+            value={stats.completed} 
+            icon={CheckCircle} 
+            colorTheme="green" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View all" 
+            linkTo="/admin/completed" 
+          />
+          <StatCard 
+            title="Approved" 
+            value={stats.approved} 
+            icon={CheckCircle} 
+            colorTheme="teal" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View all" 
+            linkTo="/admin/completed" 
+          />
+          <StatCard 
+            title="Pending" 
+            value={stats.pending} 
+            icon={Clock} 
+            colorTheme="yellow" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View all" 
+            linkTo="/admin/document-requests" 
+          />
+          <StatCard 
+            title="Expired" 
+            value={stats.expired} 
+            icon={CalendarX} 
+            colorTheme="purple" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View all" 
+            linkTo="/admin/trash" 
+          />
+          <StatCard 
+            title="Rejected" 
+            value={stats.trash} 
+            icon={Trash2} 
+            colorTheme="red" 
+            trend="neutral" 
+            trendValue="--" 
+            trendText="no change" 
+            linkText="View all" 
+            linkTo="/admin/trash" 
+          />
         </div>
       </div>
 
@@ -630,6 +723,52 @@ const Reports = () => {
         </div>
       </div>
       )}
+      
+      {/* Paid Requests Breakdown Table */}
+      <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginTop: '24px', gridColumn: reportType === 'All Reports' ? '1' : '1 / -1' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2d3748', margin: 0 }}>Paid Requests Breakdown</h3>
+          <button onClick={() => setShowPaidTable(!showPaidTable)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: '#4a5568', border: 'none', cursor: 'pointer', padding: '4px' }} title={showPaidTable ? "Collapse Table" : "Expand Table"}>
+            {showPaidTable ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </button>
+        </div>
+        {showPaidTable && (
+          <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#4a5568' }}>
+                <th style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.9rem' }}>Request Id</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.9rem' }}>Document Type</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.9rem' }}>Payment Method</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.9rem' }}>Date Request</th>
+                <th style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.9rem' }}>Fees</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRequests.filter(r => r.status === 'Completed').length > 0 ? (
+                filteredRequests.filter(r => r.status === 'Completed').map((req, idx) => (
+                  <tr key={req.id || idx} style={{ borderBottom: '1px solid #edf2f7' }}>
+                    <td style={{ padding: '12px 16px', color: '#2d3748', fontSize: '0.9rem' }}>{req.id || 'N/A'}</td>
+                    <td style={{ padding: '12px 16px', color: '#2d3748', fontSize: '0.9rem' }}>{req.type || req.documentType || 'Other'}</td>
+                    <td style={{ padding: '12px 16px', color: '#2d3748', fontSize: '0.9rem' }}>{req.deliveryMethod || 'N/A'}</td>
+                    <td style={{ padding: '12px 16px', color: '#2d3748', fontSize: '0.9rem' }}>
+                      {req.timestamp ? (req.timestamp.toDate ? req.timestamp.toDate().toLocaleDateString() : new Date(req.timestamp.seconds * 1000).toLocaleDateString()) : 'N/A'}
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#38a169', fontWeight: 600, fontSize: '0.9rem' }}>
+                      ₱{(parseFloat(req.totalFee || 0)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#a0aec0' }}>No paid requests found for this period.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 

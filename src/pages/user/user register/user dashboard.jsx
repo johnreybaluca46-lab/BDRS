@@ -13,6 +13,31 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import CalendarCard from '../../../components/CalendarCard';
+import { FileText, Clock, CheckCircle, Trash2, CalendarX, ArrowRight } from 'lucide-react';
+
+const StatCard = ({ title, value, icon: Icon, colorTheme, linkText, linkTo, valuePrefix = '', style, className = '' }) => {
+  return (
+    <div className={`summary-card new-card-${colorTheme} ${className}`} style={style}>
+      <div className="summary-card-header">
+        <div className="summary-card-icon-wrapper">
+          <Icon size={22} strokeWidth={2.5} />
+        </div>
+        <span className="summary-card-title">{title}</span>
+      </div>
+      <div className="summary-card-body">
+        <div className="summary-card-value-wrapper">
+          <span className="summary-card-value">{valuePrefix}{value}</span>
+        </div>
+      </div>
+      <Link to={linkTo} className="summary-card-link-btn">
+        {linkText} <ArrowRight size={14} />
+      </Link>
+      <div className="summary-card-bg-icon">
+        <Icon size={120} strokeWidth={1.5} />
+      </div>
+    </div>
+  );
+};
 
 export default function UserDashboard() {
   const cachedStats = JSON.parse(sessionStorage.getItem('residentDashboardStats')) || null;
@@ -102,7 +127,7 @@ export default function UserDashboard() {
           const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
           return timeB - timeA;
         });
-        const newRecent = reqs.slice(0, 4);
+        const newRecent = reqs.slice(0, 10);
         setRecentRequests(newRecent);
         sessionStorage.setItem('residentDashboardRecent', JSON.stringify(newRecent));
         
@@ -138,6 +163,7 @@ export default function UserDashboard() {
     switch (status?.toLowerCase()) {
       case 'processing':
       case 'pending': return 'status-pending';
+      case 'processing payment': return 'status-processing';
       case 'approved': return 'status-approved';
       case 'completed': return 'status-completed';
       case 'rejected':
@@ -182,36 +208,54 @@ export default function UserDashboard() {
           {loading ? <SkeletonDashboard /> : <><GreetingBanner pendingCount={stats.pending} />
           {/* Summary Cards */}
           <div className="summary-cards">
-            <div className="summary-card card-blue">
-              <span className="summary-card-title">Total Requests</span>
-              <span className="summary-card-value">{stats.total}</span>
-              <Link to="/user-my-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-orange">
-              <span className="summary-card-title">Pending Requests</span>
-              <span className="summary-card-value">{stats.pending}</span>
-              <Link to="/user-my-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-green">
-              <span className="summary-card-title">Approved Requests</span>
-              <span className="summary-card-value">{stats.approved}</span>
-              <Link to="/user-approved-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-green">
-              <span className="summary-card-title">Completed Requests</span>
-              <span className="summary-card-value">{stats.completed}</span>
-              <Link to="/user-completed-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-red">
-              <span className="summary-card-title">Rejected Requests</span>
-              <span className="summary-card-value">{stats.trash}</span>
-              <Link to="/user-rejected-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card" style={{ borderTopColor: '#805ad5', backgroundColor: '#faf5ff' }}>
-              <span className="summary-card-title" style={{ color: '#553c9a' }}>Expired Documents</span>
-              <span className="summary-card-value" style={{ color: '#6b46c1' }}>{stats.expired}</span>
-              <Link to="/user-rejected-requests" className="summary-card-link" style={{ color: '#805ad5' }}>View all</Link>
-            </div>
+            <StatCard
+              title="Total Requests"
+              value={stats.total}
+              icon={FileText}
+              colorTheme="blue"
+              linkText="View all"
+              linkTo="/user-my-requests"
+            />
+            <StatCard
+              title="Pending Requests"
+              value={stats.pending}
+              icon={Clock}
+              colorTheme="yellow"
+              linkText="View all"
+              linkTo="/user-my-requests"
+            />
+            <StatCard
+              title="Approved Requests"
+              value={stats.approved}
+              icon={CheckCircle}
+              colorTheme="teal"
+              linkText="View all"
+              linkTo="/user-approved-requests"
+            />
+            <StatCard
+              title="Completed Requests"
+              value={stats.completed}
+              icon={CheckCircle}
+              colorTheme="green"
+              linkText="View all"
+              linkTo="/user-completed-requests"
+            />
+            <StatCard
+              title="Rejected Requests"
+              value={stats.trash}
+              icon={Trash2}
+              colorTheme="red"
+              linkText="View all"
+              linkTo="/user-rejected-requests"
+            />
+            <StatCard
+              title="Expired Documents"
+              value={stats.expired}
+              icon={CalendarX}
+              colorTheme="purple"
+              linkText="View all"
+              linkTo="/user-rejected-requests"
+            />
           </div>
 
           {/* Bottom Section */}
@@ -260,9 +304,7 @@ export default function UserDashboard() {
             </div>
 
             {/* Calendar */}
-            <div className="dashboard-panel">
-              <CalendarCard />
-            </div>
+            <CalendarCard />
           </div>
 
           {/* Resident Overview Charts Section */}

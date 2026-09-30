@@ -13,7 +13,15 @@ import {
   Settings,
   Bell,
   Trash2,
-  Mail
+  Mail,
+  AlertTriangle,
+  Clock,
+  CalendarX,
+  User,
+  Coins,
+  TrendingUp,
+  Minus,
+  ArrowRight
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -39,7 +47,6 @@ import AdminHeaderRight from '../../components/AdminHeaderRight';
 import Logo from '../../assets/logo/barangay buluan seal.png';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useMaintenance } from '../../context/MaintenanceContext';
-import { AlertTriangle } from 'lucide-react';
 import CalendarCard from '../../components/CalendarCard';
 
 const recentRequests = [
@@ -48,6 +55,34 @@ const recentRequests = [
   { id: 3, name: 'Pedro Reyes', type: 'Business Permit', status: 'Pending' },
   { id: 4, name: 'Ana Lopez', type: 'Certificate of Indigency', status: 'Pending' },
 ];
+const formatCurrencyAbbreviated = (num) => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return num.toString();
+};
+const StatCard = ({ title, value, icon: Icon, colorTheme, trend, trendValue, trendText, linkText, linkTo, valuePrefix = '' }) => {
+  return (
+    <div className={`summary-card new-card-${colorTheme}`}>
+      <div className="summary-card-header">
+        <div className="summary-card-icon-wrapper">
+          <Icon size={22} strokeWidth={2.5} />
+        </div>
+        <span className="summary-card-title">{title}</span>
+      </div>
+      <div className="summary-card-body">
+        <div className="summary-card-value-wrapper">
+          <span className="summary-card-value">{valuePrefix}{value}</span>
+        </div>
+      </div>
+      <Link to={linkTo} className="summary-card-link-btn">
+        {linkText} <ArrowRight size={14} />
+      </Link>
+      <div className="summary-card-bg-icon">
+        <Icon size={120} strokeWidth={1.5} />
+      </div>
+    </div>
+  );
+};
 
 export default function Dashboard() {
   useEffect(() => {
@@ -68,8 +103,8 @@ export default function Dashboard() {
   const { isMaintenanceActive } = useMaintenance();
 
   useEffect(() => {
-    // Fetch Recent 4 Requests
-    const qRecent = query(collection(db, 'requests'), orderBy('timestamp', 'desc'), limit(4));
+    // Fetch Recent 10 Requests
+    const qRecent = query(collection(db, 'requests'), orderBy('timestamp', 'desc'), limit(10));
     const unsubRecent = onSnapshot(qRecent, (snapshot) => {
       const reqs = [];
       snapshot.forEach(doc => {
@@ -249,48 +284,97 @@ export default function Dashboard() {
 
           {/* Summary Cards */}
           <div className="summary-cards">
-            <div className="summary-card card-blue">
-              <span className="summary-card-title">Total Request</span>
-              <span className="summary-card-value">{stats.total}</span>
-              <Link to="/admin/document-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-orange">
-              <span className="summary-card-title">Pending Request</span>
-              <span className="summary-card-value">{stats.pending}</span>
-              <Link to="/admin/document-requests" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-green">
-              <span className="summary-card-title">Total Completed</span>
-              <span className="summary-card-value">{stats.completed}</span>
-              <Link to="/admin/completed" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-red">
-              <span className="summary-card-title">Trash Request</span>
-              <span className="summary-card-value">{stats.trash}</span>
-              <Link to="/admin/trash" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-purple">
-              <span className="summary-card-title">Expired Request</span>
-              <span className="summary-card-value">{stats.expired}</span>
-              <Link to="/admin/trash" className="summary-card-link" style={{ color: '#805ad5' }}>View all</Link>
-            </div>
-            <div className="summary-card card-blue">
-              <span className="summary-card-title">Resident Registered</span>
-              <span className="summary-card-value">{resStats.registered}</span>
-              <Link to="/admin/residents" className="summary-card-link">View all</Link>
-            </div>
-            <div className="summary-card card-green">
-              <span className="summary-card-title">Active Users</span>
-              <span className="summary-card-value">{resStats.active}/{resStats.registered}</span>
-              <Link to="/admin/residents" className="summary-card-link" style={{ color: '#2f855a' }}>View all</Link>
-            </div>
-            <div className="summary-card card-yellow" style={{ backgroundColor: '#fffff0', border: '1px solid #fefcbf' }}>
-              <span className="summary-card-title" style={{ color: '#b7791f' }}>Total Earned</span>
-              <span className="summary-card-value" style={{ color: '#975a16' }}>₱{stats.earned.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-              <Link to="/admin/completed" className="summary-card-link" style={{ color: '#d69e2e' }}>View details</Link>
-            </div>
-
+            <StatCard 
+              title="Total Request" 
+              value={stats.total} 
+              icon={FileText} 
+              colorTheme="blue" 
+              trend="up" 
+              trendValue="+12%" 
+              trendText="vs. last 7 days" 
+              linkText="View all" 
+              linkTo="/admin/document-requests" 
+            />
+            <StatCard 
+              title="Pending Request" 
+              value={stats.pending} 
+              icon={Clock} 
+              colorTheme="yellow" 
+              trend="neutral" 
+              trendValue="--" 
+              trendText="no change" 
+              linkText="View all" 
+              linkTo="/admin/document-requests" 
+            />
+            <StatCard 
+              title="Total Completed" 
+              value={stats.completed} 
+              icon={CheckCircle} 
+              colorTheme="green" 
+              trend="up" 
+              trendValue="+8%" 
+              trendText="vs. last 7 days" 
+              linkText="View all" 
+              linkTo="/admin/completed" 
+            />
+            <StatCard 
+              title="Trash Request" 
+              value={stats.trash} 
+              icon={Trash2} 
+              colorTheme="red" 
+              trend="neutral" 
+              trendValue="--" 
+              trendText="no change" 
+              linkText="View all" 
+              linkTo="/admin/trash" 
+            />
+            <StatCard 
+              title="Expired Request" 
+              value={stats.expired} 
+              icon={CalendarX} 
+              colorTheme="purple" 
+              trend="neutral" 
+              trendValue="--" 
+              trendText="no change" 
+              linkText="View all" 
+              linkTo="/admin/trash" 
+            />
+            <StatCard 
+              title="Resident Registered" 
+              value={resStats.registered} 
+              icon={Users} 
+              colorTheme="blue" 
+              trend="up" 
+              trendValue="+7%" 
+              trendText="vs. last 7 days" 
+              linkText="View all" 
+              linkTo="/admin/residents" 
+            />
+            <StatCard 
+              title="Active Users" 
+              value={`${resStats.active}/${resStats.registered}`} 
+              icon={User} 
+              colorTheme="teal" 
+              trend="neutral" 
+              trendValue="--" 
+              trendText="no change" 
+              linkText="View all" 
+              linkTo="/admin/residents" 
+            />
+            <StatCard 
+              title="Total Earned" 
+              value={formatCurrencyAbbreviated(stats.earned)} 
+              valuePrefix="₱"
+              icon={Coins} 
+              colorTheme="gold" 
+              trend="up" 
+              trendValue="+15%" 
+              trendText="vs. last 7 days" 
+              linkText="View details" 
+              linkTo="/admin/completed" 
+            />
           </div>
+
 
           {/* Bottom Section */}
           <div className="dashboard-bottom-grid">
@@ -339,9 +423,7 @@ export default function Dashboard() {
             </div>
 
             {/* Calendar */}
-            <div className="dashboard-panel">
-              <CalendarCard />
-            </div>
+            <CalendarCard />
           </div>
 
           {/* Extra Charts Section */}

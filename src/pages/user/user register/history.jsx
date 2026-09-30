@@ -7,8 +7,33 @@ import '../../../lib/admin-layout.css';
 import '../../../lib/history.css';
 import { collection, query, where, onSnapshot, writeBatch, doc } from 'firebase/firestore';
 import { auth, db } from '../../../database/firebase';
-import { Trash2, FileText, Check, Clock, X, Bell } from 'lucide-react';
+import { Trash2, FileText, Check, Clock, X, Bell, CheckCircle, ArrowRight } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
+
+const StatCard = ({ title, value, icon: Icon, colorTheme, linkText, linkTo, valuePrefix = '', style, className = '' }) => {
+  return (
+    <div className={`summary-card new-card-${colorTheme} ${className}`} style={style}>
+      <div className="summary-card-header">
+        <div className="summary-card-icon-wrapper">
+          <Icon size={22} strokeWidth={2.5} />
+        </div>
+        <span className="summary-card-title">{title}</span>
+      </div>
+      <div className="summary-card-body">
+        <div className="summary-card-value-wrapper">
+          <span className="summary-card-value">{valuePrefix}{value}</span>
+        </div>
+      </div>
+      <Link to={linkTo} className="summary-card-link-btn">
+        {linkText} <ArrowRight size={14} />
+      </Link>
+      <div className="summary-card-bg-icon">
+        <Icon size={120} strokeWidth={1.5} />
+      </div>
+    </div>
+  );
+};
 
 export default function RequestHistory() {
   const [historyLogs, setHistoryLogs] = useState([]);
@@ -169,19 +194,31 @@ export default function RequestHistory() {
               </div>
             </div>
 
-            <div className="activity-summary-cards">
-              <div className="activity-summary-card card-green-light">
-                <h4>Approved</h4>
-                <div className="value">{stats.actions}</div>
-              </div>
-              <div className="activity-summary-card card-red-light">
-                <h4>Rejected</h4>
-                <div className="value">{stats.rejected}</div>
-              </div>
-              <div className="activity-summary-card card-blue-light">
-                <h4>Document Actions</h4>
-                <div className="value">{historyLogs.length}</div>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+              <StatCard
+                title="Approved"
+                value={stats.actions}
+                icon={CheckCircle}
+                colorTheme="green"
+                linkText="View all"
+                linkTo="/user-approved-requests"
+              />
+              <StatCard
+                title="Rejected"
+                value={stats.rejected}
+                icon={Trash2}
+                colorTheme="red"
+                linkText="View all"
+                linkTo="/user-rejected-requests"
+              />
+              <StatCard
+                title="Document Actions"
+                value={historyLogs.length}
+                icon={FileText}
+                colorTheme="blue"
+                linkText="View all"
+                linkTo="/user-my-requests"
+              />
             </div>
 
             {loading ? <SkeletonTimeline /> : filteredLogs.length > 0 ? (

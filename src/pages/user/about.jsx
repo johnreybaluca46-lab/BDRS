@@ -127,9 +127,9 @@ export default function About() {
             <div style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>
               <p>By using the BDRS platform, you agree to the following terms:</p>
               <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Accuracy of Information:</strong> You certify that all personal and business information provided in your requests is true, correct, and accurate to the best of your knowledge.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Fraudulent Requests:</strong> Any falsification of documents, identities, or information may result in the rejection of your request and potential legal action.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Processing & Collection:</strong> A polling number will be provided upon successful submission. Documents must be collected in person at the Barangay Hall by presenting the polling number and the original copies of uploaded Valid IDs.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Accuracy of Information:</strong> You certify that all personal information, business details, and uploaded IDs provided in your resident registration and document requests are true, correct, and accurate to the best of your knowledge.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Fraudulent Submissions:</strong> Any falsification of documents, identities, or information during registration or requesting may result in the rejection of your application and potential legal action.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Processing & Collection:</strong> A polling number will be provided upon successful submission of document requests. Documents must be collected in person at the Barangay Hall by presenting the polling number and the original copies of uploaded Valid IDs.</li>
                 <li style={{ marginBottom: '0.5rem' }}><strong>Payment:</strong> Any applicable fees for the requested documents must be paid in full at the Barangay Hall during collection.</li>
               </ul>
             </div>
@@ -143,10 +143,10 @@ export default function About() {
             <div style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>
               <p>Your privacy is important to us. This policy outlines how we handle your data in accordance with the Data Privacy Act of 2012.</p>
               <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Data Collection:</strong> We collect personal information (name, address, date of birth, contact number, etc.) and uploaded IDs solely for the purpose of processing and verifying your document requests.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Data Usage:</strong> The information collected is used exclusively by authorized barangay officials for the issuance of requested certificates and clearances.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Data Protection:</strong> We implement security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Data Retention:</strong> Your data will be kept only as long as necessary for the fulfillment of the request and for required barangay record-keeping.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Data Collection:</strong> We collect personal information (name, address, date of birth, contact number, etc.) and uploaded IDs solely for the purpose of processing your resident registration and verifying your document requests.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Data Usage:</strong> The information collected is used exclusively by authorized barangay officials for the approval of resident accounts and the issuance of requested certificates and clearances.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Data Protection:</strong> We implement strict security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</li>
+                <li style={{ marginBottom: '0.5rem' }}><strong>Data Retention:</strong> Your data will be kept securely as long as you are an active registered resident, or as necessary for the fulfillment of document requests and required barangay record-keeping.</li>
               </ul>
             </div>
           </div>

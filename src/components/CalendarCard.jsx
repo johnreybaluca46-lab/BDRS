@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 const CalendarCard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,6 +29,12 @@ const CalendarCard = () => {
   for (let i = 1; i <= numDays; i++) {
     days.push(i);
   }
+  
+  // Fill the rest of the week if it doesn't end on a Saturday
+  const totalCells = Math.ceil(days.length / 7) * 7;
+  while (days.length < totalCells) {
+    days.push(null);
+  }
 
   const isToday = (day) => {
     const today = new Date();
@@ -36,51 +42,87 @@ const CalendarCard = () => {
   };
 
   return (
-    <div className="calendar-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: 0, color: '#1a202c' }}>
-          {monthName} {year}
-        </h3>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handlePrevMonth} style={{ background: '#edf2f7', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}>
-            <ChevronLeft size={16} color="#4a5568" />
+    <div className="calendar-card-container">
+      
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ backgroundColor: '#eef2ff', color: '#4f46e5', padding: '12px', borderRadius: '12px', display: 'flex' }}>
+            <Calendar size={24} strokeWidth={2} />
+          </div>
+          <div>
+            <h3 className="calendar-header-title">
+              {monthName} {year}
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: '#6b7280' }}>Select a date</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={handlePrevMonth} style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex', color: '#1e293b' }}>
+            <ChevronLeft size={18} />
           </button>
-          <button onClick={handleNextMonth} style={{ background: '#edf2f7', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}>
-            <ChevronRight size={16} color="#4a5568" />
+          <button onClick={handleNextMonth} style={{ background: '#f1f5f9', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex', color: '#1e293b' }}>
+            <ChevronRight size={18} />
           </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '5px', textAlign: 'center', marginBottom: '10px' }}>
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-          <div key={day} style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#718096' }}>{day}</div>
+      {/* Days of Week */}
+      <div className="calendar-grid-row" style={{ textAlign: 'center', marginBottom: '8px' }}>
+        {['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'].map((day, idx) => (
+          <div key={day} className="calendar-day-header" style={{ 
+            fontWeight: 700, 
+            color: '#64748b', 
+            backgroundColor: '#f8fafc',
+            borderRadius: idx === 0 ? '8px 0 0 8px' : idx === 6 ? '0 8px 8px 0' : '0' 
+          }}>
+            {day}
+          </div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '5px', textAlign: 'center' }}>
-        {days.map((day, idx) => (
-          <div 
-            key={idx} 
-            style={{ 
-              padding: '8px 0', 
-              fontSize: '0.9rem', 
-              color: day ? (isToday(day) ? '#fff' : '#4a5568') : 'transparent',
-              backgroundColor: day && isToday(day) ? '#3182ce' : 'transparent',
-              borderRadius: '50%',
-              fontWeight: isToday(day) ? 'bold' : 'normal',
-              cursor: day ? 'pointer' : 'default',
-              transition: 'background-color 0.2s',
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: 'auto'
-            }}
-          >
-            {day || ''}
-          </div>
-        ))}
+      {/* Calendar Grid */}
+      <div className="calendar-grid-row" style={{ flexGrow: 1 }}>
+        {days.map((day, idx) => {
+          const isWeekend = idx % 7 === 0 || idx % 7 === 6;
+          const today = day && isToday(day);
+          
+          return (
+            <div 
+              key={idx} 
+              className="calendar-cell-date"
+              style={{ 
+                backgroundColor: day ? (isWeekend ? '#f8fafc' : 'white') : '#f1f5f9',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: day ? 'pointer' : 'default',
+                fontWeight: 600,
+                color: day ? (isWeekend ? '#1d4ed8' : '#0f172a') : 'transparent',
+                border: day && !isWeekend ? '1px solid #f8fafc' : 'none'
+              }}
+            >
+              {today ? (
+                <div style={{
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(59, 130, 246, 0.4)'
+                }}>
+                  {day}
+                </div>
+              ) : (
+                day || ''
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

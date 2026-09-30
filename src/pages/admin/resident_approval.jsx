@@ -237,43 +237,52 @@ export default function ResidentApproval() {
     });
   };
 
-  const handleReject = (id, name, qrToken) => {
-    Swal.fire({
+  const handleReject = async (id, name, qrToken) => {
+    const { value: reason } = await Swal.fire({
       title: 'Reject Resident?',
-      text: `Are you sure you want to reject ${name}?`,
+      text: `Please provide a reason for rejecting ${name}'s registration:`,
+      input: 'textarea',
+      inputPlaceholder: 'Type your reason here...',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#e53e3e',
       cancelButtonColor: '#a0aec0',
-      confirmButtonText: 'Yes, reject!'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const batch = writeBatch(db);
-          batch.update(doc(db, 'residents', id), {
-            status: 'Rejected',
-            rejectedAt: serverTimestamp()
-          });
-          if (qrToken) {
-            batch.update(doc(db, 'registration_status', qrToken), {
-              status: 'Rejected',
-              updatedAt: serverTimestamp()
-            });
-          }
-          await batch.commit();
-          await logActivity({
-            action: 'Resident Rejected',
-            targetType: 'Resident',
-            targetId: id,
-            description: `Rejected registration for ${name}`
-          });
-          Swal.fire('Rejected!', `${name}'s registration has been rejected.`, 'success');
-        } catch (error) {
-          console.error("Error rejecting resident:", error);
-          Swal.fire('Error!', 'There was an error rejecting the resident.', 'error');
+      confirmButtonText: 'Yes, reject!',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to provide a reason!'
         }
       }
     });
+
+    if (reason) {
+      try {
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'residents', id), {
+          status: 'Rejected',
+          rejectReason: reason,
+          rejectedAt: serverTimestamp()
+        });
+        if (qrToken) {
+          batch.update(doc(db, 'registration_status', qrToken), {
+            status: 'Rejected',
+            rejectReason: reason,
+            updatedAt: serverTimestamp()
+          });
+        }
+        await batch.commit();
+        await logActivity({
+          action: 'Resident Rejected',
+          targetType: 'Resident',
+          targetId: id,
+          description: `Rejected registration for ${name}. Reason: ${reason}`
+        });
+        Swal.fire('Rejected!', `${name}'s registration has been rejected.`, 'success');
+      } catch (error) {
+        console.error("Error rejecting resident:", error);
+        Swal.fire('Error!', 'There was an error rejecting the resident.', 'error');
+      }
+    }
   };
 
   const getStatusClass = (status) => {

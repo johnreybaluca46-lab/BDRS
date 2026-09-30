@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar';
 import { Download, Info, ShieldCheck, Monitor, Smartphone, Users } from 'lucide-react';
+import { db } from '../../database/firebase';
+import { doc, getDoc, updateDoc, setDoc, increment } from 'firebase/firestore';
 import '../../lib/download.css';
 
 // Import images
@@ -19,35 +21,69 @@ export default function DownloadPage() {
     document.title = "BDRS | Download";
     window.scrollTo(0, 0);
 
-    // Fetch actual download counts from GitHub Releases
-    fetch('https://api.github.com/repos/johnreybaluca46-lab/BDRS/releases')
-      .then(res => res.json())
-      .then(data => {
-        let exe = 0;
-        let apk = 0;
-        if (Array.isArray(data)) {
-          data.forEach(release => {
+    const fetchCounts = async () => {
+      try {
+        // Fetch actual download counts from GitHub Releases
+        const ghRes = await fetch('https://api.github.com/repos/johnreybaluca46-lab/BDRS/releases');
+        const ghData = await ghRes.json();
+        
+        let ghExe = 0;
+        let ghApk = 0;
+        if (Array.isArray(ghData)) {
+          ghData.forEach(release => {
             if (release.assets && Array.isArray(release.assets)) {
               release.assets.forEach(asset => {
                 if (asset.name.endsWith('.exe')) {
-                  exe += asset.download_count || 0;
+                  ghExe += asset.download_count || 0;
                 } else if (asset.name.endsWith('.apk')) {
-                  apk += asset.download_count || 0;
+                  ghApk += asset.download_count || 0;
                 }
               });
             }
           });
         }
-        setExeCount(exe);
-        setApkCount(apk);
-      })
-      .catch(err => console.error('Error fetching download count:', err));
+
+        // Fetch DB counts
+        const docRef = doc(db, 'stats', 'downloads');
+        const docSnap = await getDoc(docRef);
+        let dbExe = 0;
+        let dbApk = 0;
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          dbExe = data.exe || 0;
+          dbApk = data.apk || 0;
+        } else {
+          // Initialize if not exists
+          await setDoc(docRef, { exe: 0, apk: 0 });
+        }
+
+        setExeCount(ghExe + dbExe);
+        setApkCount(ghApk + dbApk);
+      } catch (err) {
+        console.error('Error fetching download count:', err);
+      }
+    };
+
+    fetchCounts();
   }, []);
 
   const formatNumber = (num) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
     if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
     return num.toString();
+  };
+
+  const handleExeDownload = async () => {
+    setExeCount(prev => prev + 1);
+    try {
+      const docRef = doc(db, 'stats', 'downloads');
+      await updateDoc(docRef, {
+        exe: increment(1)
+      });
+    } catch (err) {
+      console.error('Error updating download count:', err);
+    }
   };
 
   return (
@@ -91,7 +127,7 @@ export default function DownloadPage() {
                   rel="noopener noreferrer" 
                   className="download-btn" 
                   style={{ textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '0' }}
-                  onClick={() => setExeCount(prev => prev + 1)}
+                  onClick={handleExeDownload}
                 >
                   <Download size={20} />
                   Download .EXE
