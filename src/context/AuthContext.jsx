@@ -139,6 +139,7 @@ export function AuthProvider({ children }) {
             await signInWithCustomToken(auth, verifyData.customToken);
             setUserRole(verifyData.role);
             setUserData(verifyData.user);
+            sessionStorage.removeItem('pinVerified'); // Ensure PIN is requested on new login
             return verifyData;
         } else {
             throw new Error('Failed to verify session after login');
@@ -166,6 +167,7 @@ export function AuthProvider({ children }) {
         // Clear old localstorage junk to be safe
         sessionStorage.removeItem('isAdmin');
         sessionStorage.removeItem('isResident');
+        sessionStorage.removeItem('pinVerified');
     };
 
     const value = {

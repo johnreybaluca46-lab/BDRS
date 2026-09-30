@@ -397,27 +397,9 @@ export default function ViewResident() {
             <div style={{padding: '40px', textAlign: 'center'}}>Resident not found.</div>
           ) : (
           <div className="request-details-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <h2 className="card-title" style={{ marginBottom: 0 }}>Resident Details</h2>
-              <div className="request-status-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h4 className="section-subtitle" style={{ textAlign: 'center', margin: '0 0 8px 0' }}>Resident Status</h4>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
-                  <span className={`status-badge-large ${getBadgeClass(residentData.status)}`}>
-                    {residentData.status === 'Approved' ? 'Registered' : residentData.status}
-                  </span>
-                  {residentData.status === 'Rejected' && (
-                    <div style={{ marginTop: '10px', backgroundColor: '#fef2f2', padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', maxWidth: '300px' }}>
-                      <span style={{ display: 'block', color: '#b91c1c', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px', textTransform: 'uppercase' }}>Reason for Rejection</span>
-                      <span style={{ color: '#475569', fontSize: '0.9rem', wordBreak: 'break-word' }}>
-                        {residentData.rejectReason || 'No specific reason provided.'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <h2 className="card-title" style={{ marginBottom: '1.5rem' }}>Resident Details</h2>
             
-            <div className="details-top-section">
+            <div className="details-top-section" style={{ flexWrap: 'wrap' }}>
               <div className="user-profile-section">
                 {residentData.idPicture ? (
                   <img src={residentData.idPicture} alt="2x2 Photo" className="id-picture-preview" />
@@ -454,6 +436,23 @@ export default function ViewResident() {
                   }
                   return null;
                 })}
+              </div>
+
+              <div className="request-status-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                <h4 className="section-subtitle" style={{ textAlign: 'center', margin: '0 0 8px 0' }}>Resident Status</h4>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
+                  <span className={`status-badge-large ${getBadgeClass(residentData.status)}`}>
+                    {residentData.status === 'Approved' ? 'Registered' : residentData.status}
+                  </span>
+                  {residentData.status === 'Rejected' && (
+                    <div style={{ marginTop: '10px', backgroundColor: '#fef2f2', padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', maxWidth: '300px' }}>
+                      <span style={{ display: 'block', color: '#b91c1c', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px', textTransform: 'uppercase' }}>Reason for Rejection</span>
+                      <span style={{ color: '#475569', fontSize: '0.9rem', wordBreak: 'break-word' }}>
+                        {residentData.rejectReason || 'No specific reason provided.'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             

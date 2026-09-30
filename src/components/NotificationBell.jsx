@@ -11,7 +11,9 @@ export default function NotificationBell() {
   const [cachedUnread, setCachedUnread] = useState(() => {
     return parseInt(sessionStorage.getItem('adminUnreadCount') || '0', 10);
   });
-  const [lastReadTime, setLastReadTime] = useState(0);
+  const [lastReadTime, setLastReadTime] = useState(() => {
+    return parseInt(sessionStorage.getItem('adminLastReadTime') || '0', 10);
+  });
   const [deletedIds, setDeletedIds] = useState([]);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -84,7 +86,10 @@ export default function NotificationBell() {
         unsubscribeDoc = onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data.notification_lastReadTime) setLastReadTime(data.notification_lastReadTime);
+            if (data.notification_lastReadTime) {
+              setLastReadTime(data.notification_lastReadTime);
+              sessionStorage.setItem('adminLastReadTime', data.notification_lastReadTime.toString());
+            }
             if (data.notification_deletedIds) setDeletedIds(data.notification_deletedIds);
           }
         });

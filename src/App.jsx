@@ -36,6 +36,7 @@ import ResidentApproval from './pages/admin/resident_approval';
 import ViewResident from './pages/admin/view_resident';
 import ResidentProtectedRoute from './components/ResidentProtectedRoute';
 import UserInstruction from './pages/user/user_instruction';
+import WhatsNew from './pages/user/whatsnew';
 import UserDashboard from './pages/user/user register/user dashboard';
 import RequestDocuments from './pages/user/user register/request documents';
 import MyRequests from './pages/user/user register/my request';
@@ -185,6 +186,7 @@ function App() {
             <Route path="/user-dashboard" element={<UserDashboard />} />
             <Route path="/user-request-documents" element={<RequestDocuments />} />
             <Route path="/user-instruction" element={<UserInstruction />} />
+            <Route path="/user-whats-new" element={<WhatsNew />} />
             <Route path="/user-my-requests" element={<MyRequests />} />
             <Route path="/user-history" element={<RequestHistory />} />
             <Route path="/user-profile" element={<UserProfile />} />

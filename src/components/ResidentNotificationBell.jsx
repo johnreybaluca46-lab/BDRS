@@ -14,7 +14,9 @@ export default function ResidentNotificationBell() {
   const [cachedUnread, setCachedUnread] = useState(() => {
     return parseInt(sessionStorage.getItem('residentUnreadCount') || '0', 10);
   });
-  const [lastReadTime, setLastReadTime] = useState(0);
+  const [lastReadTime, setLastReadTime] = useState(() => {
+    return parseInt(sessionStorage.getItem('residentLastReadTime') || '0', 10);
+  });
   const [deletedIds, setDeletedIds] = useState([]);
   const [residentDocRef, setResidentDocRef] = useState(null);
   const dropdownRef = useRef(null);
@@ -80,7 +82,10 @@ export default function ResidentNotificationBell() {
             const docSnap = snapshot.docs[0];
             setResidentDocRef(docSnap.ref);
             const data = docSnap.data();
-            if (data.notification_lastReadTime) setLastReadTime(data.notification_lastReadTime);
+            if (data.notification_lastReadTime) {
+              setLastReadTime(data.notification_lastReadTime);
+              sessionStorage.setItem('residentLastReadTime', data.notification_lastReadTime.toString());
+            }
             if (data.notification_deletedIds) setDeletedIds(data.notification_deletedIds);
           }
         });

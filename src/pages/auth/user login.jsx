@@ -125,6 +125,15 @@ export default function UserLogin() {
     }
   }, [location, navigate]);
 
+  const hashPin = async (pin) => {
+    const msgBuffer = new TextEncoder().encode(pin);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     
@@ -142,6 +151,7 @@ export default function UserLogin() {
     }
 
     setLoading(true);
+    sessionStorage.removeItem('pinVerified'); // Ensure PIN is requested on new login
     let locationOverride = null;
 
     try {
@@ -209,8 +219,6 @@ export default function UserLogin() {
       }
 
       // We already verified residentData.status is Approved via Firestore.
-      // Firestore rules also use document-based validation (isApprovedResident).
-      // We no longer need to enforce custom claims here.
 
       // Fetch optional location silently without blocking
       locationOverride = await getOptionalLocation();

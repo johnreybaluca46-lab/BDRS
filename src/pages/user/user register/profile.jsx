@@ -6,10 +6,9 @@ import ResidentProfileDropdown from '../../../components/ResidentProfileDropdown
 import ResidentNotificationBell from '../../../components/ResidentNotificationBell';
 import '../../../lib/admin-layout.css';
 import {
-  User, Edit, Save, X, Lock, Shield, Mail, Phone, MapPin, Calendar, AlertCircle
-  , CheckCircle, XCircle, Monitor, Smartphone, Tablet, Globe, Clock, Trash2
+  User, Edit, Save, X, Lock, Shield, Mail, Phone, MapPin, Calendar, AlertCircle, CheckCircle, XCircle, Monitor, Smartphone, Tablet, Globe, Clock, Trash2, KeyRound, Plus, ChevronRight
 } from 'lucide-react';
-import { collection, query, where, onSnapshot, doc, updateDoc, setDoc, serverTimestamp, orderBy, writeBatch } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, setDoc, deleteDoc, serverTimestamp, orderBy, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -267,6 +266,112 @@ export default function UserProfile() {
   const currentLogs = visibleLoginLogs.slice(indexOfFirstLog, indexOfLastLog);
   const totalPages = Math.ceil(visibleLoginLogs.length / logsPerPage);
 
+  const hashPin = async (pin) => {
+    const msgBuffer = new TextEncoder().encode(pin);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  const promptForPin = async (title, htmlText, confirmButtonText) => {
+    return Swal.fire({
+      title,
+      html: `
+        <p style="color: #4a5568; font-size: 0.95rem; margin-bottom: 20px;">${htmlText}</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <input id="pin-1" class="swal2-input pin-box" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" style="width: 45px; height: 55px; text-align: center; font-size: 24px; padding: 0; margin: 0; border-radius: 8px;">
+          <input id="pin-2" class="swal2-input pin-box" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" style="width: 45px; height: 55px; text-align: center; font-size: 24px; padding: 0; margin: 0; border-radius: 8px;">
+          <input id="pin-3" class="swal2-input pin-box" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" style="width: 45px; height: 55px; text-align: center; font-size: 24px; padding: 0; margin: 0; border-radius: 8px;">
+          <input id="pin-4" class="swal2-input pin-box" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" style="width: 45px; height: 55px; text-align: center; font-size: 24px; padding: 0; margin: 0; border-radius: 8px;">
+          <input id="pin-5" class="swal2-input pin-box" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" style="width: 45px; height: 55px; text-align: center; font-size: 24px; padding: 0; margin: 0; border-radius: 8px;">
+          <input id="pin-6" class="swal2-input pin-box" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" style="width: 45px; height: 55px; text-align: center; font-size: 24px; padding: 0; margin: 0; border-radius: 8px;">
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const inputs = document.querySelectorAll('.pin-box');
+        inputs.forEach((input, index) => {
+          input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            if (e.target.value.length === 1 && index < inputs.length - 1) {
+              inputs[index + 1].focus();
+            }
+          });
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+              inputs[index - 1].focus();
+            }
+          });
+        });
+        if (inputs[0]) inputs[0].focus();
+      },
+      preConfirm: () => {
+        const p1 = document.getElementById('pin-1').value;
+        const p2 = document.getElementById('pin-2').value;
+        const p3 = document.getElementById('pin-3').value;
+        const p4 = document.getElementById('pin-4').value;
+        const p5 = document.getElementById('pin-5').value;
+        const p6 = document.getElementById('pin-6').value;
+        const pin = p1 + p2 + p3 + p4 + p5 + p6;
+        if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+          Swal.showValidationMessage('Please enter exactly 6 digits.');
+          return false;
+        }
+        return pin;
+      }
+    });
+  };
+
+  const handleSetPin = async () => {
+    const { value: pinStr } = await promptForPin(
+      residentData?.pinCodeHash ? 'Change PIN' : 'Create PIN',
+      'Enter a 6-digit PIN to secure your account as a second step.',
+      'Next'
+    );
+    
+    if (pinStr) {
+      const { value: confirmPinStr } = await promptForPin('Confirm PIN', 'Re-enter your 6-digit PIN.', 'Save PIN');
+      
+      if (confirmPinStr) {
+        if (confirmPinStr === pinStr) {
+          const hashedPin = await hashPin(pinStr);
+          await updateDoc(doc(db, 'residents', residentDocId), { pinCodeHash: hashedPin });
+          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'PIN saved successfully', showConfirmButton: false, timer: 3000 });
+        } else {
+          Swal.fire('Error', 'PINs do not match. Please try again.', 'error');
+        }
+      }
+    }
+  };
+
+  const handleRemovePin = async () => {
+    const { value: password } = await Swal.fire({
+      title: 'Enter Password',
+      input: 'password',
+      inputLabel: 'Please re-authenticate to remove your PIN',
+      inputPlaceholder: 'Enter your password',
+      inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
+      showCancelButton: true,
+      confirmButtonColor: '#e53e3e',
+      confirmButtonText: 'Remove'
+    });
+
+    if (password) {
+      try {
+        const { EmailAuthProvider, reauthenticateWithCredential } = await import('firebase/auth');
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        
+        await updateDoc(doc(db, 'residents', residentDocId), { pinCodeHash: null });
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'PIN removed', showConfirmButton: false, timer: 3000 });
+      } catch (error) {
+        Swal.fire('Error', 'Incorrect password or authentication failed.', 'error');
+      }
+    }
+  };
+
   return (
     <div className="admin-dashboard-container">
       <ResidentSidebar />
@@ -414,17 +519,28 @@ export default function UserProfile() {
 
 
               {/* Profile Tabs */}
-              <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
-                <button
-                  onClick={() => setActiveTab('personal')}
-                  style={{ background: 'none', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', color: activeTab === 'personal' ? '#3182ce' : '#718096', borderBottom: activeTab === 'personal' ? '3px solid #3182ce' : 'none' }}>
-                  Personal Details
-                </button>
-                <button
-                  onClick={() => setActiveTab('security')}
-                  style={{ background: 'none', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', color: activeTab === 'security' ? '#3182ce' : '#718096', borderBottom: activeTab === 'security' ? '3px solid #3182ce' : 'none' }}>
-                  Security & Login Activity
-                </button>
+              <div style={{ position: 'relative', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', gap: '20px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px', overflowX: 'auto', whiteSpace: 'nowrap', WebkitOverflowScrolling: 'touch', paddingRight: '30px' }}>
+                  <button
+                    onClick={() => setActiveTab('personal')}
+                    style={{ background: 'none', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', color: activeTab === 'personal' ? '#3182ce' : '#718096', borderBottom: activeTab === 'personal' ? '3px solid #3182ce' : 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    Personal Details
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('security')}
+                    style={{ background: 'none', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', color: activeTab === 'security' ? '#3182ce' : '#718096', borderBottom: activeTab === 'security' ? '3px solid #3182ce' : 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    Security & Login Activity
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('passkey')}
+                    style={{ background: 'none', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', color: activeTab === 'passkey' ? '#3182ce' : '#718096', borderBottom: activeTab === 'passkey' ? '3px solid #3182ce' : 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    PIN & Security
+                  </button>
+                </div>
+                {/* Scroll indicator for mobile */}
+                <div style={{ position: 'absolute', right: 0, top: 0, bottom: '11px', width: '50px', background: 'linear-gradient(to left, #fff 40%, rgba(255,255,255,0))', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', color: '#a0aec0', paddingRight: '4px' }}>
+                  <ChevronRight size={18} style={{ opacity: 0.7, animation: 'pulse 2s infinite' }} />
+                </div>
               </div>
 
               {activeTab === 'personal' ? (
@@ -681,7 +797,7 @@ export default function UserProfile() {
                     </form>
                   </div>
                 </>
-              ) : (
+              ) : activeTab === 'security' ? (
                 <div className="dashboard-panel profile-details-panel">
                   <div className="profile-details-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -804,7 +920,67 @@ export default function UserProfile() {
                     </div>
                   )}
                 </div>
-              )}
+              ) : activeTab === 'passkey' ? (
+                <div className="dashboard-panel profile-details-panel">
+                  <div className="profile-details-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <h3 className="panel-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <KeyRound size={20} color="#3182ce" /> PIN & Security
+                      </h3>
+                    </div>
+                    {!residentData.pinCodeHash && (
+                      <button
+                        onClick={handleSetPin}
+                        style={{ padding: '8px 12px', backgroundColor: '#3182ce', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                      >
+                        <Plus size={16} /> Add PIN
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div style={{ marginTop: '20px' }}>
+                    <p style={{ color: '#4a5568', fontSize: '0.95rem', marginBottom: '20px' }}>
+                      A 6-digit PIN provides a secure second step when you sign in. 
+                    </p>
+
+                    {!residentData.pinCodeHash ? (
+                      <div style={{ padding: '30px', textAlign: 'center', color: '#718096', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e0' }}>
+                        You haven't added a PIN yet.
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', gap: '16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: '200px' }}>
+                            <div style={{ padding: '12px', background: '#ebf8ff', borderRadius: '50%', color: '#3182ce', flexShrink: 0 }}>
+                              <KeyRound size={24} />
+                            </div>
+                            <div style={{ whiteSpace: 'nowrap' }}>
+                              <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: '#2d3748' }}>6-Digit PIN</h4>
+                              <div style={{ fontSize: '0.85rem', color: '#38a169', fontWeight: 'bold' }}>
+                                Active
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              onClick={handleSetPin}
+                              style={{ padding: '8px 12px', backgroundColor: '#fff', color: '#3182ce', border: '1px solid #3182ce', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                            >
+                              <Edit size={16} /> Change
+                            </button>
+                            <button
+                              onClick={handleRemovePin}
+                              style={{ padding: '8px 12px', backgroundColor: '#fff', color: '#e53e3e', border: '1px solid #fc8181', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}
+                            >
+                              <Trash2 size={16} /> Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
         </div>

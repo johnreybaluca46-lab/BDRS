@@ -177,6 +177,33 @@ export default function SystemSettings() {
     }
   };
 
+  const autoSaveEditDoc = async (updatedFields) => {
+    if (!editingDoc) return;
+    const updatedDocToSave = { ...editingDoc, ...updatedFields };
+    setEditingDoc(updatedDocToSave);
+    
+    const updatedDocs = documentSettings.map(d =>
+      d.id === updatedDocToSave.id ? updatedDocToSave : d
+    );
+    setDocumentSettings(updatedDocs);
+    setFormData(prev => ({ ...prev, documents: updatedDocs }));
+    
+    try {
+      await setDoc(doc(db, 'settings', 'general'), { documents: updatedDocs }, { merge: true });
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Toggle Saved',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true
+      });
+    } catch (error) {
+      console.error("Error autosaving:", error);
+    }
+  };
+
   const handleEditDocSave = async () => {
     setIsSaving(true);
     let updatedDocToSave = { ...editingDoc };
@@ -674,6 +701,11 @@ export default function SystemSettings() {
                     <span className="doc-fee-status" style={{ backgroundColor: doc.status === 'active' ? '#c6f6d5' : '#e2e8f0', color: doc.status === 'active' ? '#2f855a' : '#718096' }}>
                       {doc.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
+                    {!doc.isFree && (
+                      <span className="doc-fee-status" style={{ backgroundColor: doc.isOnlinePaymentActive !== false ? '#ebf8ff' : '#fed7d7', color: doc.isOnlinePaymentActive !== false ? '#2b6cb0' : '#c53030', marginLeft: '5px' }}>
+                        Online Payment: {doc.isOnlinePaymentActive !== false ? 'Available' : 'Unavailable'}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1852,7 +1884,7 @@ export default function SystemSettings() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                       <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#4a5568', margin: 0 }}>Free Document</label>
                       <label className="toggle-switch">
-                        <input type="checkbox" checked={editingDoc.isFree || false} onChange={e => setEditingDoc({ ...editingDoc, isFree: e.target.checked, firstCopyFee: e.target.checked ? '0.00' : (editingDoc.firstCopyFee === '0.00' ? '' : editingDoc.firstCopyFee) })} />
+                        <input type="checkbox" checked={editingDoc.isFree || false} onChange={e => autoSaveEditDoc({ isFree: e.target.checked, firstCopyFee: e.target.checked ? '0.00' : (editingDoc.firstCopyFee === '0.00' ? '' : editingDoc.firstCopyFee) })} />
                         <span className="toggle-slider"></span>
                       </label>
                     </div>
@@ -1891,7 +1923,7 @@ export default function SystemSettings() {
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#4a5568', marginBottom: '5px' }}>Status</label>
                     <label className="toggle-switch" style={{ marginBottom: '15px', display: 'block' }}>
-                      <input type="checkbox" checked={editingDoc.status === 'active'} onChange={e => setEditingDoc({ ...editingDoc, status: e.target.checked ? 'active' : 'inactive' })} />
+                      <input type="checkbox" checked={editingDoc.status === 'active'} onChange={e => autoSaveEditDoc({ status: e.target.checked ? 'active' : 'inactive' })} />
                       <span className="toggle-slider"></span>
                     </label>
 
@@ -1902,7 +1934,16 @@ export default function SystemSettings() {
 
                 {!editingDoc.isFree && (
                   <div style={{ marginTop: '5px', padding: '15px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2d3748', margin: '0 0 15px 0' }}>Online Payment Details</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2d3748', margin: 0, marginBottom: '4px' }}>Online Payment</h3>
+                        <p style={{ fontSize: '0.75rem', color: '#718096', margin: 0 }}>Enable or disable the online payment (GCash, Maya, etc.) option for this document.</p>
+                      </div>
+                      <label className="toggle-switch" style={{ marginTop: '2px' }}>
+                        <input type="checkbox" checked={editingDoc.isOnlinePaymentActive !== false} onChange={e => autoSaveEditDoc({ isOnlinePaymentActive: e.target.checked })} />
+                        <span className="toggle-slider"></span>
+                      </label>
+                    </div>
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
                       <div style={{ flex: 1 }}>
                         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#4a5568', marginBottom: '5px' }}>Payment Method Name (e.g., GCash)</label>

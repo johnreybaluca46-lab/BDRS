@@ -53,6 +53,7 @@ export default function CertificateOfIndigencyForm() {
   
   const { settings, loading } = useSettings();
   const docSetting = settings?.documents?.find(d => d.id === 'certificate_of_indigency');
+  const isOnlinePaymentActive = docSetting?.isOnlinePaymentActive !== false;
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
@@ -90,6 +91,12 @@ export default function CertificateOfIndigencyForm() {
       setIs18YearsOld(false);
     }
   }, [formData.dateOfBirth]);
+
+  useEffect(() => {
+    if (!isOnlinePaymentActive && formData.deliveryMethod === 'Online PDF') {
+      setFormData(prev => ({ ...prev, deliveryMethod: '' }));
+    }
+  }, [isOnlinePaymentActive, formData.deliveryMethod]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -159,6 +166,7 @@ const handleNextStep = () => {
     if (is18YearsOld && !validIdPhotoBase64) newErrors.validIdPhoto = true;
     if (!photo2x2Base64) newErrors.photo2x2 = true;
     if (!formData.deliveryMethod) newErrors.deliveryMethod = true;
+    if (formData.deliveryMethod === 'Online PDF' && !isOnlinePaymentActive) newErrors.deliveryMethod = true;
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -196,42 +204,27 @@ const handleNextStep = () => {
     setGeneratedId(newId);
 
     try {
-      const requestRef = doc(db, "requests", newId);
-      await setDoc(requestRef, {
-        id: newId,
+      const payload = {
+        newId,
         type: "Certificate of Indigency",
-        status: "Pending",
-        timestamp: serverTimestamp(),
-        totalFee: totalPrice.toFixed(2),
-        userId: auth.currentUser.uid,
-        ...formData,
-        photo2x2: photo2x2Base64,
-        validIdPhoto: validIdPhotoBase64,
-        deliveryMethod: formData.deliveryMethod,
+        formData,
+        images: {
+          photo2x2: photo2x2Base64,
+          validIdPhoto: validIdPhotoBase64,
+        },
+        copies: '1'
+      };
+
+      const response = await fetch('/api/submit-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
 
-      if (settings?.notificationSettings?.admin_new_request !== false) {
-        const notifRef = doc(collection(db, "notifications"));
-        await setDoc(notifRef, {
-          requestId: newId,
-          type: "NEW",
-          documentType: "Certificate of Indigency",
-          residentName: formData.fullName,
-          timestamp: serverTimestamp(),
-        });
-      }
+      const data = await response.json();
 
-      // Notification for the resident themselves
-      if (settings?.notificationSettings?.resident_req_confirmation !== false) {
-        const residentNotifRef = doc(collection(db, "notifications"));
-        await setDoc(residentNotifRef, {
-          requestId: newId,
-          userId: auth.currentUser.uid,
-          type: "SUBMITTED",
-          documentType: "Certificate of Indigency",
-          residentName: formData.fullName,
-          timestamp: serverTimestamp(),
-        });
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit request');
       }
 
       setActiveStep(3);
@@ -242,7 +235,7 @@ const handleNextStep = () => {
         position: 'top-end',
         icon: 'error',
         title: 'Error',
-        text: 'There was an error saving your request. Please try again.',
+        text: error.message || 'There was an error saving your request. Please try again.',
         showConfirmButton: false,
         timer: 3000
       });
@@ -491,10 +484,11 @@ const handleNextStep = () => {
                     <span className="radio-custom"></span>
                     Barangay Pickup
                   </label>
-                  <label className={`radio-label ${formData.deliveryMethod === 'Online PDF' ? 'selected' : ''}`}>
-                    <input type="radio" name="deliveryMethod" checked={formData.deliveryMethod === 'Online PDF'} onChange={() => setFormData({...formData, deliveryMethod: 'Online PDF'})} />
+                  <label className={`radio-label ${formData.deliveryMethod === 'Online PDF' ? 'selected' : ''}`} style={!isOnlinePaymentActive ? { opacity: 0.6, cursor: 'not-allowed' } : {}}>
+                    <input type="radio" name="deliveryMethod" disabled={!isOnlinePaymentActive} checked={formData.deliveryMethod === 'Online PDF'} onChange={() => { if(isOnlinePaymentActive) setFormData({...formData, deliveryMethod: 'Online PDF'}) }} />
                     <span className="radio-custom"></span>
                     Online PDF
+                    {!isOnlinePaymentActive && <span style={{ marginLeft: '8px', fontSize: '0.7rem', background: '#e2e8f0', color: '#4a5568', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>Unavailable</span>}
                   </label>
                 </div>
                 {formData.deliveryMethod === 'Barangay Pickup' && (
@@ -503,7 +497,7 @@ const handleNextStep = () => {
                     <p style={{ fontSize: '0.85rem', margin: 0 }}>Note: Pickup your document at the barangay hall once approved.</p>
                   </div>
                 )}
-                {formData.deliveryMethod === 'Online PDF' && (
+                {formData.deliveryMethod === 'Online PDF' && isOnlinePaymentActive && (
                   <div className="info-alert" style={{ marginTop: '10px', padding: '10px 15px' }}>
                     <Info size={16} className="info-alert-icon" style={{ marginTop: '2px' }} />
                     <p style={{ fontSize: '0.85rem', margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -513,6 +507,12 @@ const handleNextStep = () => {
                         <>Note: Pay online using <span style={{ background: '#005CEE', color: 'white', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.7rem', margin: '0 5px' }}>GCash</span> and download the documents directly.</>
                       )}
                     </p>
+                  </div>
+                )}
+                {!isOnlinePaymentActive && (
+                  <div className="info-alert" style={{ marginTop: '10px', padding: '10px 15px', backgroundColor: '#fff5f5', border: '1px solid #feb2b2', color: '#c53030' }}>
+                    <Info size={16} className="info-alert-icon" style={{ marginTop: '2px', color: '#c53030' }} />
+                    <p style={{ fontSize: '0.85rem', margin: 0, color: '#c53030' }}>Note: Online PDF download is currently not available for this document.</p>
                   </div>
                 )}
               </div>

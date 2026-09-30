@@ -78,8 +78,9 @@ const Reports = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showPaidTable, setShowPaidTable] = useState(true);
   // Filters
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
   const [reportType, setReportType] = useState('All Reports');
   const [selectedMonth, setSelectedMonth] = useState(currentMonth); // Format: YYYY-MM
   

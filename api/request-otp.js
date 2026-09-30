@@ -23,7 +23,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ success: false, message: 'Backend configuration error.' });
     }
 
-    const { email } = req.body;
+    const { email, type } = req.body;
     if (!email || typeof email !== 'string') {
         return res.status(400).json({ success: false, message: 'Email is required.' });
     }

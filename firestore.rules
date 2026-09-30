@@ -23,9 +23,16 @@ service cloud.firestore {
     // Residents can create, read, and update (e.g. for hiding) their own requests if APPROVED.
     // Admins can read, update, delete all requests.
     match /requests/{requestId} {
-      allow create: if isApprovedResident() && request.resource.data.userId == request.auth.uid;
+      allow create: if false; // Creation is strictly handled by the Vercel Serverless API
       allow read: if isAdmin() || (isApprovedResident() && resource.data.userId == request.auth.uid);
-      allow update: if isAdmin() || (isApprovedResident() && resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId); // Prevent changing ownership
+      allow update: if isAdmin() || (
+        isApprovedResident() && 
+        resource.data.userId == request.auth.uid && 
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['proofOfPaymentUrl', 'referenceNumber', 'status', 'pdfDownloaded']) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']) || request.resource.data.status == 'Processing Payment') &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['pdfDownloaded']) || request.resource.data.pdfDownloaded == true)
+      );
       allow delete: if isAdmin();
     }
 
@@ -245,6 +252,11 @@ service cloud.firestore {
     }
     match /rate_limits/{docId} {
       allow read, write: if false;
+    }
+
+    // 10. System Stats (e.g., Download Counters)
+    match /stats/{docId} {
+      allow read, write: if true;
     }
   }
 }
