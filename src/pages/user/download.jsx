@@ -122,7 +122,7 @@ export default function DownloadPage() {
               
               <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <a 
-                  href="https://github.com/johnreybaluca46-lab/BDRS/releases/download/v1.0.1/BDRS-Setup-1.0.1.exe" 
+                  href={`https://github.com/johnreybaluca46-lab/BDRS/releases/download/v${__APP_VERSION__}/BDRS-Setup-${__APP_VERSION__}.exe`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="download-btn" 
