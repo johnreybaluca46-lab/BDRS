@@ -8,8 +8,7 @@ import ContactFooter from '../../components/ContactFooter';
 import BannerImg from '../../assets/image/banner 2.png';
 import Logo from '../../assets/logo/barangay buluan seal.png';
 import '../../lib/registerresidentform.css'; // Reuse some form styles
-
-const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+import { isNativeApp } from '../../utils/platform';
 
 export default function RegistrationStatus() {
   const [searchParams] = useSearchParams();

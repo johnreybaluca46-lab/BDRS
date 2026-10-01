@@ -8,6 +8,7 @@ import spl4 from '../../../assets/illustraion/spl4.png';
 import './splashscreen.css';
 
 import packageJson from '../../../../package.json';
+import { isNativeApp } from '../../../utils/platform';
 
 const slides = [
   {
@@ -39,8 +40,6 @@ const slides = [
 export default function SplashScreen() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
 
   useEffect(() => {
     document.title = `BDRS Resident Portal v${packageJson.version}`;

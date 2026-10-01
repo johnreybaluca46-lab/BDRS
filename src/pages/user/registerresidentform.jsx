@@ -24,13 +24,11 @@ import { db, auth, functions } from '../../database/firebase';
 import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useSettings } from '../../context/SettingsContext';
-
-const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+import { isNativeApp } from '../../utils/platform';
 
 export default function RegisterResidentForm() {
     const { settings } = useSettings();
     const navigate = useNavigate();
-    const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
     const cancelRoute = isNativeApp ? '/user-login' : '/';
     const [isLoading, setIsLoading] = useState(true);
     const [isTransitioning, setIsTransitioning] = useState(false);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Wifi, WifiOff, Loader2, AlertTriangle } from 'lucide-react';
 import '../lib/admin-layout.css';
+import { isNativeApp } from '../utils/platform';
 
 export default function NetworkCheckModal({ isOpen, onClose, onProceed }) {
   const [status, setStatus] = useState('checking'); // 'checking', 'green', 'yellow', 'red'
@@ -55,7 +56,6 @@ export default function NetworkCheckModal({ isOpen, onClose, onProceed }) {
           const id = setTimeout(() => controller.abort(), timeoutMs);
           
           // Fetch a small file (favicon) to check latency
-          const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
           const pingUrl = isNativeApp ? `https://bdrs-five.vercel.app/favicon.ico?cb=${Date.now()}_${Math.random()}` : `/favicon.ico?cb=${Date.now()}_${Math.random()}`;
           await fetch(pingUrl, {
             method: 'HEAD',

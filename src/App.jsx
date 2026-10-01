@@ -1,8 +1,10 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
+import React, { useEffect } from 'react';
+import { isNativeApp } from './utils/platform';
 
-const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
-const Router = isNativeApp ? HashRouter : BrowserRouter;
+
+
 import UserLogin from './pages/auth/user login';
 import ForgotPassword from './pages/auth/forgot password/create new password';
 import Home from './pages/user/home';
@@ -54,6 +56,8 @@ import NativeOfflineOverlay from './components/NativeOfflineOverlay';
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import MaintenanceWarning from './maintenance/MaintenanceWarning';
+
+const Router = isNativeApp ? HashRouter : BrowserRouter;
 
 const AdminLoginRoute = () => {
   const { isMaintenanceActive } = useMaintenance();
@@ -110,8 +114,6 @@ const PublicRouteGuard = ({ children }) => {
 
   return children;
 };
-
-import React, { useEffect } from 'react';
 
 function App() {
   useEffect(() => {

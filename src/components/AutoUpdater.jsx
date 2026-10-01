@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './AutoUpdater.css';
+import { isNativeApp } from '../utils/platform';
 
 export default function AutoUpdater() {
   const [updateStatus, setUpdateStatus] = useState('idle'); // idle, available, downloading, ready, error
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadStats, setDownloadStats] = useState({ transferred: 0, total: 0, speed: 0 });
   const [errorMessage, setErrorMessage] = useState('');
-  
-  const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
   
   useEffect(() => {
     if (!isNativeApp) return;

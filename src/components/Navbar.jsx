@@ -3,8 +3,7 @@ import { Home as HomeIcon, Info, FileText, Phone, Menu, X, LogIn, Download } fro
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo/barangay buluan seal.png';
 import './Navbar.css';
-
-const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+import { isNativeApp } from '../utils/platform';
 
 export default function Navbar({ blockNavigation = false, onBlockedNavigation = null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

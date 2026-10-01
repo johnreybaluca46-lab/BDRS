@@ -20,6 +20,7 @@ import {
 } from '../../utils/sweetAlerts';
 import '../../lib/login.css';
 import LoginBg from '../../assets/image/login bg.png';
+import { isNativeApp } from '../../utils/platform';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,8 +30,6 @@ export default function Login() {
   useEffect(() => {
     document.title = "BDRS Administrator portal";
   }, []);
-
-  const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');

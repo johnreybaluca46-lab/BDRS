@@ -4,6 +4,7 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../database/firebase';
 import { useAuth } from '../context/AuthContext';
 import Swal from 'sweetalert2';
+import { isNativeApp } from '../utils/platform';
 
 const PinVerificationScreen = ({ residentData, onVerifySuccess, onLogout }) => {
   const [pin, setPin] = useState(['', '', '', '', '', '']);
@@ -12,8 +13,6 @@ const PinVerificationScreen = ({ residentData, onVerifySuccess, onLogout }) => {
   const [firstPin, setFirstPin] = useState('');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
   const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || (isNativeApp ? 'https://bdrs-five.vercel.app' : '');
   
   const hashPin = async (pinStr) => {

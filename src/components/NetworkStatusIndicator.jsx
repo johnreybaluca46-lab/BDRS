@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff } from 'lucide-react';
+import { isNativeApp } from '../utils/platform';
 
 export default function NetworkStatusIndicator() {
   const initialPing = parseInt(sessionStorage.getItem('lastPing'), 10) || null;
@@ -21,7 +22,6 @@ export default function NetworkStatusIndicator() {
       }
       try {
         const start = performance.now();
-        const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
         const pingUrl = isNativeApp ? `https://bdrs-five.vercel.app/favicon.ico?cb=${Date.now()}_${Math.random()}` : `/favicon.ico?cb=${Date.now()}_${Math.random()}`;
         await fetch(pingUrl, { 
           method: 'HEAD', 

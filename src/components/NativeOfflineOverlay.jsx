@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { WifiOff, Loader2 } from 'lucide-react';
+import { isNativeApp } from '../utils/platform';
 
 export default function NativeOfflineOverlay() {
-  const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
   
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 

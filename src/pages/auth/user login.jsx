@@ -27,6 +27,7 @@ import '../../lib/login.css';
 import LoginBg from '../../assets/image/login bg.png';
 import Swal from 'sweetalert2';
 import packageJson from '../../../package.json';
+import { isNativeApp } from '../../utils/platform';
 
 export default function UserLogin() {
   const navigate = useNavigate();
@@ -39,8 +40,6 @@ export default function UserLogin() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
-
-  const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   

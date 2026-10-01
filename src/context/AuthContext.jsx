@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../database/firebase';
 import { signInWithCustomToken, signOut, onAuthStateChanged, inMemoryPersistence, setPersistence } from 'firebase/auth';
+import { isNativeApp } from '../utils/platform';
 
 const AuthContext = createContext();
 
@@ -14,8 +15,6 @@ export function AuthProvider({ children }) {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sessionExpired, setSessionExpired] = useState(false);
-
-    const isNativeApp = window.Capacitor !== undefined || window.electron !== undefined || navigator.userAgent.toLowerCase().includes('electron');
     const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || (isNativeApp ? 'https://bdrs-five.vercel.app' : '');
 
     useEffect(() => {
