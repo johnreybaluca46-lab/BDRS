@@ -7,6 +7,8 @@ import spl3 from '../../../assets/illustraion/spl3.png';
 import spl4 from '../../../assets/illustraion/spl4.png';
 import './splashscreen.css';
 
+import packageJson from '../../../../package.json';
+
 const slides = [
   {
     image: spl1,
@@ -38,7 +40,10 @@ export default function SplashScreen() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
+
   useEffect(() => {
+    document.title = `BDRS Resident Portal v${packageJson.version}`;
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     if (hasSeenSplash) {
       navigate('/user-login', { replace: true });
@@ -85,6 +90,21 @@ export default function SplashScreen() {
           ))}
         </div>
       </div>
+      
+      {isNativeApp && (
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '10px', 
+          right: '15px', 
+          color: 'rgba(0, 0, 0, 0.4)', 
+          fontSize: '0.85rem',
+          fontWeight: '500',
+          pointerEvents: 'none',
+          zIndex: 1000
+        }}>
+          v{packageJson.version}
+        </div>
+      )}
     </div>
   );
 }

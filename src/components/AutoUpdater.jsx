@@ -20,6 +20,17 @@ export default function AutoUpdater() {
       ipcRenderer.send('check-for-updates');
     }, 5000);
 
+    return () => {
+      clearTimeout(checkTimeout);
+    };
+  }, [isNativeApp]);
+
+  useEffect(() => {
+    if (!isNativeApp) return;
+    
+    const { ipcRenderer } = window.require ? window.require('electron') : {};
+    if (!ipcRenderer) return;
+
     const handleUpdateAvailable = () => {
       setUpdateStatus('available');
     };
@@ -53,11 +64,10 @@ export default function AutoUpdater() {
     ipcRenderer.on('update-downloaded', handleUpdateDownloaded);
 
     return () => {
-      clearTimeout(checkTimeout);
-      ipcRenderer.removeAllListeners('update-available');
-      ipcRenderer.removeAllListeners('update-error');
-      ipcRenderer.removeAllListeners('update-download-progress');
-      ipcRenderer.removeAllListeners('update-downloaded');
+      ipcRenderer.removeListener('update-available', handleUpdateAvailable);
+      ipcRenderer.removeListener('update-error', handleUpdateError);
+      ipcRenderer.removeListener('update-download-progress', handleDownloadProgress);
+      ipcRenderer.removeListener('update-downloaded', handleUpdateDownloaded);
     };
   }, [isNativeApp, updateStatus]);
 

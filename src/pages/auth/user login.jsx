@@ -26,6 +26,7 @@ import { httpsCallable } from 'firebase/functions';
 import '../../lib/login.css';
 import LoginBg from '../../assets/image/login bg.png';
 import Swal from 'sweetalert2';
+import packageJson from '../../../package.json';
 
 export default function UserLogin() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export default function UserLogin() {
   const { loginWithSession } = useAuth();
 
   useEffect(() => {
-    document.title = "BDRS Resident Portal";
+    document.title = `BDRS Resident Portal v${packageJson.version}`;
   }, []);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -431,6 +432,22 @@ export default function UserLogin() {
           </div>
         </div>
       </div>
+      
+      {isNativeApp && (
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '10px', 
+          right: '15px', 
+          color: 'rgba(255, 255, 255, 0.7)', 
+          fontSize: '0.85rem',
+          fontWeight: '500',
+          textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+          pointerEvents: 'none',
+          zIndex: 1000
+        }}>
+          v{packageJson.version}
+        </div>
+      )}
     </div>
   );
 }
