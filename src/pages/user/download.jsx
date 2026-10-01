@@ -86,6 +86,18 @@ export default function DownloadPage() {
     }
   };
 
+  const handleApkDownload = async () => {
+    setApkCount(prev => prev + 1);
+    try {
+      const docRef = doc(db, 'stats', 'downloads');
+      await updateDoc(docRef, {
+        apk: increment(1)
+      });
+    } catch (err) {
+      console.error('Error updating download count:', err);
+    }
+  };
+
   return (
     <div className="download-page">
       <Navbar />
@@ -162,20 +174,16 @@ export default function DownloadPage() {
               <p>Install BDRS on your Android phone and stay connected to barangay services.</p>
               
               <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <button 
-                  onClick={() => Swal.fire({
-                    title: 'Coming Soon!',
-                    text: 'The Android App is currently under development and will be available soon.',
-                    icon: 'info',
-                    confirmButtonText: 'Got it',
-                    confirmButtonColor: '#10b981'
-                  })}
+                <a 
+                  href={`/downloads/BDRS-Android-v${__APP_VERSION__}.apk`}
+                  download={`BDRS-Android-v${__APP_VERSION__}.apk`}
+                  onClick={handleApkDownload}
                   className="download-btn" 
                   style={{ cursor: 'pointer', border: 'none', textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white', marginBottom: '0' }}
                 >
                   <Download size={20} />
                   Download .APK
-                </button>
+                </a>
                 <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Download size={14} />
                   {formatNumber(apkCount)} Downloads

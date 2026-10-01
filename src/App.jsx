@@ -1,4 +1,5 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { SplashScreen as CapacitorSplashScreen } from '@capacitor/splash-screen';
 
 const isNativeApp = window.Capacitor !== undefined || navigator.userAgent.toLowerCase().includes('electron');
 const Router = isNativeApp ? HashRouter : BrowserRouter;
@@ -114,6 +115,11 @@ import React, { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
+    // Hide native splash screen
+    if (window.Capacitor) {
+      CapacitorSplashScreen.hide().catch(console.error);
+    }
+    
     // Temporary fix for stuck requests from old bug
     const fixRequests = async () => {
       try {

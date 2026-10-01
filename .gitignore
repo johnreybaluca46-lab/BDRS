@@ -35,3 +35,6 @@ service-account.json
 ngrok.exe
 cloudflared.exe
 *.exe
+
+# Keystore files
+*.keystore

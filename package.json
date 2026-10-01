@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "cross-env ELECTRON=true npm run build && electron-builder",
-    "capacitor:build": "cross-env CAPACITOR=true npm run build && npx cap sync android"
+    "capacitor:build": "cross-env CAPACITOR=true npm run build && npx cap sync android",
+    "android:dev": "cross-env CAPACITOR=true npx cap run android -l",
+    "android:build": "npm run build && npx cap sync android && cd android && .\\gradlew assembleRelease && cd .. && copy \"android\\app\\build\\outputs\\apk\\release\\app-release.apk\" \"public\\downloads\\BDRS-Android-v%npm_package_version%.apk\""
   },
   "build": {
     "appId": "com.barangaybuluan.bdrs",
@@ -45,6 +47,8 @@
     }
   },
   "dependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/splash-screen": "^8.0.2",
     "@emailjs/browser": "^4.4.1",
     "cookie": "^2.0.1",
     "electron-updater": "^6.8.9",
