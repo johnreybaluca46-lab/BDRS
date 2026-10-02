@@ -30,6 +30,7 @@ export default function NativeOfflineOverlay() {
         await fetch(pingUrl, { 
           method: 'HEAD', 
           cache: 'no-store',
+          mode: 'no-cors',
           signal: controller.signal
         });
         

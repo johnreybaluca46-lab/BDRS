@@ -25,7 +25,8 @@ export default function NetworkStatusIndicator() {
         const pingUrl = isNativeApp ? `https://bdrs-five.vercel.app/favicon.ico?cb=${Date.now()}_${Math.random()}` : `/favicon.ico?cb=${Date.now()}_${Math.random()}`;
         await fetch(pingUrl, { 
           method: 'HEAD', 
-          cache: 'no-store' 
+          cache: 'no-store',
+          mode: 'no-cors'
         });
         const end = performance.now();
         if (isMounted) {
