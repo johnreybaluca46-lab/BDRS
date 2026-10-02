@@ -497,7 +497,7 @@ const Reports = () => {
       {/* Summary Section */}
       <div style={{ background: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2d3748', marginBottom: '20px' }}>Summary</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: reportType === 'All Reports' ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)', gap: '16px' }}>
           <StatCard 
             title="Total Earned" 
             value={formatCurrencyAbbreviated(stats.earned || 0)} 
