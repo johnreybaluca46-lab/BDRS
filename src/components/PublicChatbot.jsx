@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Bot, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Loader2, Sparkles, Maximize2, Minimize2 } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -37,6 +37,7 @@ export default function PublicChatbot() {
 
 function PublicChatbotInner() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef(null);
   const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || (isNativeApp ? 'https://bdrs-five.vercel.app' : '');
 
@@ -150,7 +151,7 @@ function PublicChatbotInner() {
       )}
 
       {isOpen && (
-        <div className={`bdrs-chatbot-window theme-public ${false ? 'full-screen-mode' : ''}`}>
+        <div className={`bdrs-chatbot-window theme-public ${isExpanded ? 'expanded-mode' : ''}`}>
       <div className="bdrs-chatbot-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -161,11 +162,14 @@ function PublicChatbotInner() {
             <div style={{ fontSize: '11px', opacity: 0.85 }}>Your Barangay Document Guide</div>
           </div>
         </div>
-        {(!false) && (
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <button className="bdrs-chatbot-close" onClick={() => setIsExpanded(!isExpanded)} aria-label="Toggle expand">
+            {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
           <button className="bdrs-chatbot-close" onClick={toggleChat} aria-label="Close chat">
             <X size={20} />
           </button>
-        )}
+        </div>
       </div>
 
       <div className="bdrs-chatbot-messages">

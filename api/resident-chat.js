@@ -49,35 +49,30 @@ export default async function handler(req, res) {
         let uid = null;
         let isResident = false;
 
-        if (process.env.NODE_ENV !== 'production') {
-            uid = 'dev-resident-user';
-            isResident = true;
-        } else {
-            const cookies = parseCookies(req.headers.cookie);
-            const sessionCookie = cookies.__session || '';
-            if (!sessionCookie) return res.status(401).json({ error: 'Unauthorized' });
+        const cookies = parseCookies(req.headers.cookie);
+        const sessionCookie = cookies.__session || '';
+        if (!sessionCookie) return res.status(401).json({ error: 'Unauthorized' });
+        
+        try {
+            const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, false);
+            uid = decodedClaims.uid;
             
-            try {
-                const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, false);
-                uid = decodedClaims.uid;
-                
-                if (roleCache[uid] !== undefined) {
-                    isResident = roleCache[uid];
-                } else {
-                    const roleInfo = await getUserRole(uid);
-                    isResident = (roleInfo && roleInfo.role === 'resident');
-                    roleCache[uid] = isResident;
-                    setTimeout(() => { delete roleCache[uid]; }, 300000);
-                }
-            } catch (err) {
-                console.log(`[CHAT][resident][${reqId}] error=invalid_session`);
-                return res.status(401).json({ error: 'Invalid session' });
+            if (roleCache[uid] !== undefined) {
+                isResident = roleCache[uid];
+            } else {
+                const roleInfo = await getUserRole(uid);
+                isResident = (roleInfo && roleInfo.role === 'resident');
+                roleCache[uid] = isResident;
+                setTimeout(() => { delete roleCache[uid]; }, 300000);
             }
+        } catch (err) {
+            console.log(`[CHAT][resident][${reqId}] error=invalid_session`);
+            return res.status(401).json({ error: 'Invalid session' });
+        }
 
-            if (!isResident) {
-                console.log(`[CHAT][resident][${reqId}] error=forbidden_role`);
-                return res.status(403).json({ error: 'Forbidden. Resident role required.' });
-            }
+        if (!isResident) {
+            console.log(`[CHAT][resident][${reqId}] error=forbidden_role`);
+            return res.status(403).json({ error: 'Forbidden. Resident role required.' });
         }
         
         console.log(`[CHAT][resident][${reqId}] auth=success role=resident`);
@@ -190,21 +185,32 @@ BDRS Knowledge Base:
         while (attempts < maxAttempts) {
             attempts++;
             try {
+                let currentMessages = cleanMessages;
+                let toolIterations = 0;
+                const maxToolIterations = 3;
+
                 result = await generateText({
                     model: model,
                     system: systemPrompt,
-                    messages: cleanMessages,
+                    messages: currentMessages,
                     tools: tools,
                 });
                 
-                // Manual loop for tool calls since maxSteps doesn't work correctly with this provider setup
-                if (result.toolResults && result.toolResults.length > 0) {
-                    const nextMessages = cleanMessages.concat(result.response.messages);
+                // Safe manual tool loop
+                while (result.toolResults && result.toolResults.length > 0 && toolIterations < maxToolIterations) {
+                    toolIterations++;
+                    currentMessages = currentMessages.concat(result.response.messages);
                     result = await generateText({
                         model: model,
                         system: systemPrompt,
-                        messages: nextMessages,
+                        messages: currentMessages,
+                        tools: tools,
                     });
+                }
+                
+                if (result.toolResults && result.toolResults.length > 0) {
+                    console.log(`[CHAT][resident][${reqId}] gemini=max_iterations_reached`);
+                    return res.status(200).json({ text: "I'm sorry, I couldn't fully process that request right now. Please try a simpler question." });
                 }
                 
                 break;

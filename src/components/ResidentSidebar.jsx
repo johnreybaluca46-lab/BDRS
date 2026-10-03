@@ -231,6 +231,8 @@ export default function ResidentSidebar() {
             <div className="as-nav-icon"><Sparkles size={20} /></div>
             <span className="as-nav-label">What's New</span>
           </Link>
+          
+          <div className="as-nav-section">AI ASSISTANCE</div>
           <Link to="/user-assistant" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/user-assistant' ? 'active' : ''}`} title="BDRS Assistant">
             <div className="as-nav-icon"><Bot size={20} /></div>
             <span className="as-nav-label">BDRS Assistant</span>

@@ -438,16 +438,34 @@ export default function ViewResident() {
                 })}
               </div>
 
-              <div className="request-status-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                <h4 className="section-subtitle" style={{ textAlign: 'center', margin: '0 0 8px 0' }}>Resident Status</h4>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '10px' }}>
+            </div>
+            
+            <div className="details-divider"></div>
+            <div className="details-bottom-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+              {residentData.validId ? (
+                <div className="valid-id-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#4a5568', fontWeight: '600' }}>Uploaded {residentData.validIdType}</span>
+                  <img src={residentData.validId} alt="Valid ID" style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }} />
+                </div>
+              ) : (
+                <div className="valid-id-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#4a5568', fontWeight: '600' }}>Uploaded ID</span>
+                  <div style={{ width: '300px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px dashed #cbd5e1', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                    No ID Uploaded
+                  </div>
+                </div>
+              )}
+              
+              <div className="request-status-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, minWidth: '300px' }}>
+                <h4 className="section-subtitle" style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#2d3748', textAlign: 'center' }}>Resident Status</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '100%' }}>
                   <span className={`status-badge-large ${getBadgeClass(residentData.status)}`}>
                     {residentData.status === 'Approved' ? 'Registered' : residentData.status}
                   </span>
                   {residentData.status === 'Rejected' && (
-                    <div style={{ marginTop: '10px', backgroundColor: '#fef2f2', padding: '12px', borderRadius: '6px', border: '1px solid #fca5a5', maxWidth: '300px' }}>
-                      <span style={{ display: 'block', color: '#b91c1c', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '4px', textTransform: 'uppercase' }}>Reason for Rejection</span>
-                      <span style={{ color: '#475569', fontSize: '0.9rem', wordBreak: 'break-word' }}>
+                    <div style={{ backgroundColor: '#fef2f2', padding: '16px', borderRadius: '8px', border: '1px solid #fca5a5', width: '100%', textAlign: 'center' }}>
+                      <span style={{ display: 'block', color: '#b91c1c', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase' }}>Reason for Rejection</span>
+                      <span style={{ color: '#475569', fontSize: '0.95rem', wordBreak: 'break-word', lineHeight: '1.5' }}>
                         {residentData.rejectReason || 'No specific reason provided.'}
                       </span>
                     </div>
@@ -455,18 +473,6 @@ export default function ViewResident() {
                 </div>
               </div>
             </div>
-            
-            {residentData.validId && (
-              <>
-                <div className="details-divider"></div>
-                <div className="details-bottom-section" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
-                  <div className="valid-id-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#4a5568', fontWeight: '600' }}>Uploaded {residentData.validIdType}</span>
-                    <img src={residentData.validId} alt="Valid ID" style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }} />
-                  </div>
-                </div>
-              </>
-            )}
             
             <div className="details-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
               <button className="btn-back" onClick={() => navigate(residentData?.status === 'Pending' || residentData?.status === 'Rejected' ? '/admin/resident-approval' : '/admin/residents')}>

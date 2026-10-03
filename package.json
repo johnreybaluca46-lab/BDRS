@@ -1,7 +1,7 @@
 {
   "name": "bdrs",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "cross-env ELECTRON=true npm run build && electron-builder",
+    "electron:build": "cross-env ELECTRON=true NODE_OPTIONS=\"--max-old-space-size=4096\" npm run build && cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" electron-builder",
     "capacitor:build": "cross-env CAPACITOR=true npm run build && npx cap sync android",
     "android:dev": "cross-env CAPACITOR=true npx cap run android -l",
     "android:build": "npm run build && npx cap sync android && cd android && .\\gradlew assembleRelease && cd .. && copy \"android\\app\\build\\outputs\\apk\\release\\app-release.apk\" \"public\\downloads\\BDRS-Android-v%npm_package_version%.apk\""

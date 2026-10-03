@@ -46,35 +46,30 @@ export default async function handler(req, res) {
         let uid = null;
         let isAdmin = false;
 
-        if (process.env.NODE_ENV !== 'production') {
-            uid = 'dev-admin-user';
-            isAdmin = true;
-        } else {
-            const cookies = parseCookies(req.headers.cookie);
-            const sessionCookie = cookies.__session || '';
-            if (!sessionCookie) return res.status(401).json({ error: 'Unauthorized' });
+        const cookies = parseCookies(req.headers.cookie);
+        const sessionCookie = cookies.__session || '';
+        if (!sessionCookie) return res.status(401).json({ error: 'Unauthorized' });
+        
+        try {
+            const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, false);
+            uid = decodedClaims.uid;
             
-            try {
-                const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, false);
-                uid = decodedClaims.uid;
-                
-                if (roleCache[uid] !== undefined) {
-                    isAdmin = roleCache[uid];
-                } else {
-                    const roleInfo = await getUserRole(uid);
-                    isAdmin = (roleInfo && roleInfo.role === 'admin');
-                    roleCache[uid] = isAdmin;
-                    setTimeout(() => { delete roleCache[uid]; }, 300000);
-                }
-            } catch (err) {
-                console.log(`[CHAT][admin][${reqId}] error=invalid_session`);
-                return res.status(401).json({ error: 'Invalid session' });
+            if (roleCache[uid] !== undefined) {
+                isAdmin = roleCache[uid];
+            } else {
+                const roleInfo = await getUserRole(uid);
+                isAdmin = (roleInfo && roleInfo.role === 'admin');
+                roleCache[uid] = isAdmin;
+                setTimeout(() => { delete roleCache[uid]; }, 300000);
             }
+        } catch (err) {
+            console.log(`[CHAT][admin][${reqId}] error=invalid_session`);
+            return res.status(401).json({ error: 'Invalid session' });
+        }
 
-            if (!isAdmin) {
-                console.log(`[CHAT][admin][${reqId}] error=forbidden_role`);
-                return res.status(403).json({ error: 'Forbidden. Admin role required.' });
-            }
+        if (!isAdmin) {
+            console.log(`[CHAT][admin][${reqId}] error=forbidden_role`);
+            return res.status(403).json({ error: 'Forbidden. Admin role required.' });
         }
         
         console.log(`[CHAT][admin][${reqId}] auth=success role=admin`);
@@ -127,37 +122,156 @@ Never allow arbitrary Firestore queries, arbitrary collection access, arbitrary 
 Never reveal passwords, OTPs, PINs, recovery codes, reset tokens, session cookies, API keys, private keys, or authentication tokens.
 Do not expose sensitive information unnecessarily.
 Only provide the minimum information necessary for the requested administrative task.
+Important System Knowledge:
+- Payment verification in BDRS is strictly manual. The system does not use automated payment gateways like PayMongo, GCash API, or Stripe.
 FORMATTING INSTRUCTIONS:
 Always use clean, readable Markdown (headings, bold text, numbered lists).
 Prefer clean step-by-step lists over large Markdown tables. Only use tables for simple comparative data.`;
 
         const tools = {
-            getSystemStats: tool({
-                description: 'Get basic system statistics such as the total number of document requests and residents.',
+            getResidentRegistrationStats: tool({
+                description: 'Get resident registration statistics, including total registered, approved, pending, and rejected residents. Use this tool specifically when asked about resident statistics or registration statuses.',
                 parameters: z.object({}),
                 execute: async () => {
                     try {
-                        const reqCount = (await adminDb.collection('requests').count().get()).data().count;
-                        const resCount = (await adminDb.collection('residents').count().get()).data().count;
-                        return { totalRequests: reqCount, totalResidents: resCount };
+                        const total = (await adminDb.collection('residents').count().get()).data().count;
+                        const approved = (await adminDb.collection('residents').where('status', '==', 'Approved').count().get()).data().count;
+                        const pending = (await adminDb.collection('residents').where('status', '==', 'Pending').count().get()).data().count;
+                        const rejected = (await adminDb.collection('residents').where('status', '==', 'Rejected').count().get()).data().count;
+                        return { total, approved, pending, rejected };
                     } catch (error) {
-                        console.error(`[CHAT][admin][${reqId}] tool=getSystemStats error=${error.message}`);
-                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve system stats." };
+                        console.error(`[CHAT][admin][${reqId}] tool=getResidentRegistrationStats error=${error.message}`);
+                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve resident registration stats." };
                     }
-                },
+                }
             }),
-            getPendingRequestsCount: tool({
-                description: 'Get the number of pending document requests.',
+            getDashboardStats: tool({
+                description: 'Get overall Admin Dashboard statistics exactly as shown on the dashboard top cards. Includes total requests, pending, completed, trash, expired, and total earned.',
                 parameters: z.object({}),
                 execute: async () => {
                     try {
-                        const reqCount = (await adminDb.collection('requests').where('status', '==', 'Pending').count().get()).data().count;
-                        return { pendingRequests: reqCount };
+                        const q = await adminDb.collection('requests').get();
+                        let total = 0, pending = 0, completed = 0, trash = 0, expired = 0, earned = 0;
+                        q.forEach(doc => {
+                            const data = doc.data();
+                            total++;
+                            const rawStatus = data.status || 'Pending';
+                            const isCompleted = rawStatus === 'Completed';
+                            const isTrash = rawStatus === 'Trash' || rawStatus === 'Rejected';
+                            const isExpired = data.expired === true;
+                            
+                            if (rawStatus === 'Pending' || rawStatus === 'Processing' || rawStatus === 'Processing Payment' || rawStatus === 'Approved') pending++;
+                            else if (isCompleted) { completed++; earned += parseFloat(data.totalFee || 0) || 0; }
+                            else if (isTrash) trash++;
+                            
+                            if (isExpired) expired++;
+                        });
+                        return { total, pending, completed, trash, expired, earned };
                     } catch (error) {
-                        console.error(`[CHAT][admin][${reqId}] tool=getPendingRequestsCount error=${error.message}`);
-                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve pending requests count." };
+                        console.error(`[CHAT][admin][${reqId}] tool=getDashboardStats error=${error.message}`);
+                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve dashboard stats." };
                     }
-                },
+                }
+            }),
+            getRequestStats: tool({
+                description: 'Get detailed document request statistics broken down by exact status (e.g. pending, approved, processing payment, completed, rejected, trash). Use this when asked for specific request statuses.',
+                parameters: z.object({}),
+                execute: async () => {
+                    try {
+                        const q = await adminDb.collection('requests').get();
+                        let total = 0, pending = 0, approved = 0, processingPayment = 0, completed = 0, rejected = 0, trash = 0, expired = 0;
+                        q.forEach(doc => {
+                            const data = doc.data();
+                            total++;
+                            const status = data.status || 'Pending';
+                            if (status === 'Pending' || status === 'Processing') pending++;
+                            else if (status === 'Approved') approved++;
+                            else if (status === 'Processing Payment') processingPayment++;
+                            else if (status === 'Completed') completed++;
+                            else if (status === 'Rejected') rejected++;
+                            else if (status === 'Trash') trash++;
+                            
+                            if (data.expired === true) expired++;
+                        });
+                        return { total, pending, approved, processingPayment, completed, rejected, trash, expired };
+                    } catch (error) {
+                        console.error(`[CHAT][admin][${reqId}] tool=getRequestStats error=${error.message}`);
+                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve detailed request stats." };
+                    }
+                }
+            }),
+            getMonthlyRequestStats: tool({
+                description: 'Get monthly request statistics (total, completed, trash, pending, expired, earned) for the past 6 months to match the dashboard chart.',
+                parameters: z.object({}),
+                execute: async () => {
+                    try {
+                        const q = await adminDb.collection('requests').get();
+                        const monthCounts = {};
+                        q.forEach(doc => {
+                            const data = doc.data();
+                            if (data.timestamp) {
+                                const rawStatus = data.status || 'Pending';
+                                const isCompleted = rawStatus === 'Completed';
+                                const isTrash = rawStatus === 'Trash' || rawStatus === 'Rejected';
+                                const isExpired = data.expired === true;
+                                
+                                const date = data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp._seconds * 1000);
+                                const month = date.toLocaleString('default', { month: 'short' });
+                                
+                                if (!monthCounts[month]) monthCounts[month] = { total: 0, completed: 0, trash: 0, pending: 0, expired: 0, earned: 0 };
+                                monthCounts[month].total += 1;
+                                if (isCompleted) {
+                                    monthCounts[month].completed += 1;
+                                    monthCounts[month].earned += parseFloat(data.totalFee || 0) || 0;
+                                }
+                                if (isTrash) monthCounts[month].trash += 1;
+                                if (rawStatus === 'Pending' || rawStatus === 'Processing' || rawStatus === 'Processing Payment' || rawStatus === 'Approved') {
+                                    monthCounts[month].pending += 1;
+                                }
+                                if (isExpired) monthCounts[month].expired += 1;
+                            }
+                        });
+                        
+                        const last6Months = [];
+                        const d = new Date();
+                        d.setMonth(d.getMonth() - 5);
+                        for(let i=0; i<6; i++) {
+                            const m = d.toLocaleString('default', { month: 'short' });
+                            last6Months.push({ 
+                                month: m, 
+                                ... (monthCounts[m] || { total: 0, completed: 0, trash: 0, pending: 0, expired: 0, earned: 0 })
+                            });
+                            d.setMonth(d.getMonth() + 1);
+                        }
+                        return { chartData: last6Months };
+                    } catch (error) {
+                        console.error(`[CHAT][admin][${reqId}] tool=getMonthlyRequestStats error=${error.message}`);
+                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve monthly request stats." };
+                    }
+                }
+            }),
+            getSystemSettings: tool({
+                description: 'Get current system settings, including document fees and processing times.',
+                parameters: z.object({}),
+                execute: async () => {
+                    try {
+                        const settingsDoc = await adminDb.collection('settings').doc('general').get();
+                        if (settingsDoc.exists) {
+                            const data = settingsDoc.data();
+                            const docs = data.documents || [];
+                            const documentSettings = docs.map(d => ({
+                                type: d.title,
+                                fee: d.fee,
+                                processingTime: d.processingTime
+                            }));
+                            return { documentSettings };
+                        }
+                        return { error: "DATA_UNAVAILABLE", message: "Settings not found." };
+                    } catch (error) {
+                        console.error(`[CHAT][admin][${reqId}] tool=getSystemSettings error=${error.message}`);
+                        return { error: "DATA_UNAVAILABLE", message: "Could not retrieve system settings." };
+                    }
+                }
             })
         };
 
@@ -173,21 +287,32 @@ Prefer clean step-by-step lists over large Markdown tables. Only use tables for 
         while (attempts < maxAttempts) {
             attempts++;
             try {
+                let currentMessages = cleanMessages;
+                let toolIterations = 0;
+                const maxToolIterations = 3;
+
                 result = await generateText({
                     model: model,
                     system: systemPrompt,
-                    messages: cleanMessages,
+                    messages: currentMessages,
                     tools: tools,
                 });
                 
-                // Manual loop for tool calls since maxSteps doesn't work correctly with this provider setup
-                if (result.toolResults && result.toolResults.length > 0) {
-                    const nextMessages = cleanMessages.concat(result.response.messages);
+                // Safe manual tool loop
+                while (result.toolResults && result.toolResults.length > 0 && toolIterations < maxToolIterations) {
+                    toolIterations++;
+                    currentMessages = currentMessages.concat(result.response.messages);
                     result = await generateText({
                         model: model,
                         system: systemPrompt,
-                        messages: nextMessages,
+                        messages: currentMessages,
+                        tools: tools,
                     });
+                }
+                
+                if (result.toolResults && result.toolResults.length > 0) {
+                    console.log(`[CHAT][admin][${reqId}] gemini=max_iterations_reached`);
+                    return res.status(200).json({ text: "I'm sorry, I couldn't fully process that request right now. Please try a simpler question." });
                 }
                 
                 break;

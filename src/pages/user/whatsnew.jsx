@@ -136,8 +136,62 @@ export default function WhatsNew() {
             <div className="release-header">
               <div>
                 <h2 className="release-version">
-                  BDRS v1.0.4
+                  BDRS v1.0.5
                   <span className="release-badge">Latest</span>
+                </h2>
+                <p style={{ margin: '8px 0 0 0', color: '#64748b' }}>The UI & Layout Polish Update.</p>
+              </div>
+              <div className="release-date">October 2026</div>
+            </div>
+
+            <div className="feature-list">
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#eff6ff', color: '#3b82f6' }}>
+                  <Bot size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>Dedicated AI Assistance</h3>
+                  <p>The BDRS Assistant now has its own dedicated "AI ASSISTANCE" section in both the Admin and Resident sidebars. It's now easier than ever to get instant answers about document requests!</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#fdf4ff', color: '#c026d3' }}>
+                  <Zap size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>Improved AI Intelligence</h3>
+                  <p>The Admin AI Assistant has been significantly upgraded. It now seamlessly connects to the live dashboard statistics, dynamically calculating resident counts, document statuses, and monthly charts with flawless accuracy.</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>
+                  <CheckCircle size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>Admin Layout Improvements</h3>
+                  <p>Refined the Admin Resident Approval view. The Resident Status and Rejection Reasons are now beautifully centered and positioned next to the Uploaded ID for a cleaner, more organized layout.</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#fffbeb', color: '#d97706' }}>
+                  <Sparkles size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>System Cleanup</h3>
+                  <p>Cleaned up internal development files and optimized the project structure to keep the system fast, secure, and production-ready.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="release-card" style={{ opacity: 0.9 }}>
+            <div className="release-header">
+              <div>
+                <h2 className="release-version" style={{ fontSize: '1.6rem' }}>
+                  BDRS v1.0.4
                 </h2>
                 <p style={{ margin: '8px 0 0 0', color: '#64748b' }}>The Smart AI & Formatting Update.</p>
               </div>

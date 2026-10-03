@@ -113,7 +113,7 @@ export default async function handler(req, res) {
         
         console.log(`[CHAT][public][${reqId}] faq=false gemini=start`);
         
-        const systemPrompt = `You are the public BDRS Assistant.
+    const systemPrompt = `You are the public BDRS Assistant.
 You help visitors understand the Barangay Document Request System.
 Only provide public BDRS information.
 Never access or reveal private resident information, administrative information, credentials, authentication information, security logs, API keys, session cookies, passwords, OTPs, recovery codes, or reset tokens.
@@ -132,7 +132,15 @@ BDRS Knowledge Base:
 - Barangay Name: ${settings.barangayName || 'Not specified'}
 
 Available Documents and Fees:
-${(settings.documents || []).map(doc => `- ${doc.title}: ${doc.desc}. Fee: ₱${doc.firstCopyFee} (Additional copies: ₱${doc.additionalCopyFee}). Processing time: ${doc.processingTime}`).join('\n')}`;
+${(settings.documents || []).map(doc => `- ${doc.title}: ${doc.desc}. Fee: ₱${doc.firstCopyFee} (Additional copies: ₱${doc.additionalCopyFee}). Processing time: ${doc.processingTime}`).join('\n')}
+
+Registration Information (Public Knowledge):
+- How to create an account: Users must visit the BDRS Resident Registration page, complete the form, and upload the required documents.
+- Required information: Active Gmail address, full name, date of birth, civil status, sex, contact number, purok/zone, house/block no, occupation, length of stay, place of birth, nationality, complete address, a formal 2x2 photo (white background), and a valid ID (Barangay ID, Voter's ID, or National ID).
+- Registration Status: After submission, the account status is initially "Pending". Users receive a Registration ID (RES-Number) and QR code.
+- Approval Process: Barangay administrators manually review and approve pending registrations (typically within 1 to 2 days). No automatic approval emails or SMS notifications are sent.
+- Login while Pending: Users cannot access the resident dashboard while their account is "Pending". They must wait for the admin to change their status to "Approved".
+- Rejected Registrations: If an account is rejected by the admin, the user will be blocked from accessing the system and must register again with correct details or visit the barangay hall.`;
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
         const model = groq('openai/gpt-oss-20b');

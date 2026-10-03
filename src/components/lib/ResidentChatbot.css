@@ -90,6 +90,7 @@
   border: 1px solid #e5e7eb;
   transform-origin: bottom right;
   animation: chatbotPopUp 0.2s ease-out forwards;
+  transition: width 0.3s ease, height 0.3s ease;
 }
 
 .bdrs-chatbot-window.full-screen-mode {
@@ -102,6 +103,13 @@
   border: 1px solid #e5e7eb;
   box-shadow: none;
   flex: 1;
+}
+
+.bdrs-chatbot-window.expanded-mode {
+  width: 800px;
+  height: 80vh;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
 }
 
 .bdrs-chatbot-window.full-screen-mode .bdrs-chatbot-messages {
@@ -353,6 +361,9 @@
   border-collapse: collapse;
   margin: 12px 0;
   font-size: 13px;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .bdrs-markdown th, .bdrs-markdown td {
   border: 1px solid #e5e7eb;

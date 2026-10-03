@@ -204,10 +204,14 @@ export default function AdminSidebar({ className }) {
             <div className="as-nav-icon"><LayoutDashboard size={20} /></div>
             <span className="as-nav-label">Dashboard</span>
           </Link>
+
+          <div className="as-nav-section">AI ASSISTANCE</div>
           <Link to="/admin/assistant" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/admin/assistant' ? 'active' : ''}`} title="BDRS Assistant">
             <div className="as-nav-icon"><Bot size={20} /></div>
             <span className="as-nav-label">BDRS Assistant</span>
           </Link>
+
+          <div className="as-nav-section">DOCUMENTS</div>
           <Link to="/admin/document-requests" onClick={closeSidebar} className={`as-nav-item ${(location.pathname.includes('/admin/document-requests') && location.state?.from !== '/admin/payment' && location.state?.from !== '/admin/completed' && location.state?.from !== '/admin/trash') ? 'active' : ''}`} title="Document Requests">
             <div className="as-nav-icon"><FileText size={20} /></div>
             <span className="as-nav-label">Document Requests</span>
