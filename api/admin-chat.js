@@ -159,7 +159,7 @@ Only provide the minimum information necessary for the requested administrative 
         console.log(`[CHAT][admin][${reqId}] gemini=start`);
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = groq('llama-3.1-8b-instant');
+        const model = groq('openai/gpt-oss-20b');
         
         let result;
         let attempts = 0;

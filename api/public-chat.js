@@ -130,7 +130,7 @@ Available Documents and Fees:
 ${(settings.documents || []).map(doc => `- ${doc.title}: ${doc.desc}. Fee: ₱${doc.firstCopyFee} (Additional copies: ₱${doc.additionalCopyFee}). Processing time: ${doc.processingTime}`).join('\n')}`;
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = groq('llama-3.1-8b-instant');
+        const model = groq('openai/gpt-oss-20b');
         
         let result;
         let attempts = 0;

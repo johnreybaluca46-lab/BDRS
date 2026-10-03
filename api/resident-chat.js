@@ -176,7 +176,7 @@ BDRS Knowledge Base:
         console.log(`[CHAT][resident][${reqId}] gemini=start`);
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = groq('llama-3.1-8b-instant');
+        const model = groq('openai/gpt-oss-20b');
         
         let result;
         let attempts = 0;
