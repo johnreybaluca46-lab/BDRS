@@ -1,10 +1,10 @@
 import admin from 'firebase-admin';
 import { applyCors } from './_lib/cors.js';
 import { adminDb } from './_lib/firebase-admin.js';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGroq } from '@ai-sdk/groq';
 
-const google = createGoogleGenerativeAI({
-    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+const groq = createGroq({
+    apiKey: process.env.GROQ_API_KEY,
 });
 import { generateText } from 'ai';
 
@@ -130,7 +130,7 @@ Available Documents and Fees:
 ${(settings.documents || []).map(doc => `- ${doc.title}: ${doc.desc}. Fee: ₱${doc.firstCopyFee} (Additional copies: ₱${doc.additionalCopyFee}). Processing time: ${doc.processingTime}`).join('\n')}`;
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = google('gemini-3.8-flash');
+        const model = groq('llama-3.1-8b-instant');
         
         let result;
         let attempts = 0;
