@@ -9,7 +9,7 @@ import { logAdminActivity as logActivity } from '../utils/activityLogger';
 import { 
   LayoutDashboard, FileText, ClipboardList, Clock, 
   UserCircle, LogOut, CheckSquare, CheckCircle, XCircle, Menu, X, User,
-  ChevronLeft, ChevronRight, CreditCard, Info, Sparkles
+  ChevronLeft, ChevronRight, CreditCard, Info, Sparkles, Bot
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import '../lib/app-sidebar.css';
@@ -230,6 +230,10 @@ export default function ResidentSidebar() {
           <Link to="/user-whats-new" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/user-whats-new' ? 'active' : ''}`} title="What's New">
             <div className="as-nav-icon"><Sparkles size={20} /></div>
             <span className="as-nav-label">What's New</span>
+          </Link>
+          <Link to="/user-assistant" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/user-assistant' ? 'active' : ''}`} title="BDRS Assistant">
+            <div className="as-nav-icon"><Bot size={20} /></div>
+            <span className="as-nav-label">BDRS Assistant</span>
           </Link>
 
           <div className="as-nav-section">MY REQUESTS</div>

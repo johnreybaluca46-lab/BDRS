@@ -47,9 +47,12 @@
     }
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.87",
+    "@ai-sdk/react": "^4.0.130",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/splash-screen": "^8.0.2",
     "@emailjs/browser": "^4.4.1",
+    "ai": "^7.0.127",
     "cookie": "^2.0.1",
     "electron-updater": "^6.8.9",
     "firebase": "^12.17.1",
@@ -59,10 +62,12 @@
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
     "react-qr-code": "^2.2.0",
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1",
-    "sweetalert2": "^11.26.25"
+    "sweetalert2": "^11.26.25",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.2",

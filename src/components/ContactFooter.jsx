@@ -1,6 +1,6 @@
 import React from 'react';
 import { Headset, Phone, MapPin, Clock } from 'lucide-react';
-import './ContactFooter.css';
+import './lib/ContactFooter.css';
 import { useSettings } from '../context/SettingsContext';
 
 export default function ContactFooter() {

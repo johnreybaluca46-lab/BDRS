@@ -1,5 +1,5 @@
 import React from 'react';
-import './SkeletonCardGrid.css';
+import './lib/SkeletonCardGrid.css';
 
 export default function SkeletonCardGrid() {
   return (

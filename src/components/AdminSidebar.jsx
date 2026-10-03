@@ -8,7 +8,7 @@ import { logLoginEvent } from '../utils/auditLogger';
 import { 
   LayoutDashboard, FileText, Users, UserPlus, BarChart2, 
   CheckCircle, UserCircle, LogOut, Settings, Trash2, Mail,
-  CreditCard, FileCheck, ShieldCheck, Menu, X, ChevronLeft, ChevronRight, User
+  CreditCard, FileCheck, ShieldCheck, Menu, X, ChevronLeft, ChevronRight, User, Bot
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import DefaultLogo from '../assets/logo/barangay buluan seal.png';
@@ -203,6 +203,10 @@ export default function AdminSidebar({ className }) {
           <Link to="/admin/dashboard" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/admin/dashboard' ? 'active' : ''}`} title="Dashboard">
             <div className="as-nav-icon"><LayoutDashboard size={20} /></div>
             <span className="as-nav-label">Dashboard</span>
+          </Link>
+          <Link to="/admin/assistant" onClick={closeSidebar} className={`as-nav-item ${location.pathname === '/admin/assistant' ? 'active' : ''}`} title="BDRS Assistant">
+            <div className="as-nav-icon"><Bot size={20} /></div>
+            <span className="as-nav-label">BDRS Assistant</span>
           </Link>
           <Link to="/admin/document-requests" onClick={closeSidebar} className={`as-nav-item ${(location.pathname.includes('/admin/document-requests') && location.state?.from !== '/admin/payment' && location.state?.from !== '/admin/completed' && location.state?.from !== '/admin/trash') ? 'active' : ''}`} title="Document Requests">
             <div className="as-nav-icon"><FileText size={20} /></div>

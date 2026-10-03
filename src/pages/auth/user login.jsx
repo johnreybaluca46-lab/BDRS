@@ -35,7 +35,7 @@ export default function UserLogin() {
   const { loginWithSession } = useAuth();
 
   useEffect(() => {
-    document.title = `BDRS Resident Portal v${packageJson.version}`;
+    document.title = `BDRS Resident Portal`;
   }, []);
 
   const [showPassword, setShowPassword] = useState(false);

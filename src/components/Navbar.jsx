@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Home as HomeIcon, Info, FileText, Phone, Menu, X, LogIn, Download } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo/barangay buluan seal.png';
-import './Navbar.css';
+import './lib/Navbar.css';
 import { isNativeApp } from '../utils/platform';
 
 export default function Navbar({ blockNavigation = false, onBlockedNavigation = null }) {

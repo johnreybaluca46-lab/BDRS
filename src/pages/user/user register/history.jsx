@@ -29,7 +29,7 @@ const StatCard = ({ title, value, icon: Icon, colorTheme, linkText, linkTo, valu
         {linkText} <ArrowRight size={14} />
       </Link>
       <div className="summary-card-bg-icon">
-        <Icon size={120} strokeWidth={1.5} />
+        <Icon size={80} strokeWidth={1.5} />
       </div>
     </div>
   );
@@ -194,7 +194,7 @@ export default function RequestHistory() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+            <div className="history-stats-grid">
               <StatCard
                 title="Approved"
                 value={stats.actions}

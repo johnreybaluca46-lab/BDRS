@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import './SweetAlert.css';
+import './lib/SweetAlert.css';
 
 const SweetAlert = ({ 
   title = "Error !", 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import './Loader.css';
+import './lib/Loader.css';
 
 export default function Loader({ text = 'Loading...' }) {
   const loaderContent = (

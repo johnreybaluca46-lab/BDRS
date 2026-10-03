@@ -1,5 +1,5 @@
 import React from 'react';
-import './SkeletonTable.css';
+import './lib/SkeletonTable.css';
 
 export default function SkeletonTable() {
   return (

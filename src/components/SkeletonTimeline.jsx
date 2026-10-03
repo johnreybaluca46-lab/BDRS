@@ -1,5 +1,5 @@
 import React from 'react';
-import './SkeletonTimeline.css';
+import './lib/SkeletonTimeline.css';
 
 export default function SkeletonTimeline() {
   return (

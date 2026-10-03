@@ -1,5 +1,5 @@
 import React from 'react';
-import './SkeletonProfile.css';
+import './lib/SkeletonProfile.css';
 
 export default function SkeletonProfile() {
   return (

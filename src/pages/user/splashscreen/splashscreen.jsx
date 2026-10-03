@@ -42,7 +42,7 @@ export default function SplashScreen() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    document.title = `BDRS Resident Portal v${packageJson.version}`;
+    document.title = `BDRS Resident Portal`;
     const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     if (hasSeenSplash) {
       navigate('/user-login', { replace: true });

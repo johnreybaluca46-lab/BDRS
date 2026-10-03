@@ -52,7 +52,11 @@ import UserRejectedRequests from './pages/user/user register/rejected_requests';
 import SplashScreen from './pages/user/splashscreen/splashscreen';
 import AutoUpdater from './components/AutoUpdater';
 import NativeOfflineOverlay from './components/NativeOfflineOverlay';
-
+import ResidentChatbot from './components/ResidentChatbot';
+import PublicChatbot from './components/PublicChatbot';
+import AdminChatbot from './components/AdminChatbot';
+import UserAssistant from './pages/user/UserAssistant';
+import AdminAssistant from './pages/admin/AdminAssistant';
 import { MaintenanceProvider, useMaintenance } from './context/MaintenanceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import MaintenanceWarning from './maintenance/MaintenanceWarning';
@@ -115,6 +119,30 @@ const PublicRouteGuard = ({ children }) => {
   return children;
 };
 
+const GlobalChatbotWrapper = () => {
+  const location = useLocation();
+  const { userRole, loading } = useAuth();
+  const hidePaths = ['/login', '/splashscreen', '/user-login', '/forgot-password', '/register', '/status'];
+  
+  if (loading) return null;
+  if (hidePaths.includes(location.pathname)) return null;
+
+  const publicPaths = ['/', '/about', '/services', '/contact', '/download'];
+  if (publicPaths.includes(location.pathname)) {
+      return <PublicChatbot />;
+  }
+
+  if (location.pathname === '/admin/dashboard' && userRole === 'admin') {
+      return <AdminChatbot />;
+  }
+
+  if (location.pathname === '/user-dashboard' && userRole === 'resident') {
+      return <ResidentChatbot />;
+  }
+
+  return null;
+};
+
 function App() {
   useEffect(() => {
     // Hide native splash screen
@@ -169,6 +197,7 @@ function App() {
           <AutoUpdater />
           <MaintenanceWarning />
           <ScrollToTop />
+          <GlobalChatbotWrapper />
         <div className="app-container">
           <Routes>
             {/* Public User Routes - replaced by Maintenance when active */}
@@ -192,6 +221,7 @@ function App() {
           {/* Protected Resident Routes */}
           <Route element={<ResidentRouteGuard />}>
             <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route path="/user-assistant" element={<UserAssistant />} />
             <Route path="/user-request-documents" element={<RequestDocuments />} />
             <Route path="/user-instruction" element={<UserInstruction />} />
             <Route path="/user-whats-new" element={<WhatsNew />} />
@@ -211,6 +241,7 @@ function App() {
           {/* Protected Admin Routes */}
           <Route path="/admin" element={<AdminProtectedRoute />}>
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="assistant" element={<AdminAssistant />} />
             <Route path="document-requests" element={<DocumentRequest />} />
             <Route path="document-requests/:id" element={<ViewDocumentRequest />} />
             <Route path="document-validation" element={<DocumentValidation />} />

@@ -1,5 +1,5 @@
 import React from 'react';
-import './SkeletonDashboard.css';
+import './lib/SkeletonDashboard.css';
 
 export default function SkeletonDashboard() {
   return (

@@ -5,7 +5,7 @@ import { auth, db } from '../database/firebase';
 import { useAuth } from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import { isNativeApp } from '../utils/platform';
-
+import ResidentChatbot from './ResidentChatbot';
 const PinVerificationScreen = ({ residentData, onVerifySuccess, onLogout }) => {
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [isCreating, setIsCreating] = useState(!residentData?.pinCodeHash);
@@ -409,7 +409,11 @@ const ResidentProtectedRoute = ({ children }) => {
     );
   }
 
-  return children ? children : <Outlet />;
+  return (
+    <>
+      {children ? children : <Outlet />}
+    </>
+  );
 };
 
 export default ResidentProtectedRoute;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './AutoUpdater.css';
+import './lib/AutoUpdater.css';
 import { isNativeApp } from '../utils/platform';
 
 export default function AutoUpdater() {
