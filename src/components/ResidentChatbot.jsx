@@ -193,7 +193,7 @@ function ResidentChatbotInner({ fullScreen }) {
           )
         ))}
         
-        {!isLoading && (
+        {!isLoading && messages.length <= 1 && (
           <div className="bdrs-chatbot-suggestions">
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 'bold', color: 'var(--chat-primary)', marginBottom: '8px', marginTop: '12px' }}>
               <User size={16} /> Suggested Questions
