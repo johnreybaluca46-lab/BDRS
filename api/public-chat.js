@@ -130,7 +130,7 @@ Available Documents and Fees:
 ${(settings.documents || []).map(doc => `- ${doc.title}: ${doc.desc}. Fee: ₱${doc.firstCopyFee} (Additional copies: ₱${doc.additionalCopyFee}). Processing time: ${doc.processingTime}`).join('\n')}`;
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = google('gemini-2.5-flash');
+        const model = google('gemini-1.5-flash');
         
         let result;
         let attempts = 0;

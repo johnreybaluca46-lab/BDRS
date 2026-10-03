@@ -159,7 +159,7 @@ Only provide the minimum information necessary for the requested administrative 
         console.log(`[CHAT][admin][${reqId}] gemini=start`);
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = google('gemini-2.5-flash');
+        const model = google('gemini-1.5-flash');
         
         let result;
         let attempts = 0;
