@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import ResidentSidebar from '../../components/ResidentSidebar';
 import ResidentProfileDropdown from '../../components/ResidentProfileDropdown';
 import ResidentNotificationBell from '../../components/ResidentNotificationBell';
-import { Sparkles, ShieldCheck, Zap, Smartphone, CheckCircle, RefreshCw, Rocket, FileText } from 'lucide-react';
+import { Sparkles, ShieldCheck, Zap, Smartphone, CheckCircle, RefreshCw, Rocket, FileText, Bot } from 'lucide-react';
 import '../../lib/admin-layout.css';
 
 export default function WhatsNew() {
@@ -136,8 +136,52 @@ export default function WhatsNew() {
             <div className="release-header">
               <div>
                 <h2 className="release-version">
-                  BDRS v1.0.3
+                  BDRS v1.0.4
                   <span className="release-badge">Latest</span>
+                </h2>
+                <p style={{ margin: '8px 0 0 0', color: '#64748b' }}>The Smart AI & Formatting Update.</p>
+              </div>
+              <div className="release-date">October 2026</div>
+            </div>
+
+            <div className="feature-list">
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#eff6ff', color: '#3b82f6' }}>
+                  <Bot size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>Smarter AI Chatbots</h3>
+                  <p>Fixed an issue preventing the Resident and Admin AI assistants from fetching live database records. You can now reliably ask about your document requests and system stats!</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#fdf4ff', color: '#c026d3' }}>
+                  <FileText size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>Beautiful Markdown Rendering</h3>
+                  <p>The chatbots now support full markdown formatting. Responses containing tables, bold text, bullet points, and numbered lists render perfectly for a much better reading experience.</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-icon" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>
+                  <Zap size={24} />
+                </div>
+                <div className="feature-content">
+                  <h3>Smooth Chat Scrolling</h3>
+                  <p>Improved the chatbot scrolling behavior. The chat now intelligently hides the suggested questions after your first message and perfectly anchors to the newest responses.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="release-card" style={{ opacity: 0.9 }}>
+            <div className="release-header">
+              <div>
+                <h2 className="release-version" style={{ fontSize: '1.6rem' }}>
+                  BDRS v1.0.3
                 </h2>
                 <p style={{ margin: '8px 0 0 0', color: '#64748b' }}>The Security & Polish Update.</p>
               </div>
