@@ -1,1 +1,0 @@
-import { adminAuth, adminDb } from './_lib/firebase-admin.js'; export default function handler(req, res) { res.status(200).json({ success: true, message: 'pong', auth: !!adminAuth, db: !!adminDb }); }
