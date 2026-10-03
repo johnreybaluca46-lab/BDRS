@@ -175,9 +175,8 @@ export default function DownloadPage() {
               
               <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <a 
-                  href={`https://github.com/johnreybaluca46-lab/BDRS/releases/download/${__APP_VERSION__}/BDRS-Android-v${__APP_VERSION__}.apk`}
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                  href={`/downloads/BDRS-Android-v${__APP_VERSION__}.apk`}
+                  download={`BDRS-Android-v${__APP_VERSION__}.apk`}
                   onClick={handleApkDownload}
                   className="download-btn" 
                   style={{ cursor: 'pointer', border: 'none', textDecoration: 'none', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#10b981', color: 'white', marginBottom: '0' }}
