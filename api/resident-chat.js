@@ -176,7 +176,7 @@ BDRS Knowledge Base:
         console.log(`[CHAT][resident][${reqId}] gemini=start`);
 
         const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }));
-        const model = google('gemini-1.5-flash');
+        const model = google('gemini-3.8-flash');
         
         let result;
         let attempts = 0;
