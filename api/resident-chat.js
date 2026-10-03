@@ -2,11 +2,6 @@ import admin from 'firebase-admin';
 import { applyCors } from './_lib/cors.js';
 import { getUserRole } from './_lib/roles.js';
 import { adminDb } from './_lib/firebase-admin.js';
-import { createGroq } from '@ai-sdk/groq';
-
-const groq = createGroq({
-    apiKey: process.env.GROQ_API_KEY,
-});
 import { generateText, tool } from 'ai';
 import { z } from 'zod';
 
@@ -38,8 +33,14 @@ const getTimeoutSignal = (ms) => {
 export default async function handler(req, res) {
     applyCors(req, res);
     if (req.method === 'OPTIONS') return res.status(200).end();
-    
     try {
+        if (!process.env.GROQ_API_KEY) {
+            console.error("[CHAT][resident] GROQ_API_KEY is not configured");
+            return res.status(500).json({ error: "AI service is not configured" });
+        }
+        
+        const { createGroq } = await import('@ai-sdk/groq');
+        const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
         const reqId = 'req_' + Math.random().toString(36).substr(2, 6);
         const startTime = Date.now();
         console.log(`[CHAT][resident][${reqId}] auth=start role=pending req_start`);
