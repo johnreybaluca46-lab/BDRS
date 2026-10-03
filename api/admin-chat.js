@@ -2,7 +2,7 @@ import admin from 'firebase-admin';
 import { applyCors } from './_lib/cors.js';
 import { getUserRole } from './_lib/roles.js';
 import { adminDb } from './_lib/firebase-admin.js';
-import { generateText, tool } from 'ai';
+
 import { z } from 'zod';
 
 function parseCookies(cookieHeader) {
@@ -38,6 +38,7 @@ export default async function handler(req, res) {
         
         const { createGroq } = await import('@ai-sdk/groq');
         const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+        const { generateText, tool } = await import('ai');
         const reqId = 'req_' + Math.random().toString(36).substr(2, 6);
         const startTime = Date.now();
         console.log(`[CHAT][admin][${reqId}] auth=start role=pending req_start`);
@@ -125,7 +126,10 @@ Never assume that an admin has unrestricted database access.
 Never allow arbitrary Firestore queries, arbitrary collection access, arbitrary document paths, or arbitrary UID access.
 Never reveal passwords, OTPs, PINs, recovery codes, reset tokens, session cookies, API keys, private keys, or authentication tokens.
 Do not expose sensitive information unnecessarily.
-Only provide the minimum information necessary for the requested administrative task.`;
+Only provide the minimum information necessary for the requested administrative task.
+FORMATTING INSTRUCTIONS:
+Always use clean, readable Markdown (headings, bold text, numbered lists).
+Prefer clean step-by-step lists over large Markdown tables. Only use tables for simple comparative data.`;
 
         const tools = {
             getSystemStats: tool({
@@ -173,11 +177,19 @@ Only provide the minimum information necessary for the requested administrative 
                     model: model,
                     system: systemPrompt,
                     messages: cleanMessages,
-                    maxSteps: 3,
-                    maxRetries: 0,
-                    abortSignal: getTimeoutSignal(8000),
                     tools: tools,
                 });
+                
+                // Manual loop for tool calls since maxSteps doesn't work correctly with this provider setup
+                if (result.toolResults && result.toolResults.length > 0) {
+                    const nextMessages = cleanMessages.concat(result.response.messages);
+                    result = await generateText({
+                        model: model,
+                        system: systemPrompt,
+                        messages: nextMessages,
+                    });
+                }
+                
                 break;
             } catch (err) {
                 const isQuotaError = err.message.toLowerCase().includes('quota') || err.message.includes('429');

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Bot, Loader2, Shield } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import './lib/ResidentChatbot.css';
 import { isNativeApp } from '../utils/platform';
@@ -168,7 +170,9 @@ function AdminChatbotInner({ fullScreen }) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px', maxWidth: '85%' }}>
                 <div className={`bdrs-chatbot-message ${m.role}`} style={{ maxWidth: '100%' }}>
-                  <div style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{m.content}</div>
+                  <div className="bdrs-markdown" style={{ margin: 0 }}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                  </div>
                 </div>
                 <div style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '4px' }}>
                   {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -178,7 +182,9 @@ function AdminChatbotInner({ fullScreen }) {
           ) : (
             <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', marginBottom: '24px' }}>
               <div className={`bdrs-chatbot-message ${m.role}`} style={{ maxWidth: '85%' }}>
-                <div style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{m.content}</div>
+                <div className="bdrs-markdown" style={{ margin: 0 }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                </div>
               </div>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginRight: '4px' }}>
                 {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}

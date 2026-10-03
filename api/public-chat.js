@@ -1,7 +1,7 @@
 import admin from 'firebase-admin';
 import { applyCors } from './_lib/cors.js';
 import { adminDb } from './_lib/firebase-admin.js';
-import { generateText } from 'ai';
+
 
 let cachedSettings = null;
 let lastSettingsFetch = 0;
@@ -24,6 +24,7 @@ export default async function handler(req, res) {
         
         const { createGroq } = await import('@ai-sdk/groq');
         const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+        const { generateText } = await import('ai');
         const reqId = 'req_' + Math.random().toString(36).substr(2, 6);
         const startTime = Date.now();
         console.log(`[CHAT][public][${reqId}] auth=none role=public req_start`);
@@ -119,6 +120,9 @@ Never access or reveal private resident information, administrative information,
 Do not claim to know information that is not provided by the BDRS public configuration.
 Use configured BDRS settings for fees, office hours, services, and processing information.
 If information is unavailable, say that the information is not currently available.
+FORMATTING INSTRUCTIONS:
+Always use clean, readable Markdown (headings, bold text, numbered lists).
+Prefer clean step-by-step lists over large Markdown tables. Only use tables for simple comparative data.
 
 BDRS Knowledge Base:
 - Office Hours: ${settings.officeHours || 'Not specified'}

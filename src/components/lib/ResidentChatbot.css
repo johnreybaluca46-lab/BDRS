@@ -334,3 +334,37 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.bdrs-markdown p {
+  margin: 0 0 10px 0;
+}
+.bdrs-markdown p:last-child {
+  margin-bottom: 0;
+}
+.bdrs-markdown ul, .bdrs-markdown ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+.bdrs-markdown li {
+  margin-bottom: 4px;
+}
+.bdrs-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+.bdrs-markdown th, .bdrs-markdown td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  text-align: left;
+}
+.bdrs-markdown th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+.bdrs-markdown a {
+  color: var(--chat-primary, #3b82f6);
+  text-decoration: underline;
+}

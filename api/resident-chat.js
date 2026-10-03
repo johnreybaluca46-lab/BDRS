@@ -2,7 +2,7 @@ import admin from 'firebase-admin';
 import { applyCors } from './_lib/cors.js';
 import { getUserRole } from './_lib/roles.js';
 import { adminDb } from './_lib/firebase-admin.js';
-import { generateText, tool } from 'ai';
+
 import { z } from 'zod';
 
 function parseCookies(cookieHeader) {
@@ -41,6 +41,7 @@ export default async function handler(req, res) {
         
         const { createGroq } = await import('@ai-sdk/groq');
         const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+        const { generateText, tool } = await import('ai');
         const reqId = 'req_' + Math.random().toString(36).substr(2, 6);
         const startTime = Date.now();
         console.log(`[CHAT][resident][${reqId}] auth=start role=pending req_start`);
@@ -137,6 +138,9 @@ The authenticated resident identity comes only from the verified server-side ses
 Never reveal passwords, OTPs, PINs, recovery codes, reset tokens, session cookies, API keys, private keys, or authentication tokens.
 Do not invent request status, payment information, fees, or dates.
 Use authorized tools when personal request information is required.
+FORMATTING INSTRUCTIONS:
+Always use clean, readable Markdown (headings, bold text, numbered lists).
+Prefer clean step-by-step lists over large Markdown tables. Only use tables for simple comparative data.
 
 BDRS Knowledge Base:
 - Office Hours: ${settings.officeHours || 'Not specified'}
@@ -190,11 +194,19 @@ BDRS Knowledge Base:
                     model: model,
                     system: systemPrompt,
                     messages: cleanMessages,
-                    maxSteps: 3,
-                    maxRetries: 0,
-                    abortSignal: getTimeoutSignal(8000),
                     tools: tools,
                 });
+                
+                // Manual loop for tool calls since maxSteps doesn't work correctly with this provider setup
+                if (result.toolResults && result.toolResults.length > 0) {
+                    const nextMessages = cleanMessages.concat(result.response.messages);
+                    result = await generateText({
+                        model: model,
+                        system: systemPrompt,
+                        messages: nextMessages,
+                    });
+                }
+                
                 break;
             } catch (err) {
                 const isQuotaError = err.message.toLowerCase().includes('quota') || err.message.includes('429');
