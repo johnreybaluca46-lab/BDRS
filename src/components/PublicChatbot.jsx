@@ -70,10 +70,10 @@ function PublicChatbotInner() {
   };
 
   useEffect(() => {
-    if (isOpen && messagesEndRef.current && messages.length > 1) {
-      scrollToBottom();
+    if (isOpen && messagesEndRef.current) {
+      setTimeout(scrollToBottom, 100);
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isLoading]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 

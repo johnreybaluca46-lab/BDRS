@@ -70,10 +70,10 @@ function ResidentChatbotInner({ fullScreen }) {
   };
 
   useEffect(() => {
-    if ((isOpen || fullScreen) && messagesEndRef.current && messages.length > 1) {
-      scrollToBottom();
+    if ((isOpen || fullScreen) && messagesEndRef.current) {
+      setTimeout(scrollToBottom, 100);
     }
-  }, [messages, isOpen, fullScreen]);
+  }, [messages, isOpen, fullScreen, isLoading]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
