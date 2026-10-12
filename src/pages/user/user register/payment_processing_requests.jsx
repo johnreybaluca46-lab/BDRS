@@ -10,6 +10,7 @@ import '../../../lib/my-requests.css';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../../database/firebase';
 import { Eye, Clock, CheckCircle, FileText, Home, Store, FileCheck, CreditCard } from 'lucide-react';
+import { isRequestExpired } from '../../../utils/requestStatus';
 
 export default function OnlinePaymentRequests() {
   const [requests, setRequests] = useState([]);
@@ -59,7 +60,7 @@ export default function OnlinePaymentRequests() {
             ? new Date(doc.data().timestamp.seconds * 1000)
             : new Date()
         }))
-        .filter(req => req.status?.toLowerCase() === 'processing payment');
+        .filter(req => req.status?.toLowerCase() === 'processing payment' && !isRequestExpired(req) && !req.hiddenByUser);
       
       reqs.sort((a, b) => b.dateRequested - a.dateRequested);
       setRequests(reqs);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SkeletonTable from '../../components/SkeletonTable';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { 
   LayoutDashboard, 
@@ -17,11 +17,13 @@ import {
   Eye,
   Trash2,
   Mail,
-  AlertCircle
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../database/firebase';
 import { collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { isRequestExpired, getResolvedStatus } from '../../utils/requestStatus';
 
 import '../../lib/admin-layout.css';
 import AdminHeaderRight from '../../components/AdminHeaderRight';
@@ -41,7 +43,34 @@ export default function TrashRequests() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All Type Documents');
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeDeliveryTab, setActiveDeliveryTab] = useState(location.state?.activeTab || 'Barangay Pick up');
+
+  // Filter tab between All, Rejected, and Expired
+  const initialStatusTab = (() => {
+    const s = searchParams.get('status')?.toLowerCase() || location.state?.statusTab?.toLowerCase();
+    if (s === 'expired') return 'Expired';
+    if (s === 'rejected') return 'Rejected';
+    return 'All';
+  })();
+  const [statusTab, setStatusTab] = useState(initialStatusTab);
+
+  // Sync state if URL search params change
+  useEffect(() => {
+    const s = searchParams.get('status')?.toLowerCase();
+    if (s === 'expired') setStatusTab('Expired');
+    else if (s === 'rejected') setStatusTab('Rejected');
+    else if (!s) setStatusTab('All');
+  }, [searchParams]);
+
+  const handleStatusTabChange = (tab) => {
+    setStatusTab(tab);
+    setCurrentPage(1);
+    const newParams = new URLSearchParams(searchParams);
+    if (tab === 'All') newParams.delete('status');
+    else newParams.set('status', tab.toLowerCase());
+    setSearchParams(newParams, { replace: true });
+  };
 
   const [seenOnlineRequests, setSeenOnlineRequests] = useState(() => {
     try { return JSON.parse(localStorage.getItem('seenOnlineRequests_Trash')) || []; }
@@ -64,7 +93,19 @@ export default function TrashRequests() {
 
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        if (data.status === 'Trash' || data.status === 'Rejected') {
+        const expired = isRequestExpired(data);
+
+        // Auto-sync database if an approved/processing request passed 7 days
+        if ((data.status === 'Approved' || data.status === 'Processing Payment') && expired) {
+          updateDoc(doc(db, 'requests', docSnap.id), { 
+            status: 'Trash', 
+            expired: true, 
+            expiredAt: serverTimestamp(), 
+            trashedAt: serverTimestamp() 
+          }).catch(console.error);
+        }
+
+        if (data.status === 'Trash' || data.status === 'Rejected' || expired) {
           // Determine timestamp date for trash calculation
           let trashDate = null;
           if (data.trashedAt) {
@@ -90,12 +131,17 @@ export default function TrashRequests() {
             formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
           }
           
+          const resolvedStatus = expired ? 'Expired' : 'Rejected';
+
           reqs.push({
             id: docSnap.id,
             name: data.fullName || data.name || 'N/A',
             type: data.type || 'Unknown',
             date: formattedDate,
             status: data.status,
+            resolvedStatus: resolvedStatus,
+            rejectionReason: data.rejectionReason || null,
+            expired: expired,
             deliveryMethod: data.deliveryMethod || 'N/A',
             rawTimestamp: data.timestamp || null,
             trashedAt: data.trashedAt || null,
@@ -174,26 +220,44 @@ export default function TrashRequests() {
   };
 
   const getStatusClass = (status) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'pending': return 'status-pending';
       case 'approved': return 'status-approved';
       case 'completed': return 'status-completed';
       case 'rejected': return 'status-rejected';
       case 'trash': return 'status-rejected';
-
+      case 'expired': return 'status-expired';
       default: return '';
     }
   };
 
-  const filteredRequests = documentRequests.filter(req => {
-    const matchesTab = (activeDeliveryTab === 'Barangay Pick up' && req.deliveryMethod === 'Barangay Pickup') || 
-                       (activeDeliveryTab === 'Online Pick up' && req.deliveryMethod === 'Online PDF');
-    if (filterType === 'All Type Documents') {
-      return matchesTab && (!searchQuery || (req.id && req.id.toLowerCase().includes(searchQuery.toLowerCase())) || (req.name && req.name.toLowerCase().includes(searchQuery.toLowerCase())));
+  const deliveryRequests = documentRequests.filter(req => 
+    (activeDeliveryTab === 'Barangay Pick up' && req.deliveryMethod === 'Barangay Pickup') || 
+    (activeDeliveryTab === 'Online Pick up' && req.deliveryMethod === 'Online PDF')
+  );
+
+  const allCount = deliveryRequests.length;
+  const rejectedCount = deliveryRequests.filter(r => r.resolvedStatus === 'Rejected').length;
+  const expiredCount = deliveryRequests.filter(r => r.resolvedStatus === 'Expired').length;
+
+  const filteredRequests = deliveryRequests.filter(req => {
+    // Status filter (All, Rejected, Expired)
+    if (statusTab !== 'All' && req.resolvedStatus !== statusTab) {
+      return false;
     }
-    const matchesType = req.type === filterType || (filterType === 'Business Permit' && req.type === 'Business Clearance');
-    const matchesSearch = !searchQuery || (req.id && req.id.toLowerCase().includes(searchQuery.toLowerCase())) || (req.name && req.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesTab && matchesType && matchesSearch;
+
+    if (filterType !== 'All Type Documents') {
+      const matchesType = req.type === filterType || (filterType === 'Business Permit' && req.type === 'Business Clearance');
+      if (!matchesType) return false;
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = (req.id && req.id.toLowerCase().includes(q)) || (req.name && req.name.toLowerCase().includes(q));
+      if (!matchesSearch) return false;
+    }
+
+    return true;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredRequests.length / itemsPerPage));
@@ -271,6 +335,70 @@ export default function TrashRequests() {
             </button>
           </div>
 
+          {/* Status Filter Tabs (All, Rejected, Expired) */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '18px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => handleStatusTabChange('All')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 18px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                backgroundColor: statusTab === 'All' ? '#2b6cb0' : '#edf2f7',
+                color: statusTab === 'All' ? '#ffffff' : '#4a5568',
+                boxShadow: statusTab === 'All' ? '0 2px 4px rgba(43, 108, 176, 0.3)' : 'none'
+              }}
+            >
+              All <span>({allCount})</span>
+            </button>
+            <button
+              onClick={() => handleStatusTabChange('Rejected')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 18px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                backgroundColor: statusTab === 'Rejected' ? '#e53e3e' : '#edf2f7',
+                color: statusTab === 'Rejected' ? '#ffffff' : '#4a5568',
+                boxShadow: statusTab === 'Rejected' ? '0 2px 4px rgba(229, 62, 62, 0.3)' : 'none'
+              }}
+            >
+              <Trash2 size={15} /> Rejected <span>({rejectedCount})</span>
+            </button>
+            <button
+              onClick={() => handleStatusTabChange('Expired')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 18px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                backgroundColor: statusTab === 'Expired' ? '#805ad5' : '#edf2f7',
+                color: statusTab === 'Expired' ? '#ffffff' : '#4a5568',
+                boxShadow: statusTab === 'Expired' ? '0 2px 4px rgba(128, 90, 213, 0.3)' : 'none'
+              }}
+            >
+              <Clock size={15} /> Expired <span>({expiredCount})</span>
+            </button>
+          </div>
+
           <div className="doc-controls" style={{ flexWrap: 'wrap', gap: '15px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <div className="doc-dropdown">
@@ -298,7 +426,7 @@ export default function TrashRequests() {
                 boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
               }}>
                 <AlertCircle size={16} color="#e53e3e" style={{ flexShrink: 0 }} />
-                <span><strong>Note:</strong> Items in the trash will be automatically deleted permanently at the end of the month.</span>
+                <span><strong>Note:</strong> Items in the trash (both rejected and expired requests) will be automatically deleted permanently at the end of the month.</span>
               </div>
             </div>
 
@@ -325,9 +453,23 @@ export default function TrashRequests() {
 
           {loading ? <SkeletonTable /> : filteredRequests.length === 0 ? (
             <EmptyState 
-              icon={Trash2} 
-              title="Trash is Empty" 
-              subtitle={(searchQuery !== '' || filterType !== 'All Type Documents') ? "No results match your current filters." : "There are no items in the trash."}
+              icon={statusTab === 'Expired' ? Clock : Trash2} 
+              title={
+                statusTab === 'Expired' 
+                  ? "No Expired Requests" 
+                  : statusTab === 'Rejected' 
+                    ? "No Rejected Requests" 
+                    : "Trash is Empty"
+              } 
+              subtitle={
+                (searchQuery !== '' || filterType !== 'All Type Documents') 
+                  ? "No results match your current filters." 
+                  : statusTab === 'Expired'
+                    ? "There are no expired document requests in the trash."
+                    : statusTab === 'Rejected'
+                      ? "There are no rejected document requests in the trash."
+                      : "There are no items in the trash."
+              }
             />
           ) : (
             <div className="doc-table-wrapper">
@@ -365,12 +507,12 @@ export default function TrashRequests() {
                       </td>
                       <td>{req.date}</td>
                       <td style={{ textAlign: 'center' }}>
-                        <span className={`status-badge ${getStatusClass(req.status)}`}>
-                          {req.status}
+                        <span className={`status-badge ${getStatusClass(req.resolvedStatus)}`}>
+                          {req.resolvedStatus}
                         </span>
                       </td>
                       <td>
-                        <Link to={`/admin/document-requests/${req.id}`} state={{ from: '/admin/trash', activeTab: activeDeliveryTab }} style={{ display: 'inline-flex', alignItems: 'center', color: '#3182ce' }} title="View">
+                        <Link to={`/admin/document-requests/${req.id}`} state={{ from: '/admin/trash', activeTab: activeDeliveryTab, statusTab }} style={{ display: 'inline-flex', alignItems: 'center', color: '#3182ce' }} title="View">
                           <Eye size={18} className="action-icon" color="#3182ce" />
                         </Link>
                         <span title="Delete" onClick={() => handleDeleteClick(req.id)} style={{ marginLeft: '12px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: '#e53e3e' }}>

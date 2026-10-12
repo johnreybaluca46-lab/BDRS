@@ -75,7 +75,7 @@ export default function MyRequests() {
       });
       
       const filteredReqs = reqs.filter(req => 
-        req.status === 'Processing' || req.status === 'Pending'
+        (req.status === 'Processing' || req.status === 'Pending') && !req.hiddenByUser
       );
       
       filteredReqs.sort((a, b) => b.dateRequested - a.dateRequested);

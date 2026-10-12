@@ -10,6 +10,7 @@ import { auth, db } from '../../../database/firebase';
 import { Trash2, FileText, Check, Clock, X, Bell, CheckCircle, ArrowRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
+import { getResolvedStatus } from '../../../utils/requestStatus';
 
 const StatCard = ({ title, value, icon: Icon, colorTheme, linkText, linkTo, valuePrefix = '', style, className = '' }) => {
   return (
@@ -65,9 +66,7 @@ export default function RequestHistory() {
         // Skip if user cleared this from history
         if (data.clearedFromHistory) return;
 
-        let status = data.status || 'Pending';
-        if (status === 'Processing') status = 'Pending';
-        if (status === 'Trash') status = 'Rejected';
+        const status = getResolvedStatus(data);
 
         const timestamp = data.timestamp ? data.timestamp.toDate() : new Date();
         const monthKey = timestamp.toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -147,6 +146,7 @@ export default function RequestHistory() {
       case 'Approved': return { icon: <FileText size={14} />, cls: 'bg-green', title: 'Approved request' };
       case 'Completed': return { icon: <Bell size={14} />, cls: 'bg-yellow', title: 'Completed request' };
       case 'Rejected': return { icon: <Trash2 size={14} />, cls: 'bg-red', title: 'Rejected request' };
+      case 'Expired': return { icon: <Clock size={14} />, cls: 'bg-purple', title: 'Expired request' };
       case 'Pending': return { icon: <Clock size={14} />, cls: 'bg-blue', title: 'Pending request' };
       default: return { icon: <FileText size={14} />, cls: 'bg-blue', title: 'Document Request' };
     }

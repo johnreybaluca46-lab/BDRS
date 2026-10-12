@@ -14,6 +14,7 @@ import { auth, db } from '../../../database/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import CalendarCard from '../../../components/CalendarCard';
 import { FileText, Clock, CheckCircle, Trash2, CalendarX, ArrowRight } from 'lucide-react';
+import { getResolvedStatus } from '../../../utils/requestStatus';
 
 const StatCard = ({ title, value, icon: Icon, colorTheme, linkText, linkTo, valuePrefix = '', style, className = '' }) => {
   return (
@@ -83,13 +84,7 @@ export default function UserDashboard() {
         snapshot.forEach(doc => {
           const data = doc.data();
           const id = doc.id;
-          let status = data.status || 'Pending';
-          if (status === 'Processing') status = 'Pending';
-          
-          // Check if Approved but expired
-          const isExpired = status === 'Approved' && data.expiresAt && data.expiresAt.toDate() < now;
-          if (isExpired) status = 'Expired';
-          
+          const status = getResolvedStatus(data);
           const isHidden = data.hiddenByUser;
           
           reqs.push({ id, ...data, _resolvedStatus: status });
@@ -99,7 +94,7 @@ export default function UserDashboard() {
               if (status === 'Pending') pending++;
               else if (status === 'Approved') approved++;
               else if (status === 'Completed') completed++;
-              else if (status === 'Trash' || status === 'Rejected') trash++;
+              else if (status === 'Rejected') trash++;
               else if (status === 'Expired') expired++;
               
               if (data.timestamp) {
@@ -112,7 +107,7 @@ export default function UserDashboard() {
                  if (status === 'Pending') monthCounts[month].pending += 1;
                  if (status === 'Approved') monthCounts[month].approved += 1;
                  if (status === 'Completed') monthCounts[month].completed += 1;
-                 if (status === 'Trash' || status === 'Rejected') monthCounts[month].rejected += 1;
+                 if (status === 'Rejected') monthCounts[month].rejected += 1;
                  if (status === 'Expired') monthCounts[month].expired += 1;
               }
           }
@@ -246,7 +241,7 @@ export default function UserDashboard() {
               icon={Trash2}
               colorTheme="red"
               linkText="View all"
-              linkTo="/user-rejected-requests"
+              linkTo="/user-rejected-requests?status=rejected"
             />
             <StatCard
               title="Expired Documents"
@@ -254,7 +249,7 @@ export default function UserDashboard() {
               icon={CalendarX}
               colorTheme="purple"
               linkText="View all"
-              linkTo="/user-rejected-requests"
+              linkTo="/user-rejected-requests?status=expired"
             />
           </div>
 

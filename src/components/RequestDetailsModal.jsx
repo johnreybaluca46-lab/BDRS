@@ -13,22 +13,28 @@ import ProvincialSeal from '../assets/logo/provincial seal.png';
 import '../lib/my-requests.css';
 import { generateDocumentHTML, resolveDocumentTemplateId } from '../utils/documentGenerator';
 import NetworkCheckModal from './NetworkCheckModal';
+import { isRequestExpired, getResolvedStatus } from '../utils/requestStatus';
 
 const RequestDetailsModal = ({ request, onClose }) => {
   if (!request) return null;
 
-  const getStatusColor = (status) => {
+  const resolvedStatus = getResolvedStatus(request);
+  const isExpired = isRequestExpired(request);
+
+  const getStatusColor = (status, isExp) => {
+    if (isExp) return { bg: '#faf5ff', text: '#6b21a8' };
     switch (status?.toLowerCase()) {
       case 'processing': return { bg: '#ebf8ff', text: '#3182ce' };
       case 'approved': return { bg: '#f0fff4', text: '#38a169' };
       case 'completed': return { bg: '#f0fff4', text: '#38a169' };
-      case 'trash': return { bg: '#fff5f5', text: '#e53e3e' };
+      case 'trash':
+      case 'rejected': return { bg: '#fff5f5', text: '#e53e3e' };
       case 'pending': return { bg: '#fffff0', text: '#d69e2e' };
       default: return { bg: '#edf2f7', text: '#4a5568' };
     }
   };
 
-  const statusColors = getStatusColor(request.status);
+  const statusColors = getStatusColor(resolvedStatus, isExpired);
 
   const [qrCodeUrl, setQrCodeUrl] = useState(null);
   const [paymentMethodName, setPaymentMethodName] = useState(null);
@@ -326,8 +332,8 @@ const RequestDetailsModal = ({ request, onClose }) => {
             backgroundColor: statusColors.bg, color: statusColors.text
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
-              {request.expired ? <Hourglass size={20} /> : request.status === 'Trash' ? <XCircle size={20} /> : request.status === 'Pending' ? <Clock size={20} /> : <CheckCircle size={20} />}
-              Status: {request.status === 'Completed' ? 'Paid' : request.expired ? 'Expired' : request.status === 'Trash' ? 'Rejected' : request.status}
+              {isExpired ? <Hourglass size={20} /> : resolvedStatus === 'Rejected' ? <XCircle size={20} /> : resolvedStatus === 'Pending' ? <Clock size={20} /> : <CheckCircle size={20} />}
+              Status: {resolvedStatus === 'Completed' ? 'Paid' : resolvedStatus}
             </div>
             <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>
               Fee: ₱{request.totalFee || '0.00'}
@@ -414,11 +420,20 @@ const RequestDetailsModal = ({ request, onClose }) => {
               </div>
             )}
 
-            {(request.status?.toLowerCase() === 'trash' || request.status?.toLowerCase() === 'rejected') && !request.expired && (
+            {resolvedStatus === 'Rejected' && (
               <div style={{ marginTop: '20px', padding: '16px', background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: '8px' }}>
                 <h4 style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#c53030', textTransform: 'uppercase', fontWeight: '700' }}>Reason for Rejection</h4>
                 <p style={{ margin: 0, fontSize: '0.95rem', color: '#9b2c2c', fontWeight: '500', lineHeight: 1.5 }}>
                   {request.rejectionReason || 'No specific reason provided. Please contact the barangay hall for details.'}
+                </p>
+              </div>
+            )}
+
+            {isExpired && (
+              <div style={{ marginTop: '20px', padding: '16px', background: '#faf5ff', border: '1px solid #e9d8fd', borderRadius: '8px' }}>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#6b21a8', textTransform: 'uppercase', fontWeight: '700' }}>Expiration Notice</h4>
+                <p style={{ margin: 0, fontSize: '0.95rem', color: '#6b21a8', fontWeight: '500', lineHeight: 1.5 }}>
+                  {request.trashReason || 'This document request was not claimed within 7 days and has expired.'}
                 </p>
               </div>
             )}

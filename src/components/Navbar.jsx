@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home as HomeIcon, Info, FileText, Phone, Menu, X, LogIn, Download } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo/barangay buluan seal.png';
@@ -10,6 +10,30 @@ export default function Navbar({ blockNavigation = false, onBlockedNavigation = 
   const [clickCount, setClickCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let keySequence = '';
+    const cheatCode = 'administrator';
+
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
+
+      keySequence += e.key.toLowerCase();
+      if (keySequence.length > cheatCode.length) {
+        keySequence = keySequence.slice(-cheatCode.length);
+      }
+
+      if (keySequence === cheatCode) {
+        sessionStorage.setItem('loginUnlocked', 'true');
+        navigate('/login');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);

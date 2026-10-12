@@ -10,9 +10,11 @@ import '../../../lib/my-requests.css';
 import { collection, query, where, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../../database/firebase';
 import Swal from 'sweetalert2';
-import { Eye, Clock, XCircle, Hourglass, FileText, Home, Store, FileCheck, FileX, Trash2 } from 'lucide-react';
+import { Eye, Clock, XCircle, Hourglass, FileText, Home, Store, FileCheck, FileX, Trash2, CalendarX } from 'lucide-react';
+import { isRequestExpired, getResolvedStatus } from '../../../utils/requestStatus';
 
 export default function RejectedRequests() {
+  const location = useLocation();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -20,12 +22,28 @@ export default function RejectedRequests() {
   const [deliveryTab, setDeliveryTab] = useState('All');
   const [seenTabs, setSeenTabs] = useState(new Set(['All']));
 
+  // Tab for filtering between All, Rejected, and Expired
+  const [statusTab, setStatusTab] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    const s = params.get('status')?.toLowerCase();
+    if (s === 'rejected') return 'Rejected';
+    if (s === 'expired') return 'Expired';
+    return 'All';
+  });
+
+  // Sync tab with URL if user clicks different dashboard cards
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const s = params.get('status')?.toLowerCase();
+    if (s === 'rejected') setStatusTab('Rejected');
+    else if (s === 'expired') setStatusTab('Expired');
+  }, [location.search]);
+
   useEffect(() => {
     setSeenTabs(prev => new Set(prev).add(deliveryTab));
   }, [deliveryTab]);
 
   const [flashingCardId, setFlashingCardId] = useState(null);
-  const location = useLocation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -46,7 +64,7 @@ export default function RejectedRequests() {
   }, [location.search, requests]);
 
   useEffect(() => {
-    document.title = 'Resident | Rejected Requests';
+    document.title = 'Resident | Rejected / Expired Requests';
 
     if (!auth.currentUser) {
       setLoading(false);
@@ -60,16 +78,20 @@ export default function RejectedRequests() {
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const reqs = querySnapshot.docs
-        .map(d => ({
-          id: d.id,
-          ...d.data(),
-          dateRequested: d.data().timestamp?.seconds
-            ? new Date(d.data().timestamp.seconds * 1000)
-            : new Date()
-        }))
+        .map(d => {
+          const data = d.data();
+          const resolvedStatus = getResolvedStatus(data);
+          return {
+            id: d.id,
+            ...data,
+            resolvedStatus,
+            dateRequested: data.timestamp?.seconds
+              ? new Date(data.timestamp.seconds * 1000)
+              : new Date()
+          };
+        })
         .filter(req => {
-          const s = req.status?.toLowerCase();
-          return (s === 'rejected' || s === 'trashed' || s === 'expired') && !req.hiddenByUser;
+          return (req.resolvedStatus === 'Rejected' || req.resolvedStatus === 'Expired') && !req.hiddenByUser;
         });
 
       reqs.sort((a, b) => b.dateRequested - a.dateRequested);
@@ -83,9 +105,8 @@ export default function RejectedRequests() {
     return () => unsubscribe();
   }, []);
 
-  const getThemeByStatus = (status) => {
-    const s = status?.toLowerCase();
-    if (s === 'trashed' || s === 'expired') return 'theme-trashed';
+  const getThemeByStatus = (status, resolvedStatus) => {
+    if (resolvedStatus === 'Expired' || status === 'Expired') return 'theme-trashed';
     return 'theme-rejected';
   };
 
@@ -97,11 +118,11 @@ export default function RejectedRequests() {
   };
 
   const getBannerMessage = (req) => {
-    const s = req.status?.toLowerCase();
-    if (s === 'trashed' || s === 'expired') {
+    const isExpired = req.resolvedStatus === 'Expired' || isRequestExpired(req);
+    if (isExpired) {
       return {
         title: 'Request Expired',
-        desc: req.trashReason || 'This request has expired and was moved to trash.'
+        desc: req.trashReason || 'This request was not claimed within 7 days and has expired.'
       };
     }
     return {
@@ -110,9 +131,8 @@ export default function RejectedRequests() {
     };
   };
 
-  const getStatusLabel = (status) => {
-    const s = status?.toLowerCase();
-    if (s === 'trashed' || s === 'expired') return 'Expired';
+  const getStatusLabel = (req) => {
+    if (req.resolvedStatus === 'Expired' || isRequestExpired(req)) return 'Expired';
     return 'Rejected';
   };
 
@@ -148,6 +168,19 @@ export default function RejectedRequests() {
     }
   };
 
+  // Counts for tabs
+  const totalCount = requests.length;
+  const rejectedCount = requests.filter(r => r.resolvedStatus === 'Rejected').length;
+  const expiredCount = requests.filter(r => r.resolvedStatus === 'Expired').length;
+
+  const filteredRequests = requests.filter(req => {
+    const matchStatus = statusTab === 'All' || req.resolvedStatus === statusTab;
+    const matchType = filterType === 'All Type Documents' || req.type === filterType || (filterType === 'Business Permit' && req.type === 'Business Clearance');
+    const normMethod = (req.deliveryMethod === 'Online PDF' || req.deliveryMethod === 'Online Pick up') ? 'Online Pick up' : 'Barangay Pick up';
+    const matchDelivery = deliveryTab === 'All' || normMethod === deliveryTab;
+    return matchStatus && matchType && matchDelivery;
+  });
+
   return (
     <div className="admin-dashboard-container">
       <ResidentSidebar />
@@ -162,6 +195,70 @@ export default function RejectedRequests() {
         </header>
 
         <div className="dashboard-content">
+
+          {/* Status Tabs: All, Rejected, Expired */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setStatusTab('All')}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '20px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                backgroundColor: statusTab === 'All' ? '#3182ce' : '#edf2f7',
+                color: statusTab === 'All' ? '#ffffff' : '#4a5568',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: statusTab === 'All' ? '0 2px 4px rgba(49, 130, 206, 0.3)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              All <span>({totalCount})</span>
+            </button>
+            <button
+              onClick={() => setStatusTab('Rejected')}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '20px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                backgroundColor: statusTab === 'Rejected' ? '#e53e3e' : '#edf2f7',
+                color: statusTab === 'Rejected' ? '#ffffff' : '#4a5568',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: statusTab === 'Rejected' ? '0 2px 4px rgba(229, 62, 62, 0.3)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <XCircle size={15} /> Rejected <span>({rejectedCount})</span>
+            </button>
+            <button
+              onClick={() => setStatusTab('Expired')}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '20px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                backgroundColor: statusTab === 'Expired' ? '#805ad5' : '#edf2f7',
+                color: statusTab === 'Expired' ? '#ffffff' : '#4a5568',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: statusTab === 'Expired' ? '0 2px 4px rgba(128, 90, 213, 0.3)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Clock size={15} /> Expired <span>({expiredCount})</span>
+            </button>
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '24px' }}>
             <div className="delivery-tabs-container" style={{ display: 'flex', gap: '20px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
@@ -200,24 +297,31 @@ export default function RejectedRequests() {
             </div>
           </div>
 
-          {loading ? <SkeletonCardGrid /> : requests.length === 0 ? (
+          {loading ? <SkeletonCardGrid /> : filteredRequests.length === 0 ? (
             <div className="empty-requests">
               <FileX size={48} />
-              <h3>No Rejected Requests</h3>
-              <p>You don't have any rejected or expired document requests.</p>
+              <h3>
+                {statusTab === 'Rejected' 
+                  ? 'No Rejected Requests' 
+                  : statusTab === 'Expired' 
+                    ? 'No Expired Requests' 
+                    : 'No Requests Found'}
+              </h3>
+              <p>
+                {statusTab === 'Rejected'
+                  ? "You don't have any rejected document requests."
+                  : statusTab === 'Expired'
+                    ? "You don't have any expired document requests."
+                    : "You don't have any rejected or expired document requests."}
+              </p>
             </div>
           ) : (
             <div className="my-requests-grid">
-              {requests.filter(req => {
-                const matchType = filterType === 'All Type Documents' || req.type === filterType || (filterType === 'Business Permit' && req.type === 'Business Clearance');
-                const normMethod = (req.deliveryMethod === 'Online PDF' || req.deliveryMethod === 'Online Pick up') ? 'Online Pick up' : 'Barangay Pick up';
-                const matchTab = deliveryTab === 'All' || normMethod === deliveryTab;
-                return matchType && matchTab;
-              }).map(request => (
+              {filteredRequests.map(request => (
                 <div
                   id={`request-card-${request.id}`}
                   key={request.id}
-                  className={`request-card ${getThemeByStatus(request.status)} ${flashingCardId === request.id ? 'flashing-blue' : ''}`}
+                  className={`request-card ${getThemeByStatus(request.status, request.resolvedStatus)} ${flashingCardId === request.id ? 'flashing-blue' : ''}`}
                 >
                   {isNew(request.rejectedAt || request.timestamp) && <div className="new-request-badge">New</div>}
                   <div className="request-card-content">
@@ -230,8 +334,12 @@ export default function RejectedRequests() {
                           <h3 className="request-title">{request.type}</h3>
                           <p className="request-id">Request #{request.id}</p>
                         </div>
-                        <div className="request-status-badge">
-                          <XCircle size={14} /> {getStatusLabel(request.status)}
+                        <div 
+                          className="request-status-badge"
+                          style={request.resolvedStatus === 'Expired' ? { backgroundColor: '#f3e8ff', color: '#6b21a8' } : {}}
+                        >
+                          {request.resolvedStatus === 'Expired' ? <Clock size={14} /> : <XCircle size={14} />} 
+                          {getStatusLabel(request)}
                         </div>
                       </div>
                       <div className="request-meta">
@@ -245,7 +353,10 @@ export default function RejectedRequests() {
                           <span style={{ fontWeight: 600, marginLeft: '4px' }}>Method:</span> <span style={{ marginLeft: '4px' }}>{request.deliveryMethod === 'Barangay Pickup' ? 'Barangay Pick up' : (request.deliveryMethod === 'Online PDF' ? 'Online Pick up' : (request.deliveryMethod || 'Not specified'))}</span>
                         </div>
                       </div>
-                      <div className="rejected-message-box">
+                      <div 
+                        className="rejected-message-box"
+                        style={request.resolvedStatus === 'Expired' ? { backgroundColor: '#faf5ff', borderColor: '#e9d8fd', color: '#6b21a8' } : {}}
+                      >
                         <strong>{getBannerMessage(request).title}</strong>
                         <br />
                         {getBannerMessage(request).desc}

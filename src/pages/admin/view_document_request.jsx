@@ -21,7 +21,8 @@ import {
   Mail,
   Printer,
   X,
-  Download
+  Download,
+  Clock
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../database/firebase';
@@ -29,6 +30,7 @@ import { doc, onSnapshot, updateDoc, deleteDoc, collection, setDoc, serverTimest
 import { generateDocumentHTML } from '../../utils/documentGenerator';
 import { logActivity } from '../../utils/auditLogger';
 import { useSettings } from '../../context/SettingsContext';
+import { isRequestExpired } from '../../utils/requestStatus';
 import html2pdf from 'html2pdf.js';
 
 import '../../lib/admin-layout.css';
@@ -573,7 +575,7 @@ export default function ViewDocumentRequest() {
           <div className="request-details-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <h2 className="card-title" style={{ marginBottom: 0 }}>Request Details</h2>
-              {requestData.status === 'Approved' && requestData.approvedAt && (
+              {requestData.status === 'Approved' && requestData.approvedAt && !isRequestExpired(requestData) && (
                 <div style={{ padding: '8px 16px', background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: '8px', textAlign: 'right' }}>
                   <h4 style={{ margin: '0 0 2px 0', fontSize: '0.75rem', color: '#c53030', textTransform: 'uppercase' }}>Expiration Countdown</h4>
                   <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#9b2c2c' }}>
@@ -588,6 +590,14 @@ export default function ViewDocumentRequest() {
                       const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                       return `${days} days, ${hours} hours remaining`;
                     })()}
+                  </div>
+                </div>
+              )}
+              {isRequestExpired(requestData) && (
+                <div style={{ padding: '8px 16px', background: '#faf5ff', border: '1px solid #e9d8fd', borderRadius: '8px', textAlign: 'right' }}>
+                  <h4 style={{ margin: '0 0 2px 0', fontSize: '0.75rem', color: '#805ad5', textTransform: 'uppercase' }}>Status</h4>
+                  <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#6b46c1' }}>
+                    Expired (Unclaimed)
                   </div>
                 </div>
               )}
@@ -767,11 +777,53 @@ export default function ViewDocumentRequest() {
               
               <div className="request-status-section">
                 <h4 className="section-subtitle">Request Status</h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                  <span className={`status-badge-large status-${requestData.status.toLowerCase().replace(' ', '-')}`}>
-                    {requestData.status === 'Completed' ? 'Paid' : requestData.status === 'Processing Payment' ? 'Processing' : requestData.status}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  {isRequestExpired(requestData) ? (
+                    <span className="status-badge-large status-expired" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <Clock size={16} /> Expired
+                    </span>
+                  ) : requestData.status === 'Trash' ? (
+                    <span className="status-badge-large status-rejected" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <AlertCircle size={16} /> Rejected
+                    </span>
+                  ) : (
+                    <span className={`status-badge-large status-${requestData.status.toLowerCase().replace(' ', '-')}`}>
+                      {requestData.status === 'Completed' ? 'Paid' : requestData.status === 'Processing Payment' ? 'Processing' : requestData.status}
+                    </span>
+                  )}
                 </div>
+
+                {isRequestExpired(requestData) && (
+                  <div style={{
+                    backgroundColor: '#faf5ff',
+                    border: '1px solid #e9d8fd',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    color: '#553c9a',
+                    fontSize: '0.9rem',
+                    marginBottom: '16px',
+                    lineHeight: '1.5'
+                  }}>
+                    <strong style={{ display: 'block', marginBottom: '3px', color: '#6b46c1' }}>Document Request Expired</strong>
+                    This document request exceeded the 7-day pickup deadline without being claimed or paid by the resident, and was automatically moved to Trash.
+                  </div>
+                )}
+
+                {requestData.status === 'Trash' && !isRequestExpired(requestData) && requestData.rejectionReason && (
+                  <div style={{
+                    backgroundColor: '#fff5f5',
+                    border: '1px solid #fed7d7',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    color: '#c53030',
+                    fontSize: '0.9rem',
+                    marginBottom: '16px',
+                    lineHeight: '1.5'
+                  }}>
+                    <strong style={{ display: 'block', marginBottom: '3px', color: '#9b2c2c' }}>Rejection Reason</strong>
+                    {requestData.rejectionReason}
+                  </div>
+                )}
                 
                 {requestData.status === 'Approved' && requestData.approvedAt && (
                   <div style={{ display: 'none' }}></div>
@@ -795,7 +847,7 @@ export default function ViewDocumentRequest() {
             </div>
             
             <div className="details-actions">
-              <button className="btn-back" onClick={() => navigate(backLink, { state: { activeTab: location.state?.activeTab } })}>Back</button>
+              <button className="btn-back" onClick={() => navigate(backLink, { state: { activeTab: location.state?.activeTab, statusTab: location.state?.statusTab } })}>Back</button>
               {requestData?.status === 'Pending' && (
                 <div className="action-buttons-right">
                   <button className="btn-reject" onClick={handleTrashClick}><Trash2 size={16} /> Reject Request</button>

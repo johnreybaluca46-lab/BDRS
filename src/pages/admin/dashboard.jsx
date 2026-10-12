@@ -41,6 +41,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../database/firebase';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { isRequestExpired } from '../../utils/requestStatus';
 
 import '../../lib/admin-layout.css';
 import AdminHeaderRight from '../../components/AdminHeaderRight';
@@ -129,7 +130,7 @@ export default function Dashboard() {
       snapshot.forEach(doc => {
         const data = doc.data();
         const rawStatus = data.status || 'Pending';
-        const isExpired = data.expired || (rawStatus === 'Approved' && data.expiresAt && data.expiresAt.toDate && data.expiresAt.toDate() < now);
+        const isExpired = isRequestExpired(data);
 
         let isCompleted = false;
         let isTrash = false;
@@ -138,13 +139,18 @@ export default function Dashboard() {
           expired++;
         }
 
-        if (rawStatus === 'Pending' || rawStatus === 'Processing' || rawStatus === 'Processing Payment' || rawStatus === 'Approved') pending++;
+        if (!isExpired && (rawStatus === 'Pending' || rawStatus === 'Processing' || rawStatus === 'Processing Payment' || rawStatus === 'Approved')) {
+          pending++;
+        }
         else if (rawStatus === 'Completed') { 
           completed++; 
           isCompleted = true; 
           earned += parseFloat(data.totalFee || 0) || 0;
         }
-        else if (rawStatus === 'Trash' || rawStatus === 'Rejected') { trash++; isTrash = true; }
+        else if (rawStatus === 'Trash' || rawStatus === 'Rejected' || isExpired) { 
+          trash++; 
+          isTrash = true; 
+        }
         
         if (data.timestamp) {
            const date = data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp.seconds * 1000);
@@ -326,7 +332,7 @@ export default function Dashboard() {
               trendValue="--" 
               trendText="no change" 
               linkText="View all" 
-              linkTo="/admin/trash" 
+              linkTo="/admin/trash?status=rejected" 
             />
             <StatCard 
               title="Expired Request" 
@@ -337,7 +343,7 @@ export default function Dashboard() {
               trendValue="--" 
               trendText="no change" 
               linkText="View all" 
-              linkTo="/admin/trash" 
+              linkTo="/admin/trash?status=expired" 
             />
             <StatCard 
               title="Resident Registered" 
