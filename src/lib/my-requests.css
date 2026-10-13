@@ -193,6 +193,21 @@
   margin-bottom: 4px;
 }
 
+.rejected-message-box {
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  color: #c53030;
+  font-size: 0.85rem;
+}
+
+.rejected-message-box strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
 .btn-view-details {
   display: inline-flex;
   align-items: center;
@@ -242,6 +257,18 @@
 .theme-trash .request-status-badge { background-color: #fed7d7; color: #c53030; }
 .theme-trash .request-banner { background-color: #fff5f5; border-left-color: #e53e3e; }
 .theme-trash .request-banner-text h4 { color: #c53030; }
+
+.theme-rejected .request-icon-container { background-color: #fff5f5; }
+.theme-rejected .request-icon-container svg { color: #e53e3e; }
+.theme-rejected .request-status-badge { background-color: #fed7d7; color: #c53030; }
+.theme-rejected .request-banner { background-color: #fff5f5; border-left-color: #e53e3e; }
+.theme-rejected .request-banner-text h4 { color: #c53030; }
+
+.theme-trashed .request-icon-container { background-color: #faf5ff; }
+.theme-trashed .request-icon-container svg { color: #805ad5; }
+.theme-trashed .request-status-badge { background-color: #f3e8ff; color: #6b21a8; }
+.theme-trashed .request-banner { background-color: #faf5ff; border-left-color: #805ad5; }
+.theme-trashed .request-banner-text h4 { color: #6b21a8; }
 
 /* Empty state */
 .empty-requests {
@@ -350,7 +377,8 @@
   }
   
   .approved-message-box,
-  .completed-message-box {
+  .completed-message-box,
+  .rejected-message-box {
     padding: 10px;
     font-size: 0.75rem;
     margin-top: 12px;
